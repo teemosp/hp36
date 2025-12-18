@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhà Xe Hoàng Phương - Quản Lý Thông Tin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            color: white;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+            color: #f39c12;
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .logo p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .contact-info {
+            text-align: right;
+        }
+        
+        .hotline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .hotline i {
+            color: #f39c12;
+        }
+        
+        .hotline-number {
+            color: #f39c12;
+        }
+        
+        nav {
+            background-color: #34495e;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-menu li {
+            position: relative;
+        }
+        
+        .nav-menu a {
+            display: block;
+            padding: 1rem 1.5rem;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-menu a:hover, .nav-menu a.active {
+            background-color: #2c3e50;
+            color: #f39c12;
+        }
+        
+        .nav-menu a i {
+            margin-right: 8px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f1f1;
+        }
+        
+        .section-header i {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-right: 15px;
+        }
+        
+        .section-header h2 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+        
+        .company-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .info-card {
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+            padding: 1.5rem;
+            background-color: #f9f9f9;
+        }
+        
+        .info-card h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .info-item {
+            margin-bottom: 0.8rem;
+            display: flex;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            min-width: 150px;
+            color: #555;
+        }
+        
+        .info-value {
+            color: #333;
+        }
+        
+        .pdf-viewer {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .ticket-table-container {
+            overflow-x: auto;
+            max-height: 700px;
+            overflow-y: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e1e1e1;
+        }
+        
+        th {
+            background-color: #2c3e50;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .price-cell {
+            font-weight: 600;
+            color: #e74c3c;
+            text-align: right;
+        }
+        
+        .from-cell {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .phone-schedule-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .phone-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .phone-card h3 {
+            color: #2c3e50;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .phone-card h3 i {
+            color: #27ae60;
+        }
+        
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .schedule-time {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .schedule-phone {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        
+        .route-search-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .search-btn {
+            padding: 12px 25px;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        .search-btn:hover {
+            background-color: #1a252f;
+        }
+        
+        .route-table-container {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .location-group {
+            margin-bottom: 2rem;
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .location-header {
+            background-color: #3498db;
+            color: white;
+            padding: 15px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .location-header i {
+            font-size: 1.2rem;
+        }
+        
+        .note {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .note i {
+            color: #ffc107;
+            margin-right: 8px;
+        }
+        
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .footer-section h3 {
+            color: #f39c12;
+            margin-bottom: 1.2rem;
+            font-size: 1.2rem;
+        }
+        
+        .footer-section p {
+            margin-bottom: 0.8rem;
+            opacity: 0.9;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 1.5rem;
+            margin-top: 1.5rem;
+            border-top: 1px solid #3a506b;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        .search-results-count {
+            background-color: #e8f4fc;
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            border-left: 4px solid #3498db;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #7f8c8d;
+        }
+        
+        .no-results i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #bdc3c7;
+        }
+        
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .contact-info {
+                text-align: center;
+            }
+            
+            .nav-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-menu a {
+                padding: 0.8rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .company-info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .phone-schedule-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-container {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-bus"></i>
+                <div>
+                    <h1>NHÀ XE HOÀNG PHƯƠNG</h1>
+                    <p>Chuyên tuyến Thanh Hóa - Hà Nội & các tỉnh miền Bắc</p>
+                </div>
+            </div>
+            <div class="contact-info">
+                <div class="hotline">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>Hotline: <span class="hotline-number">0948.531.333</span></span>
+                </div>
+                <div class="hotline">
+                    <i class="fas fa-phone-alt"></i>
+                    <span><span class="hotline-number">0986.757.575</span></span>
+                </div>
+                <p>Email: ctyhoangphuongth@gmail.com</p>
+            </div>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="nav-container">
+            <ul class="nav-menu">
+                <li><a href="#" class="active" data-section="company-info"><i class="fas fa-info-circle"></i> Thông Tin Nhà Xe</a></li>
+                <li><a href="#" data-section="ticket-prices"><i class="fas fa-ticket-alt"></i> Giá Vé</a></li>
+                <li><a href="#" data-section="phone-schedule"><i class="fas fa-clock"></i> Giờ Xuất Bến & SĐT</a></li>
+                <li><a href="#" data-section="route-search"><i class="fas fa-map-marker-alt"></i> Tra Cứu Vị Trí</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <!-- Thông tin nhà xe -->
+        <section id="company-info" class="section active">
+            <div class="section-header">
+                <i class="fas fa-info-circle"></i>
+                <h2>Thông Tin Nhà Xe</h2>
+            </div>
+            
+            <div class="company-info-grid">
+                <div class="info-card">
+                    <h3><i class="fas fa-building"></i> Thông Tin Doanh Nghiệp</h3>
+                    <div class="info-item">
+                        <div class="info-label">Tên công ty:</div>
+                        <div class="info-value">CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ VẬN TẢI HOÀNG PHƯƠNG</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Mã số doanh nghiệp:</div>
+                        <div class="info-value">2800836982</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Đăng ký lần đầu:</div>
+                        <div class="info-value">12/04/2005</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Cập nhật lần cuối:</div>
+                        <div class="info-value">11/02/2025</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Vốn điều lệ:</div>
+                        <div class="info-value">8.000.000.000 VNĐ (Tám tỷ đồng)</div>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3><i class="fas fa-map-marker-alt"></i> Địa Chỉ Liên Hệ</h3>
+                    <div class="info-item">
+                        <div class="info-label">Trụ sở chính:</div>
+                        <div class="info-value">HH02-17 Vinhome Star City, Phường Hạc Thành, Tỉnh Thanh Hoá</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Điện thoại:</div>
+                        <div class="info-value">0948955999</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Giám đốc:</div>
+                        <div class="info-value">HỒ THỊ HOÀNG</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Thành viên:</div>
+                        <div class="info-value">LÊ VIẾT PHƯƠNG (29.5%)</div>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3><i class="fas fa-file-pdf"></i> Giấy Chứng Nhận Đăng Ký Doanh Nghiệp</h3>
+                    <p>Dưới đây là bản sao Giấy Chứng Nhận Đăng Ký Doanh Nghiệp của Nhà xe Hoàng Phương:</p>
+                    <div class="note">
+                        <i class="fas fa-info-circle"></i> <strong>Lưu ý:</strong> Đây là bản xem trước. Để có bản chính thức, vui lòng liên hệ trực tiếp với nhà xe.
+                    </div>
+                    <div class="pdf-viewer">
+                        <iframe src="https://docs.google.com/viewer?url=https://example.com/DKKD_DOANH_NGHIEP_2025.pdf&embedded=true" width="100%" height="100%" style="border: none;"></iframe>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Giá vé -->
+        <section id="ticket-prices" class="section">
+            <div class="section-header">
+                <i class="fas fa-ticket-alt"></i>
+                <h2>Bảng Giá Vé Đầy Đủ</h2>
+            </div>
+            
+            <div class="note">
+                <i class="fas fa-info-circle"></i> <strong>Lưu ý:</strong> Giá vé có thể thay đổi theo mùa và chính sách của nhà xe. Vui lòng liên hệ hotline để biết giá chính xác nhất. Đơn vị tính: nghìn đồng.
+            </div>
+            
+            <div class="ticket-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Điểm đi</th>
+                            <th>Điểm đến</th>
+                            <th>Giá vé (VNĐ)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ticket-table-body">
+                        <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="note" style="margin-top: 1.5rem;">
+                <i class="fas fa-bus"></i> <strong>Thông tin thêm:</strong> Nhà xe có nhiều loại xe từ 16 chỗ đến 45 chỗ, phục vụ đa dạng nhu cầu của hành khách. Có hỗ trợ đón trả khách tại nhiều điểm trên tuyến đường.
+            </div>
+        </section>
+        
+        <!-- Giờ xuất bến & SĐT -->
+        <section id="phone-schedule" class="section">
+            <div class="section-header">
+                <i class="fas fa-clock"></i>
+                <h2>Giờ Xuất Bến & Số Điện Thoại</h2>
+            </div>
+            
+            <div class="note">
+                <i class="fas fa-phone-alt"></i> <strong>Lưu ý:</strong> Vui lòng gọi trước ít nhất 30 phút để đặt chỗ và xác nhận giờ xe chính xác. Các chuyến xe có thể thay đổi lịch trình vào ngày lễ, Tết.
+            </div>
+            
+            <div class="phone-schedule-container" id="phone-schedule-content">
+                <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+            </div>
+        </section>
+        
+        <!-- Tra cứu vị trí -->
+        <section id="route-search" class="section">
+            <div class="section-header">
+                <i class="fas fa-map-marker-alt"></i>
+                <h2>Tra Cứu Vị Trí Đón Xe</h2>
+            </div>
+            
+            <div class="note">
+                <i class="fas fa-search"></i> <strong>Hướng dẫn:</strong> Nhập điểm đi hoặc điểm đến để tìm kiếm lộ trình và thông tin xe phù hợp. Mỗi địa điểm có thể có nhiều chuyến xe với giờ khác nhau.
+            </div>
+            
+            <div class="route-search-container">
+                <div class="search-box">
+                    <input type="text" id="route-search-input" class="search-input" placeholder="Nhập điểm đi/đến (ví dụ: Thái Nguyên, Yên Nghĩa, Quan Hóa, Cẩm Thủy...)">
+                    <button id="search-route-btn" class="search-btn"><i class="fas fa-search"></i> Tìm Kiếm</button>
+                </div>
+                
+                <div id="search-results-count" class="search-results-count" style="display: none;"></div>
+                
+                <div id="route-results-container">
+                    <!-- Kết quả tìm kiếm sẽ được hiển thị ở đây -->
+                </div>
+                
+                <div class="note">
+                    <i class="fas fa-map-signs"></i> <strong>Ký hiệu:</strong> TX (Thọ Xuân), TN (Thái Nguyên), BG (Bắc Giang), YN (Yên Nghĩa), HP (Hải Phòng), HD (Hải Dương), GB (Giáp Bát), QH (Quan Hóa), QS (Quan Sơn), BN (Bắc Ninh).
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3><i class="fas fa-bus"></i> NHÀ XE HOÀNG PHƯƠNG</h3>
+                <p>Chuyên cung cấp dịch vụ vận tải hành khách chất lượng cao trên tuyến Thanh Hóa - Hà Nội và các tỉnh miền Bắc.</p>
+                <p>Đã hoạt động hơn 15 năm với đội ngũ lái xe chuyên nghiệp, phương tiện hiện đại.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3><i class="fas fa-map-marker-alt"></i> LIÊN HỆ</h3>
+                <p><i class="fas fa-location-dot"></i> HH02-17 Vinhome Star City, P. Đông Hải, TP Thanh Hoá</p>
+                <p><i class="fas fa-phone"></i> Hotline: 0948.531.333 - 0986.757.575</p>
+                <p><i class="fas fa-phone-office"></i> Điện thoại: 0948955999</p>
+                <p><i class="fas fa-envelope"></i> Email: ctyhoangphuongth@gmail.com</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3><i class="fas fa-clock"></i> THỜI GIAN LÀM VIỆC</h3>
+                <p><i class="fas fa-calendar-day"></i> Mở cửa: 5h00 - 22h00 hàng ngày</p>
+                <p><i class="fas fa-headset"></i> Tư vấn & đặt vé: 24/7 qua hotline</p>
+                <p><i class="fas fa-ticket"></i> Đặt vé trước tối thiểu 2 giờ trước giờ khởi hành</p>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            <p>&copy; 2025 Nhà Xe Hoàng Phương. Mọi quyền được bảo lưu.</p>
+            <p>Thiết kế và phát triển bởi Đội ngũ Quản lý Nhà Xe Hoàng Phương</p>
+        </div>
+    </footer>
+
+    <script>
+        // Dữ liệu giá vé đầy đủ từ file GIÁ VÉ NX HP.docx
+        const ticketPrices = [
+            // Mường Lát
+            { from: "Mường Lát", to: "Yên Thủy", price: "180,000" },
+            { from: "Mường Lát", to: "Sỏi, chợ bến, Chi Nê", price: "230,000" },
+            { from: "Mường Lát", to: "Hà Nam, Xuân Mai", price: "230,000" },
+            { from: "Mường Lát", to: "Hưng Yên, Hải Dương, Hà Nội", price: "280,000" },
+            { from: "Mường Lát", to: "Bắc Ninh", price: "330,000" },
+            { from: "Mường Lát", to: "Hải Phòng", price: "350,000" },
+            { from: "Mường Lát", to: "Bắc Giang, Thái Nguyên", price: "380,000" },
+            
+            // Hiền kiệt
+            { from: "Hiền kiệt", to: "Chợ Mía, Yên Thủy", price: "140,000" },
+            { from: "Hiền kiệt", to: "Trạm, Sỏi, chợ bến, Chi Nê", price: "180,000" },
+            { from: "Hiền kiệt", to: "Hà Nam, Xuân Mai", price: "210,000" },
+            { from: "Hiền kiệt", to: "Hưng Yên, Hải Dương, Hà Nội", price: "230,000" },
+            { from: "Hiền kiệt", to: "Bắc Ninh", price: "250,000" },
+            { from: "Hiền kiệt", to: "Hải Phòng, Bắc Giang, Thái Nguyên", price: "300,000" },
+            
+            // Quan Sơn
+            { from: "Quan Sơn", to: "Chợ Mía, Yên Thủy", price: "140,000" },
+            { from: "Quan Sơn", to: "Trạm, Sỏi, chợ bến, Chi Nê", price: "180,000" },
+            { from: "Quan Sơn", to: "Hà Nam, Xuân Mai", price: "210,000" },
+            { from: "Quan Sơn", to: "Hưng Yên, Hải Dương, Hà Nội", price: "230,000" },
+            { from: "Quan Sơn", to: "Hải Phòng, Bắc Ninh", price: "280,000" },
+            { from: "Quan Sơn", to: "Bắc Giang, Thái Nguyên", price: "330,000" },
+            
+            // Quan Hóa
+            { from: "Quan Hóa", to: "Yên Thủy", price: "100,000" },
+            { from: "Quan Hóa", to: "Sỏi, chợ bến, Chi Nê", price: "130,000" },
+            { from: "Quan Hóa", to: "Hà Nam, Xuân Mai", price: "160,000" },
+            { from: "Quan Hóa", to: "Hưng Yên, Hải Dương, Hà Nội", price: "180,000" },
+            { from: "Quan Hóa", to: "Hải Phòng, Bắc Ninh", price: "230,000" },
+            { from: "Quan Hóa", to: "Bắc Giang, Thái Nguyên", price: "280,000" },
+            
+            // Cẩm Thủy
+            { from: "Cẩm Thủy", to: "Yên Thủy", price: "80,000" },
+            { from: "Cẩm Thủy", to: "Trạm, Sỏi, chợ bến, Chi Nê", price: "100,000" },
+            { from: "Cẩm Thủy", to: "Hà Nam, Xuân Mai", price: "140,000" },
+            { from: "Cẩm Thủy", to: "Hưng Yên, Hải Dương, Hà Nội", price: "160,000" },
+            { from: "Cẩm Thủy", to: "Bắc Ninh", price: "210,000" },
+            { from: "Cẩm Thủy", to: "Hải Phòng", price: "230,000" },
+            { from: "Cẩm Thủy", to: "Bắc Giang, Thái Nguyên", price: "260,000" },
+            
+            // Chợ Mía, Yên Thủy
+            { from: "Chợ Mía, Yên Thủy", to: "Sỏi, chợ bến, Chi Nê", price: "50,000" },
+            { from: "Chợ Mía, Yên Thủy", to: "Hà Nam, Xuân Mai", price: "80,000" },
+            { from: "Chợ Mía, Yên Thủy", to: "Hưng Yên, Hà Nội", price: "100,000" },
+            { from: "Chợ Mía, Yên Thủy", to: "Hải Dương", price: "150,000" },
+            { from: "Chợ Mía, Yên Thủy", to: "Bắc Ninh", price: "150,000" },
+            { from: "Chợ Mía, Yên Thủy", to: "Hải Phòng", price: "200,000" },
+            { from: "Chợ Mía, Yên Thủy", to: "Bắc Giang, Thái Nguyên", price: "230,000" },
+            
+            // Trạm, Sỏi, Chợ bến, Chi Nê
+            { from: "Trạm, Sỏi, Chợ bến, Chi Nê", to: "Hà Nam, Xuân Mai", price: "60,000" },
+            { from: "Trạm, Sỏi, Chợ bến, Chi Nê", to: "Hà Nội", price: "80,000" },
+            { from: "Trạm, Sỏi, Chợ bến, Chi Nê", to: "Hưng Yên, Hải Dương", price: "100,000" },
+            { from: "Trạm, Sỏi, Chợ bến, Chi Nê", to: "Bắc Ninh", price: "120,000" },
+            { from: "Trạm, Sỏi, Chợ bến, Chi Nê", to: "Hải Phòng, Bắc Giang", price: "150,000" },
+            { from: "Trạm, Sỏi, Chợ bến, Chi Nê", to: "Thái Nguyên", price: "200,000" }
+        ];
+
+        // Dữ liệu giờ xuất bến & SĐT từ file mini sdt.docx
+        const phoneSchedules = [
+            {
+                location: "Thái Nguyên",
+                schedules: [
+                    { time: "6h30", phone: "0963 529 789" },
+                    { time: "13h30", phone: "0961 529 789" },
+                    { time: "15h00", phone: "0965 529 789" },
+                    { time: "17h00", phone: "0961 533 789" }
+                ]
+            },
+            {
+                location: "Bắc Giang",
+                schedules: [
+                    { time: "6h00", phone: "0969 029 789" },
+                    { time: "7h20", phone: "0961 722 789" },
+                    { time: "16h40", phone: "0978 819 121" },
+                    { time: "18h20", phone: "0981 941 789" }
+                ]
+            },
+            {
+                location: "Quễ võ",
+                schedules: [
+                    { time: "6h00", phone: "0961 941 789" },
+                    { time: "6h20", phone: "0961 129 789" },
+                    { time: "11h00", phone: "0975 148 456" },
+                    { time: "13h00", phone: "0966 278 789" },
+                    { time: "14h00", phone: "0868 402 789" }
+                ]
+            },
+            {
+                location: "Giáp Bát",
+                schedules: [
+                    { time: "8h00", phone: "0913 051 675" },
+                    { time: "14h00", phone: "0929 754 789" }
+                ]
+            },
+            {
+                location: "Yên Nghĩa",
+                schedules: [
+                    { time: "6h30", phone: "0973 456 336" },
+                    { time: "9h20", phone: "0965 902 789" },
+                    { time: "12h00", phone: "0393 999 599" },
+                    { time: "14h00", phone: "0986 539 385" },
+                    { time: "15h45", phone: "0972 820 789" },
+                    { time: "19h00", phone: "0961 005 789" }
+                ]
+            },
+            {
+                location: "Hải Phòng",
+                schedules: [
+                    { time: "5h45", phone: "0868 430 789" },
+                    { time: "8h00", phone: "0868 401 789" },
+                    { time: "8h00", phone: "0868 410 789" },
+                    { phone: "0868 403 789" }
+                ]
+            },
+            {
+                location: "Hải Dương",
+                schedules: [
+                    { time: "13h00", phone: "0868 420 789" }
+                ]
+            }
+        ];
+
+        // Dữ liệu lộ trình đầy đủ từ file SDT - LO TRINH.docx
+        // Nhóm theo địa điểm (mỗi địa điểm có nhiều chuyến xe với giờ khác nhau)
+        const routesByLocation = {
+            "Triệu Sơn": [
+                { time: "05h50", plate: "36B-03077", phone: "0961.529.789" },
+                { time: "05h50", plate: "36B-03077", phone: "0961.009.789" }
+            ],
+            "Phố Châu": [
+                { time: "04h00", plate: "36B-02377", phone: "0965.902.789" }
+            ],
+            "Thượng Ninh": [
+                { time: "08h20", plate: "36B-02569", phone: "0978.819.121" }
+            ],
+            "Khe Hạ": [
+                { time: "08h40", plate: "36B-02569", phone: "0978.819.121" },
+                { time: "12h00", plate: "36B-02662", phone: "0961.941.789" }
+            ],
+            "Luận Thành": [
+                { time: "08h40", plate: "36B-02569", phone: "0978.819.121" },
+                { time: "12h00", plate: "36B-02662", phone: "0961.941.789" }
+            ],
+            "TT Sao Vàng": [
+                { time: "03h10", plate: "36B-02377", phone: "0965.902.789" },
+                { time: "06h00", plate: "36B-03077", phone: "0961.529.789" },
+                { time: "09h10", plate: "36B-02569", phone: "0978.819.121" },
+                { time: "09h10", plate: "36B-02569", phone: "0961.009.789" },
+                { time: "12h30", plate: "36B-03176", phone: "0973.456.336" }
+            ],
+            "Thường Xuân": [
+                { time: "07h00", plate: "36B-02322", phone: "0868.420.789" },
+                { time: "10h10", plate: "36B-02868", phone: "0981.941.789" },
+                { time: "13h30", plate: "36B-02993", phone: "0963.529.789" }
+            ],
+            "Mục Sơn": [
+                { time: "03h30", plate: "36B-02377", phone: "0965.902.789" },
+                { time: "05h10", plate: "36B-02169", phone: "0393.999.599" },
+                { time: "06h20", plate: "36B-03077", phone: "0961.529.789" },
+                { time: "07h25", plate: "36B-02322", phone: "0868.420.789" },
+                { time: "09h30", plate: "36B-02569", phone: "0978.819.121" },
+                { time: "10h40", plate: "36B-02868", phone: "0981.941.789" },
+                { time: "13h45", plate: "36B-03176", phone: "0973.456.336" },
+                { time: "14h50", plate: "36B-02993", phone: "0963.529.789" },
+                { time: "15h30", plate: "36B-02858", phone: "0961.722.789" }
+            ],
+            "Sông Âm": [
+                { time: "07h50", plate: "36B-02969", phone: "0868.402.789" },
+                { time: "13h40", plate: "36B-02856", phone: "0961.129.789" }
+            ],
+            "Chợ Ba Si": [
+                { time: "03h45", plate: "36B-02377", phone: "0965.902.789" },
+                { time: "05h25", plate: "36B-02169", phone: "0393.999.599" },
+                { time: "06h35", plate: "36B-03077", phone: "0961.529.789" },
+                { time: "07h40", plate: "36B-02322", phone: "0868.420.789" },
+                { time: "08h20", plate: "36B-02969", phone: "0868.402.789" },
+                { time: "09h45", plate: "36B-02569", phone: "0978.819.121" },
+                { time: "10h55", plate: "36B-02868", phone: "0981.941.789" },
+                { time: "14h00", plate: "36B-03176", phone: "0973.456.336" },
+                { time: "14h10", plate: "36B-02856", phone: "0961.129.789" },
+                { time: "15h05", plate: "36B-02993", phone: "0963.529.789" },
+                { time: "15h45", plate: "36B-02858", phone: "0961.722.789" }
+            ],
+            "Đồng Tâm, Bá Thước": [
+                { time: "06h40", plate: "36B-03012", phone: "0973.737.778" },
+                { time: "08h20", plate: "36B-02624", phone: "0986.538.385" },
+                { time: "09h00", plate: "36F-00850", phone: "0868.430.789" },
+                { time: "09h00", plate: "36F-00860", phone: "0868.403.789" },
+                { time: "09h40", plate: "36B-02688", phone: "0961.533.789" },
+                { time: "10h40", plate: "36B-03692", phone: "0972.820.789" },
+                { time: "10h40", plate: "36H-07566", phone: "0973.045.567" },
+                { time: "15h10", plate: "36B-02599", phone: "0969.029.789" },
+                { time: "15h20", plate: "36B-02393", phone: "0913.051.675" }
+            ],
+            "TT Cành Nàng": [
+                { time: "06h20", plate: "36B-03146", phone: "0975.148.456" },
+                { time: "08h40", plate: "36B-02624", phone: "0986.538.385" },
+                { time: "10h00", plate: "36B-02688", phone: "0961.533.789" },
+                { time: "11h15", plate: "36B-03692", phone: "0972.820.789" },
+                { time: "15h40", plate: "36B-02393", phone: "0913.051.675" }
+            ],
+            "Lang Chánh": [
+                { time: "07h45", plate: "36B-03012", phone: "0973.737.778" },
+                { time: "09h15", plate: "36F-00850", phone: "0868.430.789" },
+                { time: "09h15", plate: "36F-00860", phone: "0868.403.789" },
+                { time: "11h30", plate: "36H-07566", phone: "0973.045.567" },
+                { time: "15h45", plate: "36B-02599", phone: "0969.029.789" }
+            ],
+            "Yên Định": [
+                { time: "07h20", plate: "36B-02568", phone: "0966.278.789" },
+                { time: "09h50", plate: "36B-03276", phone: "0868.401.789" }
+            ],
+            "Mường Chanh": [
+                { time: "04h50", plate: "36F-00850", phone: "0868.430.789" },
+                { time: "04h50", plate: "36F-00860", phone: "0868.403.789" }
+            ],
+            "Tén Tằn, Mường Lát": [
+                { time: "05h20", plate: "36F-00860", phone: "0868.403.789" },
+                { time: "05h20", plate: "36F-00850", phone: "0868.430.789" },
+                { time: "07h00", plate: "36B-03692", phone: "0972.820.789" }
+            ],
+            "Hiền Kiệt": [
+                { time: "07h20", plate: "36F-00850", phone: "0868.430.789" },
+                { time: "07h20", plate: "36B-00860", phone: "0868.403.789" },
+                { time: "07h40", plate: "36B-02688", phone: "0961.533.789" },
+                { time: "09h20", plate: "36B-03692", phone: "0972.820.789" }
+            ],
+            "Tây Hồ, Thọ Xuân": [
+                { time: "14h50", plate: "36B-02858", phone: "0961.722.789" }
+            ],
+            "Thái Nguyên": [
+                { time: "06h30", plate: "36B-02993", phone: "0963.529.789" },
+                { time: "13h20", plate: "36B-03077", phone: "0961.529.789" },
+                { time: "15h30", plate: "36H-07527", phone: "0965.529.789" },
+                { time: "17h00", plate: "36B-02688", phone: "0961.533.789" }
+            ],
+            "Bắc Giang": [
+                { time: "06h00", plate: "36B-02599", phone: "0969.029.789" },
+                { time: "07h45", plate: "36B-02858", phone: "0961.722.789" },
+                { time: "16h50", plate: "36B-02569", phone: "0978.819.121" },
+                { time: "18h30", plate: "36B-02868", phone: "0981.941.789" }
+            ],
+            "Quễ võ": [
+                { time: "06h10", plate: "36B-02662", phone: "0961.941.789" },
+                { time: "06h30", plate: "36B-02856", phone: "0961.129.789" },
+                { time: "07h00", plate: "36B-02599", phone: "0969.029.789" },
+                { time: "07h40", plate: "36B-02993", phone: "0963.529.789" },
+                { time: "08h25", plate: "36B-02858", phone: "0961.722.789" },
+                { time: "11h00", plate: "36B-03146", phone: "0975.148.456" },
+                { time: "13h00", plate: "36B-02568", phone: "0966.278.789" },
+                { time: "14h30", plate: "36B-02969", phone: "0868.402.789" },
+                { time: "16h25", plate: "36H-07527", phone: "0965.529.789" },
+                { time: "17h30", plate: "36B-02569", phone: "0978.819.121" },
+                { time: "19h10", plate: "36B-02868", phone: "0981.941.789" }
+            ],
+            "Giáp Bát": [
+                { time: "08h00", plate: "36B-02393", phone: "0913.051.675" },
+                { time: "14h00", plate: "36B-03012", phone: "0973.737.778" }
+            ],
+            "Yên Nghĩa": [
+                { time: "06h30", plate: "36B-03176", phone: "0973.456.336" },
+                { time: "09h30", plate: "36B-02377", phone: "0965.902.789" },
+                { time: "12h15", plate: "36B-02169", phone: "0393.999.599" },
+                { time: "14h20", plate: "36B-02624", phone: "0986.538.385" },
+                { time: "15h50", plate: "36B-03692", phone: "0972.820.789" },
+                { time: "19h00", plate: "36B-03276", phone: "0868.401.789" }
+            ],
+            "Hải Phòng": [
+                { time: "05h55", plate: "36F-00850", phone: "0868.430.789" },
+                { time: "05h55", plate: "36F-00860", phone: "0868.403.789" }
+            ],
+            "Hải Dương": [
+                { time: "07h25", plate: "36F-00850", phone: "0868.430.789" },
+                { time: "07h25", plate: "36F-00860", phone: "0868.403.789" },
+                { time: "13h10", plate: "36B-02322", phone: "0868.420.789" },
+                { time: "17h45", plate: "36H-07566", phone: "0973.045.567" }
+            ],
+            "Hưng Yên": [
+                { time: "08h10", plate: "36F-00850", phone: "0868.430.789" },
+                { time: "08h10", plate: "36F-00860", phone: "0868.403.789" },
+                { time: "13h40", plate: "36B-02322", phone: "0868.420.789" },
+                { time: "18h40", plate: "36H-07566", phone: "0973.045.567" }
+            ],
+            "TP Hưng Yên": [
+                { time: "09h45", plate: "36F-00850", phone: "0868.430.789" },
+                { time: "09h45", plate: "36F-00860", phone: "0868.403.789" },
+                { time: "15h00", plate: "36B-02322", phone: "0868.420.789" },
+                { time: "20h00", plate: "36H-07566", phone: "0973.045.567" }
+            ],
+            "Đồng văn": [
+                { time: "10h10", plate: "36F-00850", phone: "0868.430.789" },
+                { time: "10h10", plate: "36F-00860", phone: "0868.403.789" },
+                { time: "15h20", plate: "36B-02322", phone: "0868.420.789" },
+                { time: "20h00", plate: "36H-07566", phone: "0973.045.567" }
+            ],
+            "Chi nê": [
+                { time: "10h40", plate: "36F-00850", phone: "0868.430.789" },
+                { time: "10h40", plate: "36F-00860", phone: "0868.403.789" },
+                { time: "15h50", plate: "36B-02322", phone: "0868.420.789" },
+                { time: "20h35", plate: "36H-07566", phone: "0973.045.567" }
+            ],
+            "Cẩm Thủy": [
+                { time: "04h40", plate: "36B-02377", phone: "0965.902.789" },
+                { time: "07h00", plate: "36B-02169", phone: "0393.999.599" },
+                { time: "07h10", plate: "36B-03146", phone: "0975.148.456" },
+                { time: "07h30", plate: "36B-03077", phone: "0961.529.789" },
+                { time: "08h35", plate: "36B-02568", phone: "0966.278.789" },
+                { time: "08h25", plate: "36B-02322", phone: "0868.420.789" },
+                { time: "08h40", plate: "36B-03012", phone: "0973.737.778" },
+                { time: "09h50", plate: "36B-02624", phone: "0986.538.385" },
+                { time: "09h35", plate: "36B-02969", phone: "0868.402.789" },
+                { time: "10h00", plate: "36F-00850", phone: "0868.430.789" },
+                { time: "10h00", plate: "36F-00860", phone: "0868.403.789" },
+                { time: "10h50", plate: "36B-03276", phone: "0868.401.789" },
+                { time: "10h55", plate: "36B-02569", phone: "0978.819.121" },
+                { time: "11h00", plate: "36B-02688", phone: "0961.533.789" },
+                { time: "12h00", plate: "36H-07566", phone: "0973.045.567" },
+                { time: "12h00", plate: "36B-03692", phone: "0972.820.789" },
+                { time: "12h00", plate: "36B-02868", phone: "0981.941.789" },
+                { time: "14h00", plate: "36B-02662", phone: "0961.941.789" },
+                { time: "14h45", plate: "36B-03176", phone: "0973.456.336" },
+                { time: "15h10", plate: "36B-02856", phone: "0961.129.789" },
+                { time: "15h50", plate: "36B-02993", phone: "0963.529.789" },
+                { time: "16h35", plate: "36B-02858", phone: "0961.722.789" },
+                { time: "16h25", plate: "36B-02393", phone: "0913.051.675" },
+                { time: "16h30", plate: "36B-02599", phone: "0969.029.789" }
+            ]
+        };
+
+        // Khởi tạo trang web
+        document.addEventListener('DOMContentLoaded', function() {
+            // Xử lý điều hướng menu
+            const navLinks = document.querySelectorAll('.nav-menu a');
+            const sections = document.querySelectorAll('.section');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Xóa class active khỏi tất cả các link và sections
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    sections.forEach(s => s.classList.remove('active'));
+                    
+                    // Thêm class active cho link được click
+                    this.classList.add('active');
+                    
+                    // Hiển thị section tương ứng
+                    const sectionId = this.getAttribute('data-section');
+                    document.getElementById(sectionId).classList.add('active');
+                });
+            });
+            
+            // Tải dữ liệu giá vé
+            loadTicketPrices();
+            
+            // Tải dữ liệu giờ xuất bến & SĐT
+            loadPhoneSchedules();
+            
+            // Tải tất cả lộ trình ban đầu
+            loadAllRoutes();
+            
+            // Xử lý tìm kiếm lộ trình
+            document.getElementById('search-route-btn').addEventListener('click', searchRoutes);
+            document.getElementById('route-search-input').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    searchRoutes();
+                }
+            });
+        });
+        
+        // Hàm tải dữ liệu giá vé
+        function loadTicketPrices() {
+            const tableBody = document.getElementById('ticket-table-body');
+            tableBody.innerHTML = '';
+            
+            // Nhóm giá vé theo điểm đi để dễ đọc
+            const groupedByFrom = {};
+            
+            ticketPrices.forEach(ticket => {
+                if (!groupedByFrom[ticket.from]) {
+                    groupedByFrom[ticket.from] = [];
+                }
+                groupedByFrom[ticket.from].push(ticket);
+            });
+            
+            // Tạo bảng
+            for (const fromLocation in groupedByFrom) {
+                const tickets = groupedByFrom[fromLocation];
+                
+                // Thêm hàng tiêu đề cho nhóm
+                const headerRow = document.createElement('tr');
+                headerRow.innerHTML = `
+                    <td colspan="3" class="from-cell" style="background-color: #ecf0f1; font-size: 1.1rem; padding: 15px;">
+                        <i class="fas fa-map-marker-alt"></i> ${fromLocation}
+                    </td>
+                `;
+                tableBody.appendChild(headerRow);
+                
+                // Thêm các hàng giá vé
+                tickets.forEach(ticket => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td></td>
+                        <td>${ticket.to}</td>
+                        <td class="price-cell">${ticket.price} VNĐ</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+        
+        // Hàm tải dữ liệu giờ xuất bến & SĐT
+        function loadPhoneSchedules() {
+            const container = document.getElementById('phone-schedule-content');
+            container.innerHTML = '';
+            
+            phoneSchedules.forEach(location => {
+                const card = document.createElement('div');
+                card.className = 'phone-card';
+                
+                let scheduleHTML = '';
+                location.schedules.forEach(schedule => {
+                    if (schedule.time) {
+                        scheduleHTML += `
+                            <div class="schedule-item">
+                                <div class="schedule-time">${schedule.time}</div>
+                                <div class="schedule-phone">${schedule.phone}</div>
+                            </div>
+                        `;
+                    } else {
+                        scheduleHTML += `
+                            <div class="schedule-item">
+                                <div class="schedule-time">Liên hệ</div>
+                                <div class="schedule-phone">${schedule.phone}</div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                card.innerHTML = `
+                    <h3><i class="fas fa-map-pin"></i> ${location.location}</h3>
+                    ${scheduleHTML}
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // Hàm tải tất cả lộ trình ban đầu
+        function loadAllRoutes() {
+            const container = document.getElementById('route-results-container');
+            container.innerHTML = '';
+            
+            let totalRoutes = 0;
+            
+            // Hiển thị tất cả lộ trình theo nhóm địa điểm
+            for (const location in routesByLocation) {
+                const routes = routesByLocation[location];
+                totalRoutes += routes.length;
+                
+                const locationGroup = document.createElement('div');
+                locationGroup.className = 'location-group';
+                
+                let routesHTML = '';
+                routes.forEach(route => {
+                    routesHTML += `
+                        <tr>
+                            <td>${route.time}</td>
+                            <td>${route.plate}</td>
+                            <td>${route.phone}</td>
+                        </tr>
+                    `;
+                });
+                
+                locationGroup.innerHTML = `
+                    <div class="location-header">
+                        <i class="fas fa-map-marker-alt"></i> ${location} (${routes.length} chuyến)
+                    </div>
+                    <div class="route-table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Thời gian</th>
+                                    <th>Biển số</th>
+                                    <th>Số điện thoại</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${routesHTML}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                container.appendChild(locationGroup);
+            }
+            
+            // Hiển thị tổng số chuyến
+            const resultsCount = document.getElementById('search-results-count');
+            resultsCount.textContent = `Tìm thấy ${totalRoutes} chuyến xe tại ${Object.keys(routesByLocation).length} địa điểm`;
+            resultsCount.style.display = 'block';
+        }
+        
+        // Hàm tìm kiếm lộ trình
+        function searchRoutes() {
+            const searchInput = document.getElementById('route-search-input').value.trim().toLowerCase();
+            const container = document.getElementById('route-results-container');
+            const resultsCount = document.getElementById('search-results-count');
+            
+            if (searchInput === '') {
+                // Nếu không có từ khóa tìm kiếm, hiển thị tất cả
+                loadAllRoutes();
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            let totalRoutes = 0;
+            let matchedLocations = 0;
+            
+            // Tìm kiếm theo địa điểm
+            for (const location in routesByLocation) {
+                if (location.toLowerCase().includes(searchInput)) {
+                    const routes = routesByLocation[location];
+                    totalRoutes += routes.length;
+                    matchedLocations++;
+                    
+                    const locationGroup = document.createElement('div');
+                    locationGroup.className = 'location-group';
+                    
+                    let routesHTML = '';
+                    routes.forEach(route => {
+                        routesHTML += `
+                            <tr>
+                                <td>${route.time}</td>
+                                <td>${route.plate}</td>
+                                <td>${route.phone}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    locationGroup.innerHTML = `
+                        <div class="location-header">
+                            <i class="fas fa-map-marker-alt"></i> ${location} (${routes.length} chuyến)
+                        </div>
+                        <div class="route-table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Thời gian</th>
+                                        <th>Biển số</th>
+                                        <th>Số điện thoại</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${routesHTML}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    
+                    container.appendChild(locationGroup);
+                }
+            }
+            
+            // Hiển thị kết quả
+            if (matchedLocations > 0) {
+                resultsCount.textContent = `Tìm thấy ${totalRoutes} chuyến xe tại ${matchedLocations} địa điểm phù hợp với "${searchInput}"`;
+                resultsCount.style.display = 'block';
+            } else {
+                // Không tìm thấy kết quả
+                container.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-search"></i>
+                        <h3>Không tìm thấy địa điểm phù hợp</h3>
+                        <p>Không có địa điểm nào khớp với từ khóa "${searchInput}". Vui lòng thử lại với từ khóa khác.</p>
+                        <p>Gợi ý: Thái Nguyên, Bắc Giang, Yên Nghĩa, Quan Hóa, Cẩm Thủy, Hải Phòng, Hải Dương</p>
+                    </div>
+                `;
+                resultsCount.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
