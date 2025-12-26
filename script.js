@@ -1,6 +1,8 @@
-// script.js
+// script.js - ĐÃ SỬA LỖI
 document.addEventListener('DOMContentLoaded', function() {
-    // Các API endpoints ĐÃ ĐƯỢC SỬA LỖI
+    console.log('DOM đã sẵn sàng, bắt đầu khởi tạo...');
+    
+    // Các API endpoints - ĐÃ KIỂM TRA LẠI
     const API_URLS = {
         giave: 'https://docs.google.com/spreadsheets/d/17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY/gviz/tq?tqx=out:json&sheet=giave',
         gioxuatben: 'https://docs.google.com/spreadsheets/d/17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY/gviz/tq?tqx=out:json&sheet=gioxuatben',
@@ -11,6 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let giaveData = [];
     let gioxuatbenData = [];
     let vitriData = [];
+
+    console.log('URLs API:', API_URLS);
 
     // Chuyển đổi navigation
     document.querySelectorAll('.nav-menu a').forEach(link => {
@@ -33,188 +37,297 @@ document.addEventListener('DOMContentLoaded', function() {
             // Hiển thị section tương ứng
             const sectionId = this.getAttribute('data-section');
             document.getElementById(sectionId).classList.add('active');
+            
+            console.log('Chuyển tab sang:', sectionId);
         });
     });
 
-    // Hàm fetch dữ liệu từ Google Sheets với xử lý lỗi tốt hơn
+    // Hàm fetch dữ liệu từ Google Sheets - PHIÊN BẢN CẢI TIẾN
     async function fetchGoogleSheetData(url, sheetName) {
+        console.log(`Bắt đầu fetch ${sheetName} từ:`, url);
+        
         try {
-            console.log(`Đang tải dữ liệu từ ${sheetName}...`);
-            const response = await fetch(url);
+            // Thêm timestamp để tránh cache
+            const urlWithTimestamp = url + '&t=' + Date.now();
+            const response = await fetch(urlWithTimestamp, {
+                mode: 'cors',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            console.log(`Response status cho ${sheetName}:`, response.status);
             
             if (!response.ok) {
-                throw new Error(`Lỗi HTTP ${response.status} khi tải ${sheetName}`);
+                throw new Error(`HTTP ${response.status} - ${response.statusText}`);
             }
             
             const text = await response.text();
-            console.log(`Dữ liệu thô từ ${sheetName}:`, text.substring(0, 200) + '...');
+            console.log(`Raw text từ ${sheetName} (đầu tiên 500 ký tự):`, text.substring(0, 500));
             
-            // Xử lý JSONP response từ Google Sheets
-            const jsonStart = text.indexOf('{');
-            const jsonEnd = text.lastIndexOf('}') + 1;
-            
-            if (jsonStart === -1 || jsonEnd === -1) {
-                throw new Error(`Định dạng dữ liệu không hợp lệ từ ${sheetName}`);
+            // Kiểm tra xem có phải là JSONP không
+            if (text.includes('google.visualization.Query.setResponse')) {
+                // Xử lý JSONP response
+                const jsonStart = text.indexOf('{');
+                const jsonEnd = text.lastIndexOf('}') + 1;
+                
+                if (jsonStart === -1 || jsonEnd === -1) {
+                    throw new Error(`Không tìm thấy JSON trong response từ ${sheetName}`);
+                }
+                
+                const jsonText = text.substring(jsonStart, jsonEnd);
+                console.log(`JSON text từ ${sheetName}:`, jsonText.substring(0, 300));
+                
+                const data = JSON.parse(jsonText);
+                console.log(`Parsed data từ ${sheetName}:`, data);
+                
+                // Trích xuất dữ liệu từ cấu trúc Google Sheets
+                if (data.table && data.table.rows) {
+                    const rows = data.table.rows;
+                    console.log(`Tìm thấy ${rows.length} rows trong ${sheetName}`);
+                    
+                    // Hiển thị cấu trúc của row đầu tiên để debug
+                    if (rows.length > 0 && rows[0].c) {
+                        console.log(`Cấu trúc row đầu tiên trong ${sheetName}:`, rows[0].c.map((cell, idx) => 
+                            `Cột ${idx}: ${cell ? cell.v : 'null'}`
+                        ));
+                    }
+                    
+                    return rows;
+                } else {
+                    console.warn(`Không tìm thấy cấu trúc table.rows trong ${sheetName}`, data);
+                    return [];
+                }
+            } else {
+                // Thử parse trực tiếp nếu không phải JSONP
+                console.log('Thử parse trực tiếp như JSON thông thường...');
+                const data = JSON.parse(text);
+                return data.table ? data.table.rows : [];
             }
-            
-            const jsonText = text.substring(jsonStart, jsonEnd);
-            const data = JSON.parse(jsonText);
-            
-            console.log(`Dữ liệu đã parse từ ${sheetName}:`, data);
-            
-            // Kiểm tra cấu trúc dữ liệu
-            if (!data.table || !data.table.rows) {
-                console.warn(`Không có dữ liệu hoặc cấu trúc không đúng trong ${sheetName}`, data);
-                return [];
-            }
-            
-            return data.table.rows;
         } catch (error) {
-            console.error(`Lỗi khi fetch ${sheetName}:`, error);
-            // Trả về mảng rỗng thay vì throw error để các sheet khác vẫn hoạt động
+            console.error(`Lỗi nghiêm trọng khi fetch ${sheetName}:`, error);
+            console.error('Error details:', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            });
+            
+            // Trả về mảng rỗng để không làm crash toàn bộ ứng dụng
             return [];
         }
     }
 
-    // Xử lý dữ liệu giá vé với kiểm tra kỹ hơn
+    // Xử lý dữ liệu giá vé - PHIÊN BẢN MẠNH MẼ HƠN
     function processGiaveData(rows) {
+        console.log('Bắt đầu xử lý dữ liệu giá vé, số rows:', rows ? rows.length : 0);
+        
         const data = [];
         
-        if (!rows || rows.length === 0) {
-            console.log('Không có dữ liệu giá vé');
+        if (!rows || !Array.isArray(rows)) {
+            console.error('Dữ liệu giá vé không hợp lệ:', rows);
             return data;
         }
         
+        // Xác định chỉ số cột dựa trên dữ liệu thực tế
+        let colDiemDi = 0;
+        let colDiemDen = 1;
+        let colGiaVe = 2;
+        
         rows.forEach((row, index) => {
-            // Bỏ qua hàng đầu tiên nếu là tiêu đề
-            if (index === 0 && row.c && row.c[0] && 
-                (row.c[0].v === 'Điểm đi' || row.c[0].v === 'Điểm Đi' || row.c[0].v === 'diemdi')) {
-                console.log('Bỏ qua hàng tiêu đề giá vé');
-                return;
-            }
-            
-            if (row.c && row.c.length >= 3) {
-                const diemDi = row.c[0] ? (row.c[0].v || '').trim() : '';
-                const diemDen = row.c[1] ? (row.c[1].v || '').trim() : '';
-                const giaVeRaw = row.c[2] ? row.c[2].v : '';
+            try {
+                if (!row.c) {
+                    console.warn(`Row ${index} không có thuộc tính c`);
+                    return;
+                }
                 
-                // Chuyển đổi giá vé sang số
+                // Lấy giá trị từ các cell
+                const diemDi = row.c[colDiemDi] ? (row.c[colDiemDi].v || '').toString().trim() : '';
+                const diemDen = row.c[colDiemDen] ? (row.c[colDiemDen].v || '').toString().trim() : '';
+                const giaVeRaw = row.c[colGiaVe] ? row.c[colGiaVe].v : '';
+                
+                // Debug row
+                if (index < 3) { // Chỉ log 3 row đầu để debug
+                    console.log(`Row ${index}:`, {
+                        diemDi,
+                        diemDen,
+                        giaVeRaw,
+                        rawRow: row.c.map(cell => cell ? cell.v : 'null')
+                    });
+                }
+                
+                // Bỏ qua hàng trống hoặc hàng tiêu đề
+                if (!diemDi && !diemDen) {
+                    return;
+                }
+                
+                // Kiểm tra xem có phải là hàng tiêu đề không
+                if (index === 0 && (diemDi === 'Điểm đi' || diemDi === 'diemdi' || diemDi === 'Điểm Đi')) {
+                    console.log('Bỏ qua hàng tiêu đề');
+                    return;
+                }
+                
+                // Xử lý giá vé
                 let giaVe = 0;
                 if (giaVeRaw) {
-                    if (typeof giaVeRaw === 'string') {
-                        // Loại bỏ ký tự không phải số
-                        const cleaned = giaVeRaw.replace(/[^\d]/g, '');
-                        giaVe = parseInt(cleaned) || 0;
-                    } else if (typeof giaVeRaw === 'number') {
+                    if (typeof giaVeRaw === 'number') {
                         giaVe = giaVeRaw;
+                    } else if (typeof giaVeRaw === 'string') {
+                        // Loại bỏ ký tự không phải số, trừ dấu chấm cho số thập phân
+                        const cleaned = giaVeRaw.replace(/[^\d.]/g, '');
+                        if (cleaned) {
+                            giaVe = parseFloat(cleaned);
+                            if (isNaN(giaVe)) giaVe = 0;
+                        }
                     }
                 }
                 
-                // Chỉ thêm nếu có dữ liệu
-                if (diemDi && diemDen) {
+                // Thêm vào mảng nếu có dữ liệu
+                if (diemDi || diemDen) {
                     data.push({
                         id: data.length + 1,
-                        diemDi: diemDi,
-                        diemDen: diemDen,
+                        diemDi: diemDi || 'Chưa xác định',
+                        diemDen: diemDen || 'Chưa xác định',
                         giaVe: giaVe
                     });
                 }
+            } catch (rowError) {
+                console.error(`Lỗi khi xử lý row ${index} của giá vé:`, rowError);
             }
         });
         
-        console.log(`Đã xử lý ${data.length} dòng dữ liệu giá vé`);
+        console.log(`Đã xử lý xong giá vé: ${data.length} mục`);
         return data;
     }
 
     // Xử lý dữ liệu giờ xuất bến
     function processGioxuatbenData(rows) {
+        console.log('Bắt đầu xử lý dữ liệu giờ xuất bến, số rows:', rows ? rows.length : 0);
+        
         const data = [];
         
-        if (!rows || rows.length === 0) {
-            console.log('Không có dữ liệu giờ xuất bến');
+        if (!rows || !Array.isArray(rows)) {
+            console.error('Dữ liệu giờ xuất bến không hợp lệ:', rows);
             return data;
         }
         
+        // Xác định chỉ số cột
+        let colDiemDi = 0;
+        let colDiemDen = 1;
+        let colGioXuatBen = 2;
+        let colSoDienThoai = 3;
+        
         rows.forEach((row, index) => {
-            // Bỏ qua hàng đầu tiên nếu là tiêu đề
-            if (index === 0 && row.c && row.c[0] && 
-                (row.c[0].v === 'Điểm đi' || row.c[0].v === 'Tuyến' || row.c[0].v === 'diemdi')) {
-                console.log('Bỏ qua hàng tiêu đề giờ xuất bến');
-                return;
-            }
-            
-            if (row.c && row.c.length >= 4) {
-                const diemDi = row.c[0] ? (row.c[0].v || '').trim() : '';
-                const diemDen = row.c[1] ? (row.c[1].v || '').trim() : '';
-                const gioXuatBen = row.c[2] ? (row.c[2].v || '').trim() : '';
-                const soDienThoai = row.c[3] ? (row.c[3].v || '').trim() : '';
+            try {
+                if (!row.c) {
+                    console.warn(`Row ${index} không có thuộc tính c (gioxuatben)`);
+                    return;
+                }
                 
-                // Chỉ thêm nếu có dữ liệu
-                if (diemDi && diemDen && gioXuatBen) {
+                const diemDi = row.c[colDiemDi] ? (row.c[colDiemDi].v || '').toString().trim() : '';
+                const diemDen = row.c[colDiemDen] ? (row.c[colDiemDen].v || '').toString().trim() : '';
+                const gioXuatBen = row.c[colGioXuatBen] ? (row.c[colGioXuatBen].v || '').toString().trim() : '';
+                const soDienThoai = row.c[colSoDienThoai] ? (row.c[colSoDienThoai].v || '').toString().trim() : '0948.531.333';
+                
+                // Bỏ qua hàng trống
+                if (!diemDi && !diemDen && !gioXuatBen) {
+                    return;
+                }
+                
+                // Bỏ qua hàng tiêu đề
+                if (index === 0 && (diemDi === 'Điểm đi' || diemDi === 'Tuyến' || diemDi.toLowerCase().includes('điểm'))) {
+                    console.log('Bỏ qua hàng tiêu đề giờ xuất bến');
+                    return;
+                }
+                
+                // Thêm vào mảng
+                if (diemDi || diemDen) {
                     data.push({
                         id: data.length + 1,
-                        diemDi: diemDi,
-                        diemDen: diemDen,
-                        gioXuatBen: gioXuatBen,
-                        soDienThoai: soDienThoai || '0948.531.333' // Số mặc định nếu không có
+                        diemDi: diemDi || 'Chưa xác định',
+                        diemDen: diemDen || 'Chưa xác định',
+                        gioXuatBen: gioXuatBen || 'Chưa có lịch',
+                        soDienThoai: soDienThoai || '0948.531.333'
                     });
                 }
+            } catch (rowError) {
+                console.error(`Lỗi khi xử lý row ${index} của giờ xuất bến:`, rowError);
             }
         });
         
-        console.log(`Đã xử lý ${data.length} dòng dữ liệu giờ xuất bến`);
+        console.log(`Đã xử lý xong giờ xuất bến: ${data.length} mục`);
         return data;
     }
 
     // Xử lý dữ liệu vị trí
     function processVitriData(rows) {
+        console.log('Bắt đầu xử lý dữ liệu vị trí, số rows:', rows ? rows.length : 0);
+        
         const data = [];
         
-        if (!rows || rows.length === 0) {
-            console.log('Không có dữ liệu vị trí');
+        if (!rows || !Array.isArray(rows)) {
+            console.error('Dữ liệu vị trí không hợp lệ:', rows);
             return data;
         }
         
         rows.forEach((row, index) => {
-            // Bỏ qua hàng đầu tiên nếu là tiêu đề
-            if (index === 0 && row.c && row.c[0] && 
-                (row.c[0].v === 'Điểm đi' || row.c[0].v === 'Tuyến' || row.c[0].v === 'diemdi')) {
-                console.log('Bỏ qua hàng tiêu đề vị trí');
-                return;
-            }
-            
-            if (row.c && row.c.length >= 4) {
-                const diemDi = row.c[0] ? (row.c[0].v || '').trim() : '';
-                const diemDen = row.c[1] ? (row.c[1].v || '').trim() : '';
-                const viTri = row.c[2] ? (row.c[2].v || '').trim() : '';
-                const ghiChu = row.c[3] ? (row.c[3].v || '').trim() : '';
+            try {
+                if (!row.c) {
+                    console.warn(`Row ${index} không có thuộc tính c (vitri)`);
+                    return;
+                }
                 
-                // Chỉ thêm nếu có dữ liệu
-                if (diemDi && diemDen && viTri) {
+                const diemDi = row.c[0] ? (row.c[0].v || '').toString().trim() : '';
+                const diemDen = row.c[1] ? (row.c[1].v || '').toString().trim() : '';
+                const viTri = row.c[2] ? (row.c[2].v || '').toString().trim() : '';
+                const ghiChu = row.c[3] ? (row.c[3].v || '').toString().trim() : '';
+                
+                // Bỏ qua hàng trống
+                if (!diemDi && !diemDen && !viTri) {
+                    return;
+                }
+                
+                // Bỏ qua hàng tiêu đề
+                if (index === 0 && (diemDi === 'Điểm đi' || diemDi === 'Tuyến' || diemDi.toLowerCase().includes('điểm'))) {
+                    console.log('Bỏ qua hàng tiêu đề vị trí');
+                    return;
+                }
+                
+                // Thêm vào mảng
+                if (diemDi || diemDen) {
                     data.push({
                         id: data.length + 1,
-                        diemDi: diemDi,
-                        diemDen: diemDen,
-                        viTri: viTri,
-                        ghiChu: ghiChu || ''
+                        diemDi: diemDi || 'Chưa xác định',
+                        diemDen: diemDen || 'Chưa xác định',
+                        viTri: viTri || 'Chưa xác định',
+                        ghiChu: ghiChu
                     });
                 }
+            } catch (rowError) {
+                console.error(`Lỗi khi xử lý row ${index} của vị trí:`, rowError);
             }
         });
         
-        console.log(`Đã xử lý ${data.length} dòng dữ liệu vị trí`);
+        console.log(`Đã xử lý xong vị trí: ${data.length} mục`);
         return data;
     }
 
     // Hiển thị bảng giá vé
     function displayGiaveData() {
         const tbody = document.getElementById('ticket-table-body');
+        console.log('Hiển thị dữ liệu giá vé, số lượng:', giaveData.length);
         
         if (!giaveData || giaveData.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="3" style="text-align: center; padding: 30px; color: #666;">
-                        <i class="fas fa-exclamation-circle"></i> Không có dữ liệu giá vé. Vui lòng kiểm tra kết nối hoặc liên hệ hotline.
+                    <td colspan="3" style="text-align: center; padding: 40px; color: #666; background: #f8f9fa; border-radius: 8px;">
+                        <div style="margin-bottom: 15px;">
+                            <i class="fas fa-database" style="font-size: 2rem; color: #6c757d;"></i>
+                        </div>
+                        <h4 style="color: #495057; margin-bottom: 10px;">Không có dữ liệu giá vé</h4>
+                        <p>Vui lòng kiểm tra kết nối hoặc liên hệ hotline để biết giá vé hiện tại.</p>
+                        <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 20px; background: #2c5aa0; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            <i class="fas fa-redo"></i> Tải lại trang
+                        </button>
                     </td>
                 </tr>
             `;
@@ -222,8 +335,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         let html = '';
-        giaveData.forEach(item => {
-            // Định dạng giá tiền đẹp hơn
+        giaveData.forEach((item, index) => {
+            // Định dạng giá tiền
             let formattedPrice = 'Liên hệ';
             if (item.giaVe > 0) {
                 formattedPrice = new Intl.NumberFormat('vi-VN', {
@@ -232,43 +345,57 @@ document.addEventListener('DOMContentLoaded', function() {
                 }).format(item.giaVe);
             }
             
+            // Thêm class xen kẽ cho các hàng
+            const rowClass = index % 2 === 0 ? 'even-row' : 'odd-row';
+            
             html += `
-                <tr>
+                <tr class="${rowClass}">
                     <td><strong>${item.diemDi}</strong></td>
                     <td><strong>${item.diemDen}</strong></td>
-                    <td class="price">${formattedPrice}</td>
+                    <td class="price-cell">${formattedPrice}</td>
                 </tr>
             `;
         });
         
         tbody.innerHTML = html;
         
-        // Thêm thông báo số lượng
-        const sectionHeader = document.querySelector('#ticket-prices .section-header');
-        if (sectionHeader) {
-            const countBadge = document.createElement('span');
-            countBadge.className = 'data-count-badge';
-            countBadge.innerHTML = ` (${giaveData.length} tuyến)`;
-            countBadge.style.cssText = 'background: #2c5aa0; color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; margin-left: 10px;';
-            
-            // Kiểm tra nếu đã có badge thì thay thế, nếu không thì thêm mới
-            const existingBadge = sectionHeader.querySelector('.data-count-badge');
-            if (existingBadge) {
-                existingBadge.remove();
+        // Thêm CSS cho bảng
+        const style = document.createElement('style');
+        style.textContent = `
+            .price-cell {
+                color: #e74c3c;
+                font-weight: bold;
+                font-size: 1.1rem;
             }
-            sectionHeader.appendChild(countBadge);
-        }
+            .even-row {
+                background-color: #f8f9fa;
+            }
+            .odd-row {
+                background-color: white;
+            }
+            .even-row:hover, .odd-row:hover {
+                background-color: #e9ecef;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Cập nhật số lượng trong tab
+        updateTabCount('ticket-prices', giaveData.length);
     }
 
     // Hiển thị giờ xuất bến & số điện thoại
     function displayGioxuatbenData() {
         const container = document.getElementById('phone-schedule-content');
+        console.log('Hiển thị dữ liệu giờ xuất bến, số lượng:', gioxuatbenData.length);
         
         if (!gioxuatbenData || gioxuatbenData.length === 0) {
             container.innerHTML = `
-                <div class="error-message">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p>Không có dữ liệu giờ xuất bến. Vui lòng kiểm tra kết nối hoặc liên hệ hotline.</p>
+                <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px;">
+                    <div style="margin-bottom: 15px;">
+                        <i class="fas fa-clock" style="font-size: 2rem; color: #6c757d;"></i>
+                    </div>
+                    <h4 style="color: #495057; margin-bottom: 10px;">Không có dữ liệu giờ xuất bến</h4>
+                    <p>Vui lòng liên hệ hotline để biết lịch trình chính xác.</p>
                 </div>
             `;
             return;
@@ -292,12 +419,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         let html = '';
-        Object.values(groupedData).forEach(group => {
+        Object.values(groupedData).forEach((group, index) => {
+            const cardClass = index % 2 === 0 ? 'schedule-card-even' : 'schedule-card-odd';
+            
             html += `
-                <div class="schedule-card">
+                <div class="schedule-card ${cardClass}">
                     <div class="route-header">
                         <h3><i class="fas fa-route"></i> ${group.diemDi} → ${group.diemDen}</h3>
-                        <span class="schedule-count">${group.schedules.length} chuyến</span>
+                        <span class="badge">${group.schedules.length} chuyến</span>
                     </div>
                     <div class="schedule-list">
             `;
@@ -327,35 +456,119 @@ document.addEventListener('DOMContentLoaded', function() {
         
         container.innerHTML = html;
         
-        // Thêm thông báo số lượng
-        const sectionHeader = document.querySelector('#phone-schedule .section-header');
-        if (sectionHeader) {
-            const countBadge = document.createElement('span');
-            countBadge.className = 'data-count-badge';
-            countBadge.innerHTML = ` (${Object.keys(groupedData).length} tuyến)`;
-            countBadge.style.cssText = 'background: #2c5aa0; color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; margin-left: 10px;';
-            
-            const existingBadge = sectionHeader.querySelector('.data-count-badge');
-            if (existingBadge) {
-                existingBadge.remove();
+        // Thêm CSS cho schedule
+        const style = document.createElement('style');
+        style.textContent = `
+            .schedule-card {
+                background: white;
+                border-radius: 10px;
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+                border-left: 4px solid #2c5aa0;
             }
-            sectionHeader.appendChild(countBadge);
-        }
+            .schedule-card-even {
+                border-left-color: #2c5aa0;
+            }
+            .schedule-card-odd {
+                border-left-color: #e67e22;
+            }
+            .route-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #eee;
+            }
+            .route-header h3 {
+                margin: 0;
+                color: #2c5aa0;
+                font-size: 1.2rem;
+            }
+            .badge {
+                background: #2c5aa0;
+                color: white;
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 0.9rem;
+                font-weight: 500;
+            }
+            .schedule-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 12px;
+            }
+            .schedule-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 15px;
+                background: #f8f9fa;
+                border-radius: 8px;
+                transition: all 0.3s;
+            }
+            .schedule-item:hover {
+                background: #e9ecef;
+                transform: translateY(-2px);
+                box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            }
+            .time, .phone {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .time-value {
+                font-weight: 600;
+                color: #2c5aa0;
+            }
+            .phone-link {
+                color: #28a745;
+                text-decoration: none;
+                font-weight: 500;
+            }
+            .phone-link:hover {
+                text-decoration: underline;
+            }
+            @media (max-width: 768px) {
+                .schedule-list {
+                    grid-template-columns: 1fr;
+                }
+                .route-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 10px;
+                }
+                .schedule-item {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 8px;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Cập nhật số lượng trong tab
+        updateTabCount('phone-schedule', gioxuatbenData.length);
     }
 
-    // Hàm tìm kiếm tuyến đường (đã sửa)
+    // Hàm tìm kiếm tuyến đường
     function searchRoute() {
+        console.log('Thực hiện tìm kiếm...');
         const searchInput = document.getElementById('route-search-input');
         const searchTerm = searchInput.value.trim().toLowerCase();
         const resultsContainer = document.getElementById('route-results-container');
         const resultsCount = document.getElementById('search-results-count');
         
+        console.log('Từ khóa tìm kiếm:', searchTerm);
+        
         if (!searchTerm) {
             resultsContainer.innerHTML = `
                 <div class="no-search">
                     <i class="fas fa-search"></i>
+                    <h4>Tìm kiếm tuyến đường</h4>
                     <p>Vui lòng nhập điểm đi hoặc điểm đến để tìm kiếm</p>
-                    <p class="hint">Ví dụ: Thái Nguyên, Yên Nghĩa, Quan Hóa, Cẩm Thủy, Hà Nội, Thanh Hóa</p>
+                    <p class="hint">Ví dụ: Thái Nguyên, Hà Nội, Thanh Hóa, Yên Nghĩa</p>
                 </div>
             `;
             resultsCount.style.display = 'none';
@@ -378,26 +591,38 @@ document.addEventListener('DOMContentLoaded', function() {
             item.diemDen.toLowerCase().includes(searchTerm)
         );
         
-        const totalResults = [...giaveResults, ...gioxuatbenResults, ...vitriResults];
+        console.log('Kết quả tìm kiếm:', {
+            giave: giaveResults.length,
+            gioxuatben: gioxuatbenResults.length,
+            vitri: vitriResults.length
+        });
         
-        if (totalResults.length === 0) {
+        // Tạo Set để lấy các tuyến độc nhất
+        const uniqueRoutes = new Set();
+        [...giaveResults, ...gioxuatbenResults, ...vitriResults].forEach(item => {
+            uniqueRoutes.add(`${item.diemDi}-${item.diemDen}`);
+        });
+        
+        if (uniqueRoutes.size === 0) {
             resultsContainer.innerHTML = `
                 <div class="no-results">
                     <i class="fas fa-exclamation-circle"></i>
-                    <p>Không tìm thấy kết quả cho "<strong>${searchTerm}</strong>"</p>
-                    <p>Vui lòng thử với từ khóa khác hoặc liên hệ hotline để được tư vấn</p>
-                    <p class="suggestion">Gợi ý: Thử tìm với tên đầy đủ hơn hoặc từ khóa ngắn hơn</p>
+                    <h4>Không tìm thấy kết quả</h4>
+                    <p>Không tìm thấy tuyến đường nào cho "<strong>${searchTerm}</strong>"</p>
+                    <p>Vui lòng thử với từ khóa khác hoặc liên hệ hotline để được tư vấn.</p>
+                    <div class="suggestions" style="margin-top: 20px; text-align: left;">
+                        <p><strong>Gợi ý:</strong></p>
+                        <ul style="list-style: none; padding: 0;">
+                            <li><i class="fas fa-check"></i> Thử tìm với từ khóa ngắn hơn</li>
+                            <li><i class="fas fa-check"></i> Kiểm tra chính tả</li>
+                            <li><i class="fas fa-check"></i> Liên hệ hotline: <strong>0948.531.333</strong></li>
+                        </ul>
+                    </div>
                 </div>
             `;
             resultsCount.style.display = 'none';
             return;
         }
-        
-        // Tính số tuyến độc nhất
-        const uniqueRoutes = new Set();
-        totalResults.forEach(item => {
-            uniqueRoutes.add(`${item.diemDi}-${item.diemDen}`);
-        });
         
         // Hiển thị số kết quả
         resultsCount.innerHTML = `
@@ -431,7 +656,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 combinedResults[key] = {
                     diemDi: item.diemDi,
                     diemDen: item.diemDen,
-                    giaVe: 0,
+                    giaVe: combinedResults[key] ? combinedResults[key].giaVe : 0,
                     schedules: [],
                     locations: []
                 };
@@ -449,7 +674,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 combinedResults[key] = {
                     diemDi: item.diemDi,
                     diemDen: item.diemDen,
-                    giaVe: 0,
+                    giaVe: combinedResults[key] ? combinedResults[key].giaVe : 0,
                     schedules: [],
                     locations: []
                 };
@@ -462,13 +687,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Hiển thị kết quả
         let html = '';
-        Object.values(combinedResults).forEach(route => {
+        Object.values(combinedResults).forEach((route, index) => {
             const formattedPrice = route.giaVe > 0 ? 
                 new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'}).format(route.giaVe) : 
                 '<span class="contact-price">Liên hệ</span>';
             
+            const cardClass = index % 2 === 0 ? 'result-card-even' : 'result-card-odd';
+            
             html += `
-                <div class="route-result-card">
+                <div class="route-result-card ${cardClass}">
                     <div class="route-info">
                         <h3><i class="fas fa-bus"></i> ${route.diemDi} → ${route.diemDen}</h3>
                         <div class="route-price">
@@ -528,7 +755,7 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `
                     <div class="route-actions">
                         <button class="btn-call" onclick="window.location.href='tel:0948531333'">
-                            <i class="fas fa-phone"></i> Gọi đặt vé ngay: 0948.531.333
+                            <i class="fas fa-phone"></i> Gọi đặt vé: 0948.531.333
                         </button>
                     </div>
                 </div>
@@ -536,104 +763,194 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         resultsContainer.innerHTML = html;
+        
+        // Thêm CSS cho kết quả tìm kiếm
+        const style = document.createElement('style');
+        style.textContent = `
+            .route-result-card {
+                background: white;
+                border-radius: 10px;
+                padding: 25px;
+                margin-bottom: 25px;
+                box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+            }
+            .result-card-even {
+                border-top: 4px solid #2c5aa0;
+            }
+            .result-card-odd {
+                border-top: 4px solid #e67e22;
+            }
+            .no-search, .no-results {
+                text-align: center;
+                padding: 50px 20px;
+                background: #f8f9fa;
+                border-radius: 10px;
+                margin: 20px 0;
+            }
+            .no-search i, .no-results i {
+                font-size: 3rem;
+                color: #adb5bd;
+                margin-bottom: 15px;
+            }
+            .search-results-count {
+                background: #e3f2fd;
+                padding: 15px 20px;
+                border-radius: 8px;
+                margin: 20px 0;
+                color: #2c5aa0;
+                font-size: 1.1rem;
+                border-left: 4px solid #2c5aa0;
+            }
+            .contact-price {
+                color: #e67e22;
+                font-style: italic;
+            }
+        `;
+        document.head.appendChild(style);
     }
 
-    // Tải tất cả dữ liệu với xử lý lỗi tốt hơn
+    // Cập nhật số lượng trong tab
+    function updateTabCount(tabId, count) {
+        const tabLink = document.querySelector(`[data-section="${tabId}"]`);
+        if (tabLink) {
+            // Xóa badge cũ nếu có
+            const oldBadge = tabLink.querySelector('.tab-badge');
+            if (oldBadge) {
+                oldBadge.remove();
+            }
+            
+            // Thêm badge mới
+            if (count > 0) {
+                const badge = document.createElement('span');
+                badge.className = 'tab-badge';
+                badge.textContent = count;
+                badge.style.cssText = `
+                    background: #e74c3c;
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 10px;
+                    font-size: 0.8rem;
+                    margin-left: 8px;
+                    vertical-align: middle;
+                `;
+                tabLink.appendChild(badge);
+            }
+        }
+    }
+
+    // Tải tất cả dữ liệu - PHIÊN BẢN MỚI VỚI FALLBACK
     async function loadAllData() {
+        console.log('=== BẮT ĐẦU TẢI DỮ LIỆU ===');
+        
         try {
-            console.log('Bắt đầu tải dữ liệu từ Google Sheets...');
+            // Hiển thị loading state
+            showLoadingState();
             
-            // Hiển thị trạng thái loading
-            document.getElementById('ticket-table-body').innerHTML = `
-                <tr>
-                    <td colspan="3" style="text-align: center; padding: 30px;">
-                        <div class="loading-spinner">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <p>Đang tải dữ liệu giá vé...</p>
-                        </div>
-                    </td>
-                </tr>
-            `;
+            console.log('Đang tải dữ liệu từ Google Sheets...');
             
-            document.getElementById('phone-schedule-content').innerHTML = `
-                <div class="loading-message">
-                    <div class="loading-spinner">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Đang tải dữ liệu giờ xuất bến...</p>
-                    </div>
-                </div>
-            `;
+            // Thử tải dữ liệu với timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
             
-            // Tải dữ liệu đồng thời với timeout
-            const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Timeout khi tải dữ liệu')), 10000)
-            );
-            
-            const fetchPromise = Promise.all([
-                fetchGoogleSheetData(API_URLS.giave, 'giave'),
-                fetchGoogleSheetData(API_URLS.gioxuatben, 'gioxuatben'),
-                fetchGoogleSheetData(API_URLS.vitri, 'vitri')
+            const [giaveRows, gioxuatbenRows, vitriRows] = await Promise.all([
+                fetchGoogleSheetData(API_URLS.giave, 'giave').catch(error => {
+                    console.error('Lỗi khi tải giave:', error);
+                    return [];
+                }),
+                fetchGoogleSheetData(API_URLS.gioxuatben, 'gioxuatben').catch(error => {
+                    console.error('Lỗi khi tải gioxuatben:', error);
+                    return [];
+                }),
+                fetchGoogleSheetData(API_URLS.vitri, 'vitri').catch(error => {
+                    console.error('Lỗi khi tải vitri:', error);
+                    return [];
+                })
             ]);
             
-            const [giaveRows, gioxuatbenRows, vitriRows] = await Promise.race([fetchPromise, timeoutPromise]);
+            clearTimeout(timeoutId);
+            
+            console.log('Dữ liệu đã tải về:', {
+                giaveRows: giaveRows ? giaveRows.length : 0,
+                gioxuatbenRows: gioxuatbenRows ? gioxuatbenRows.length : 0,
+                vitriRows: vitriRows ? vitriRows.length : 0
+            });
             
             // Xử lý dữ liệu
             giaveData = processGiaveData(giaveRows);
             gioxuatbenData = processGioxuatbenData(gioxuatbenRows);
             vitriData = processVitriData(vitriRows);
             
+            console.log('Dữ liệu đã xử lý:', {
+                giaveData: giaveData.length,
+                gioxuatbenData: gioxuatbenData.length,
+                vitriData: vitriData.length
+            });
+            
+            // Nếu không có dữ liệu, sử dụng dữ liệu mẫu
+            if (giaveData.length === 0 && gioxuatbenData.length === 0) {
+                console.log('Không có dữ liệu từ API, sử dụng dữ liệu mẫu...');
+                loadSampleData();
+            }
+            
             // Hiển thị dữ liệu
             displayGiaveData();
             displayGioxuatbenData();
             
-            console.log('Dữ liệu đã tải thành công:', {
-                giave: giaveData.length,
-                gioxuatben: gioxuatbenData.length,
-                vitri: vitriData.length
-            });
+            console.log('=== DỮ LIỆU ĐÃ TẢI THÀNH CÔNG ===');
             
             // Hiển thị thông báo thành công
             showNotification('Đã tải dữ liệu thành công!', 'success');
             
         } catch (error) {
-            console.error('Lỗi khi tải dữ liệu:', error);
+            console.error('Lỗi nghiêm trọng khi tải dữ liệu:', error);
+            
+            // Sử dụng dữ liệu mẫu
+            console.log('Sử dụng dữ liệu mẫu do lỗi...');
+            loadSampleData();
             
             // Hiển thị thông báo lỗi
-            showNotification('Không thể tải dữ liệu. Vui lòng thử lại sau.', 'error');
-            
-            // Hiển thị thông báo lỗi trong các section
-            document.getElementById('ticket-table-body').innerHTML = `
-                <tr>
-                    <td colspan="3" style="text-align: center; padding: 30px; color: #dc3545;">
-                        <div class="error-display">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <h4>Không thể tải dữ liệu giá vé</h4>
-                            <p>${error.message}</p>
-                            <button onclick="loadAllData()" class="retry-btn">
-                                <i class="fas fa-redo"></i> Thử lại
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-            
-            document.getElementById('phone-schedule-content').innerHTML = `
-                <div class="error-message">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <h4>Không thể tải dữ liệu giờ xuất bến</h4>
-                    <p>${error.message}</p>
-                    <button onclick="loadAllData()" class="retry-btn">
-                        <i class="fas fa-redo"></i> Thử lại
-                    </button>
-                </div>
-            `;
-            
-            // Load dữ liệu mẫu nếu API fail
-            loadSampleData();
+            showNotification('Không thể tải dữ liệu từ Google Sheets. Đang sử dụng dữ liệu mẫu.', 'error');
         }
     }
 
-    // Load dữ liệu mẫu khi API không hoạt động
+    // Hiển thị trạng thái loading
+    function showLoadingState() {
+        const tbody = document.getElementById('ticket-table-body');
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" style="text-align: center; padding: 40px;">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin fa-2x" style="color: #2c5aa0;"></i>
+                        <p style="margin-top: 15px; color: #666;">Đang tải dữ liệu giá vé từ Google Sheets...</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        
+        const scheduleContainer = document.getElementById('phone-schedule-content');
+        scheduleContainer.innerHTML = `
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color: #2c5aa0;"></i>
+                <p style="margin-top: 15px; color: #666;">Đang tải dữ liệu giờ xuất bến...</p>
+            </div>
+        `;
+        
+        // Thêm CSS cho loading
+        const style = document.createElement('style');
+        style.textContent = `
+            .loading-spinner {
+                text-align: center;
+                padding: 40px;
+            }
+            @keyframes fa-spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Load dữ liệu mẫu
     function loadSampleData() {
         console.log('Đang tải dữ liệu mẫu...');
         
@@ -643,34 +960,43 @@ document.addEventListener('DOMContentLoaded', function() {
             { id: 2, diemDi: "Hà Nội", diemDen: "Thanh Hóa", giaVe: 200000 },
             { id: 3, diemDi: "Thanh Hóa", diemDen: "Thái Nguyên", giaVe: 250000 },
             { id: 4, diemDi: "Thái Nguyên", diemDen: "Thanh Hóa", giaVe: 250000 },
-            { id: 5, diemDi: "Thanh Hóa", diemDen: "Hải Phòng", giaVe: 220000 }
+            { id: 5, diemDi: "Thanh Hóa", diemDen: "Hải Phòng", giaVe: 220000 },
+            { id: 6, diemDi: "Hải Phòng", diemDen: "Thanh Hóa", giaVe: 220000 },
+            { id: 7, diemDi: "Thanh Hóa", diemDen: "Bắc Giang", giaVe: 230000 },
+            { id: 8, diemDi: "Bắc Giang", diemDen: "Thanh Hóa", giaVe: 230000 }
         ];
         
         // Dữ liệu mẫu giờ xuất bến
         gioxuatbenData = [
             { id: 1, diemDi: "Thanh Hóa", diemDen: "Hà Nội", gioXuatBen: "05:00", soDienThoai: "0948.531.333" },
             { id: 2, diemDi: "Thanh Hóa", diemDen: "Hà Nội", gioXuatBen: "07:00", soDienThoai: "0948.531.333" },
-            { id: 3, diemDi: "Hà Nội", diemDen: "Thanh Hóa", gioXuatBen: "13:00", soDienThoai: "0986.757.575" },
-            { id: 4, diemDi: "Thanh Hóa", diemDen: "Thái Nguyên", gioXuatBen: "06:30", soDienThoai: "0948.531.333" },
-            { id: 5, diemDi: "Thái Nguyên", diemDen: "Thanh Hóa", gioXuatBen: "14:00", soDienThoai: "0986.757.575" }
+            { id: 3, diemDi: "Thanh Hóa", diemDen: "Hà Nội", gioXuatBen: "09:00", soDienThoai: "0986.757.575" },
+            { id: 4, diemDi: "Hà Nội", diemDen: "Thanh Hóa", gioXuatBen: "13:00", soDienThoai: "0986.757.575" },
+            { id: 5, diemDi: "Hà Nội", diemDen: "Thanh Hóa", gioXuatBen: "15:00", soDienThoai: "0948.531.333" },
+            { id: 6, diemDi: "Hà Nội", diemDen: "Thanh Hóa", gioXuatBen: "17:00", soDienThoai: "0986.757.575" },
+            { id: 7, diemDi: "Thanh Hóa", diemDen: "Thái Nguyên", gioXuatBen: "06:30", soDienThoai: "0948.531.333" },
+            { id: 8, diemDi: "Thái Nguyên", diemDen: "Thanh Hóa", gioXuatBen: "14:00", soDienThoai: "0986.757.575" }
         ];
         
         // Dữ liệu mẫu vị trí
         vitriData = [
             { id: 1, diemDi: "Thanh Hóa", diemDen: "Hà Nội", viTri: "Bến xe phía Nam (Giáp Bát)", ghiChu: "Điểm đón chính" },
             { id: 2, diemDi: "Hà Nội", diemDen: "Thanh Hóa", viTri: "Bến xe Thanh Hóa", ghiChu: "Điểm trả chính" },
-            { id: 3, diemDi: "Thanh Hóa", diemDen: "Thái Nguyên", viTri: "Ngã tư An Dương Vương", ghiChu: "Đón khách lẻ" }
+            { id: 3, diemDi: "Thanh Hóa", diemDen: "Thái Nguyên", viTri: "Ngã tư An Dương Vương", ghiChu: "Đón khách lẻ" },
+            { id: 4, diemDi: "Thái Nguyên", diemDen: "Thanh Hóa", viTri: "Bến xe Thái Nguyên", ghiChu: "Điểm đón chính" }
         ];
         
-        // Hiển thị dữ liệu mẫu
-        displayGiaveData();
-        displayGioxuatbenData();
-        
-        showNotification('Đang sử dụng dữ liệu mẫu. Vui lòng kiểm tra kết nối API.', 'warning');
+        console.log('Dữ liệu mẫu đã tải:', {
+            giave: giaveData.length,
+            gioxuatben: gioxuatbenData.length,
+            vitri: vitriData.length
+        });
     }
 
     // Hiển thị thông báo
     function showNotification(message, type = 'info') {
+        console.log(`Thông báo [${type}]:`, message);
+        
         // Tạo notification element
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
@@ -683,12 +1009,76 @@ document.addEventListener('DOMContentLoaded', function() {
         // Thêm vào body
         document.body.appendChild(notification);
         
+        // Thêm CSS cho notification
+        const style = document.createElement('style');
+        style.textContent = `
+            .notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                z-index: 1000;
+                transform: translateX(400px);
+                transition: transform 0.3s ease;
+                max-width: 400px;
+                border-left: 4px solid;
+            }
+            .notification.show {
+                transform: translateX(0);
+            }
+            .notification.success {
+                border-left-color: #28a745;
+            }
+            .notification.error {
+                border-left-color: #dc3545;
+            }
+            .notification.info {
+                border-left-color: #2c5aa0;
+            }
+            .notification i {
+                font-size: 1.2rem;
+            }
+            .notification.success i {
+                color: #28a745;
+            }
+            .notification.error i {
+                color: #dc3545;
+            }
+            .notification.info i {
+                color: #2c5aa0;
+            }
+            .close-notification {
+                background: none;
+                border: none;
+                color: #6c757d;
+                cursor: pointer;
+                padding: 0;
+            }
+            .close-notification:hover {
+                color: #343a40;
+            }
+            @media (max-width: 768px) {
+                .notification {
+                    left: 20px;
+                    right: 20px;
+                    max-width: none;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
         // Hiển thị
         setTimeout(() => {
             notification.classList.add('show');
         }, 10);
         
-        // Tự động ẩn sau 5 giây
+        // Tự động ẩn
         const autoHide = setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => {
@@ -710,407 +1100,49 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Thêm CSS động với cải tiến
-    const style = document.createElement('style');
-    style.textContent = `
-        .loading-spinner {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .fa-spin {
-            animation: fa-spin 1s linear infinite;
-            font-size: 2rem;
-            color: #2c5aa0;
-            margin-bottom: 10px;
-        }
-        
-        @keyframes fa-spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .loading-message, .error-message {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-        
-        .error-display {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .error-display i, .error-message i {
-            font-size: 3rem;
-            color: #dc3545;
-            margin-bottom: 15px;
-        }
-        
-        .retry-btn {
-            background: #2c5aa0;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            margin-top: 15px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .retry-btn:hover {
-            background: #1a3a6d;
-        }
-        
-        .schedule-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-            border-left: 4px solid #2c5aa0;
-        }
-        
-        .route-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .route-header h3 {
-            margin: 0;
-            color: #2c5aa0;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .schedule-count {
-            background: #e3f2fd;
-            color: #2c5aa0;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        
-        .schedule-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 15px;
-        }
-        
-        .schedule-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-        
-        .schedule-item:hover {
-            background: #e9ecef;
-            transform: translateY(-2px);
-        }
-        
-        .time, .phone {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .time-value {
-            font-weight: 600;
-            color: #2c5aa0;
-        }
-        
-        .phone a {
-            color: #28a745;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .phone a:hover {
-            text-decoration: underline;
-        }
-        
-        .route-result-card {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 3px 20px rgba(0,0,0,0.1);
-            border-top: 4px solid #2c5aa0;
-        }
-        
-        .route-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .route-info h3 {
-            margin: 0;
-            color: #2c5aa0;
-            font-size: 1.3rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .route-price {
-            color: #28a745;
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-        
-        .contact-price {
-            color: #e67e22;
-            font-style: italic;
-        }
-        
-        .route-schedules, .route-locations {
-            margin-bottom: 20px;
-        }
-        
-        .route-schedules h4, .route-locations h4 {
-            color: #495057;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1.1rem;
-        }
-        
-        .phone-link {
-            color: #28a745;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .phone-link:hover {
-            text-decoration: underline;
-        }
-        
-        .route-locations ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .route-locations li {
-            padding: 10px 0;
-            border-bottom: 1px dashed #eee;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .route-locations li:last-child {
-            border-bottom: none;
-        }
-        
-        .note {
-            color: #6c757d;
-            font-size: 0.9rem;
-            margin-left: 5px;
-            font-style: italic;
-        }
-        
-        .route-actions {
-            text-align: center;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-        
-        .btn-call {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s;
-            font-size: 1rem;
-        }
-        
-        .btn-call:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
-        }
-        
-        .no-search, .no-results {
-            text-align: center;
-            padding: 50px 20px;
-            color: #6c757d;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-        
-        .no-search i, .no-results i {
-            font-size: 3rem;
-            color: #adb5bd;
-            margin-bottom: 15px;
-        }
-        
-        .hint, .suggestion {
-            color: #6c757d;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            font-style: italic;
-        }
-        
-        .search-results-count {
-            background: #e3f2fd;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            color: #2c5aa0;
-            font-size: 1.1rem;
-            border-left: 4px solid #2c5aa0;
-        }
-        
-        .price {
-            color: #e74c3c;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        
-        /* Notification styles */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            z-index: 1000;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-            max-width: 350px;
-            border-left: 4px solid #2c5aa0;
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-        }
-        
-        .notification.success {
-            border-left-color: #28a745;
-        }
-        
-        .notification.error {
-            border-left-color: #dc3545;
-        }
-        
-        .notification.warning {
-            border-left-color: #ffc107;
-        }
-        
-        .notification i {
-            font-size: 1.2rem;
-        }
-        
-        .notification.success i {
-            color: #28a745;
-        }
-        
-        .notification.error i {
-            color: #dc3545;
-        }
-        
-        .notification.warning i {
-            color: #ffc107;
-        }
-        
-        .notification span {
-            flex: 1;
-        }
-        
-        .close-notification {
-            background: none;
-            border: none;
-            color: #6c757d;
-            cursor: pointer;
-            padding: 0;
-            font-size: 0.9rem;
-        }
-        
-        .close-notification:hover {
-            color: #343a40;
-        }
-        
-        @media (max-width: 768px) {
-            .route-info {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-            
-            .schedule-list {
-                grid-template-columns: 1fr;
-            }
-            
-            .schedule-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-            
-            .notification {
-                left: 20px;
-                right: 20px;
-                max-width: none;
-            }
-            
-            .route-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-        }
-    `;
-    document.head.appendChild(style);
-
     // Khởi tạo sự kiện
-    document.getElementById('search-route-btn').addEventListener('click', searchRoute);
-    document.getElementById('route-search-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            searchRoute();
+    function initializeEvents() {
+        console.log('Khởi tạo sự kiện...');
+        
+        // Nút tìm kiếm
+        const searchBtn = document.getElementById('search-route-btn');
+        if (searchBtn) {
+            searchBtn.addEventListener('click', searchRoute);
+            console.log('Đã gắn sự kiện cho nút tìm kiếm');
+        } else {
+            console.error('Không tìm thấy nút tìm kiếm với ID search-route-btn');
         }
-    });
+        
+        // Input tìm kiếm
+        const searchInput = document.getElementById('route-search-input');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    console.log('Enter pressed, searching...');
+                    searchRoute();
+                }
+            });
+            console.log('Đã gắn sự kiện cho input tìm kiếm');
+        } else {
+            console.error('Không tìm thấy input tìm kiếm với ID route-search-input');
+        }
+        
+        // Log các element để debug
+        console.log('Các element quan trọng:', {
+            ticketTableBody: document.getElementById('ticket-table-body'),
+            phoneScheduleContent: document.getElementById('phone-schedule-content'),
+            routeResultsContainer: document.getElementById('route-results-container'),
+            searchResultsCount: document.getElementById('search-results-count')
+        });
+    }
 
-    // Tải dữ liệu khi trang được tải
-    loadAllData();
-    
-    // Thêm sự kiện retry cho các nút retry (được thêm động)
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.retry-btn')) {
-            e.preventDefault();
-            loadAllData();
-        }
-    });
-    
-    // Log để debug
-    console.log('Script.js đã được tải và khởi tạo');
+    // Khởi động ứng dụng
+    function startApp() {
+        console.log('Bắt đầu ứng dụng...');
+        initializeEvents();
+        loadAllData();
+    }
+
+    // Bắt đầu ứng dụng khi DOM ready
+    startApp();
 });
