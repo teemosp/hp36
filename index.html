@@ -103,59 +103,38 @@
         
         .toc-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 20px;
         }
         
         .toc-card {
             background-color: #f8f9fa;
             border-radius: 8px;
-            padding: 20px;
+            padding: 25px;
             border-left: 5px solid #2a5298;
             transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            text-align: center;
         }
         
         .toc-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            background-color: #eef2f7;
         }
         
         .toc-card h3 {
             color: #1e3c72;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             display: flex;
+            justify-content: center;
             align-items: center;
             gap: 10px;
         }
         
-        .toc-card ul {
-            list-style-type: none;
-            padding-left: 5px;
-        }
-        
-        .toc-card li {
-            margin-bottom: 8px;
-            padding-left: 20px;
-            position: relative;
-        }
-        
-        .toc-card li:before {
-            content: "•";
-            color: #2a5298;
-            font-weight: bold;
-            position: absolute;
-            left: 0;
-        }
-        
-        .toc-card a {
-            color: #333;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        
-        .toc-card a:hover {
-            color: #2a5298;
-            text-decoration: underline;
+        .toc-card p {
+            color: #666;
+            font-size: 0.95rem;
         }
         
         .content-section {
@@ -329,7 +308,7 @@
                 </div>
                 <div class="contact-header">
                     <p><i class="fas fa-phone-alt"></i> Hotline đặt vé</p>
-                    <p class="phone">0948 531 333</p>
+                    <p class="phone">0948 955 999</p>
                 </div>
             </div>
         </div>
@@ -340,36 +319,24 @@
         <div class="toc-container" id="main-toc">
             <h2><i class="fas fa-list"></i> Mục Lục Nội Dung</h2>
             <div class="toc-grid">
-                <div class="toc-card">
+                <div class="toc-card" data-section="company-info">
                     <h3><i class="fas fa-building"></i> Thông Tin Công Ty</h3>
-                    <ul>
-                        <li><a href="#company-info" class="nav-link" data-section="company-info">Thông tin doanh nghiệp</a></li>
-                        <li><a href="#company-address" class="nav-link" data-section="company-info">Địa chỉ liên hệ</a></li>
-                    </ul>
+                    <p>Thông tin doanh nghiệp và địa chỉ liên hệ</p>
                 </div>
                 
-                <div class="toc-card">
+                <div class="toc-card" data-section="giave-section">
                     <h3><i class="fas fa-money-bill-wave"></i> Bảng Giá Vé</h3>
-                    <ul>
-                        <li><a href="#giave-section" class="nav-link" data-section="giave-section">Bảng giá vé theo tuyến</a></li>
-                        <li><a href="#giave-note" class="nav-link" data-section="giave-section">Lưu ý về giá vé</a></li>
-                    </ul>
+                    <p>Bảng giá vé theo tuyến và các lưu ý</p>
                 </div>
                 
-                <div class="toc-card">
+                <div class="toc-card" data-section="gioxuatben-section">
                     <h3><i class="fas fa-clock"></i> Giờ Xuất Bến</h3>
-                    <ul>
-                        <li><a href="#gioxuatben-section" class="nav-link" data-section="gioxuatben-section">Lịch xuất bến các tuyến</a></li>
-                        <li><a href="#gioxuatben-note" class="nav-link" data-section="gioxuatben-section">Thông tin liên hệ</a></li>
-                    </ul>
+                    <p>Lịch xuất bến các tuyến và thông tin liên hệ</p>
                 </div>
                 
-                <div class="toc-card">
+                <div class="toc-card" data-section="vitri-section">
                     <h3><i class="fas fa-map-marked-alt"></i> Vị Trí Xe</h3>
-                    <ul>
-                        <li><a href="#vitri-section" class="nav-link" data-section="vitri-section">Thông tin vị trí xe</a></li>
-                        <li><a href="#vitri-note" class="nav-link" data-section="vitri-section">Loại xe và liên hệ</a></li>
-                    </ul>
+                    <p>Thông tin vị trí xe, loại xe và liên hệ</p>
                 </div>
             </div>
         </div>
@@ -451,7 +418,7 @@
                 </tbody>
             </table>
             
-            <div class="info-card" id="giave-note">
+            <div class="info-card">
                 <h3><i class="fas fa-exclamation-circle"></i> Lưu ý về giá vé</h3>
                 <div class="info-item">
                     <div class="info-label">Giá vé:</div>
@@ -493,11 +460,11 @@
                 </tbody>
             </table>
             
-            <div class="info-card" id="gioxuatben-note">
+            <div class="info-card">
                 <h3><i class="fas fa-phone-alt"></i> Thông Tin Liên Hệ Đặt Vé</h3>
                 <div class="info-item">
                     <div class="info-label">Hotline đặt vé:</div>
-                    <div class="info-value">0948 531 333 (24/7)</div>
+                    <div class="info-value">0948 955 999 (24/7)</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Đặt vé online:</div>
@@ -554,7 +521,7 @@
                 </tbody>
             </table>
             
-            <div class="info-card" id="vitri-note">
+            <div class="info-card">
                 <h3><i class="fas fa-car-side"></i> Thông Tin Loại Xe</h3>
                 <div class="info-item">
                     <div class="info-label">Xe nằm:</div>
@@ -992,15 +959,14 @@
 
         // Hàm điều hướng giữa các mục lục
         function setupNavigation() {
-            const navLinks = document.querySelectorAll('.nav-link');
+            const tocCards = document.querySelectorAll('.toc-card');
             const backButtons = document.querySelectorAll('.back-to-toc');
             const contentSections = document.querySelectorAll('.content-section');
             const mainToc = document.getElementById('main-toc');
             
-            // Xử lý click vào link trong mục lục
-            navLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
+            // Xử lý click vào thẻ mục lục
+            tocCards.forEach(card => {
+                card.addEventListener('click', function() {
                     const sectionId = this.getAttribute('data-section');
                     
                     // Ẩn tất cả các section và hiện section được chọn
