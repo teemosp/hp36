@@ -1,20 +1,16 @@
-// script.js - SỬA LỖI CẤU TRÚC CỘT
+// script.js - SỬA LỖI CẤU TRÚC VÀ THỜI GIAN
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM đã sẵn sàng, bắt đầu khởi tạo...');
     
-    // Các API endpoints
     const API_URLS = {
         giave: 'https://docs.google.com/spreadsheets/d/17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY/gviz/tq?tqx=out:json&sheet=giave',
         gioxuatben: 'https://docs.google.com/spreadsheets/d/17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY/gviz/tq?tqx=out:json&sheet=gioxuatben',
         vitri: 'https://docs.google.com/spreadsheets/d/17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY/gviz/tq?tqx=out:json&sheet=vitri'
     };
 
-    // Biến lưu trữ dữ liệu
     let giaveData = [];
     let gioxuatbenData = [];
     let vitriData = [];
-
-    console.log('URLs API:', API_URLS);
 
     // Chuyển đổi navigation
     document.querySelectorAll('.nav-menu a').forEach(link => {
@@ -36,73 +32,70 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Hàm fetch dữ liệu từ Google Sheets
+    // Hàm fetch dữ liệu
     async function fetchGoogleSheetData(url, sheetName) {
-        console.log(`Bắt đầu fetch ${sheetName}...`);
-        
         try {
-            const urlWithTimestamp = url + '&t=' + Date.now();
-            const response = await fetch(urlWithTimestamp);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
+            const response = await fetch(url + '&t=' + Date.now());
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
             const text = await response.text();
-            
-            // Xử lý JSONP response
             const jsonStart = text.indexOf('{');
             const jsonEnd = text.lastIndexOf('}') + 1;
-            
-            if (jsonStart === -1 || jsonEnd === -1) {
-                throw new Error(`Không tìm thấy JSON trong response`);
-            }
-            
             const jsonText = text.substring(jsonStart, jsonEnd);
             const data = JSON.parse(jsonText);
             
-            // Trích xuất dữ liệu
-            if (data.table && data.table.rows) {
-                return data.table.rows;
-            }
-            
-            return [];
+            return data.table ? data.table.rows : [];
         } catch (error) {
             console.error(`Lỗi khi fetch ${sheetName}:`, error);
             return [];
         }
     }
 
-    // Xử lý dữ liệu giá vé (sheet giave)
-    function processGiaveData(rows) {
-        console.log('Xử lý dữ liệu giá vé, số rows:', rows ? rows.length : 0);
+    // Hàm chuyển đổi thời gian Date(1899,11,30,6,30,0) → "06:30"
+    function convertGoogleDate(dateStr) {
+        if (!dateStr) return '';
         
+        // Nếu đã là định dạng hh:mm
+        if (typeof dateStr === 'string' && dateStr.includes(':')) {
+            return dateStr;
+        }
+        
+        // Nếu là định dạng Date(1899,11,30,6,30,0)
+        if (typeof dateStr === 'string' && dateStr.startsWith('Date(')) {
+            try {
+                // Lấy các tham số: Date(year,month,day,hour,minute,second)
+                const match = dateStr.match(/Date\((\d+),(\d+),(\d+),(\d+),(\d+),(\d+)\)/);
+                if (match) {
+                    const hour = parseInt(match[4]);
+                    const minute = parseInt(match[5]);
+                    return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                }
+            } catch (e) {
+                console.error('Lỗi chuyển đổi thời gian:', e);
+            }
+        }
+        
+        return dateStr || '';
+    }
+
+    // Xử lý dữ liệu giá vé (đã hoạt động)
+    function processGiaveData(rows) {
         const data = [];
         
-        if (!rows || !Array.isArray(rows)) {
-            console.error('Dữ liệu giá vé không hợp lệ');
-            return data;
-        }
+        if (!rows || !Array.isArray(rows)) return data;
         
         rows.forEach((row, index) => {
             if (!row.c) return;
             
-            // Dựa vào log: sheet "giave" có cột A: "Thanh Hóa", B: "Miền bắc"
-            // Giả sử cấu trúc: Cột A = điểm đi, Cột B = điểm đến, Cột C = giá
             const diemDi = row.c[0] ? (row.c[0].v || '').toString().trim() : '';
             const diemDen = row.c[1] ? (row.c[1].v || '').toString().trim() : '';
             const giaVeRaw = row.c[2] ? row.c[2].v : '';
             
             // Bỏ qua hàng tiêu đề
-            if (index === 0 && (diemDi === 'Điểm đi' || diemDi === 'Thanh Hóa' || diemDi === 'Bến đi')) {
-                console.log('Bỏ qua hàng tiêu đề giá vé');
-                return;
-            }
+            if (index === 0 && (diemDi === 'Thanh Hóa' || diemDi === 'Điểm đi')) return;
             
-            // Bỏ qua hàng trống
             if (!diemDi && !diemDen) return;
             
-            // Xử lý giá vé
             let giaVe = 0;
             if (giaVeRaw) {
                 if (typeof giaVeRaw === 'number') {
@@ -113,7 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Thêm vào mảng
             data.push({
                 id: data.length + 1,
                 diemDi: diemDi || 'Chưa xác định',
@@ -126,197 +118,137 @@ document.addEventListener('DOMContentLoaded', function() {
         return data;
     }
 
-    // Xử lý dữ liệu giờ xuất bến (sheet gioxuatben)
+    // Xử lý dữ liệu giờ xuất bến - CẤU TRÚC MỚI: Bến đi | giờ | Số điện thoại
     function processGioxuatbenData(rows) {
-        console.log('Xử lý dữ liệu giờ xuất bến, số rows:', rows ? rows.length : 0);
-        
         const data = [];
         
-        if (!rows || !Array.isArray(rows)) {
-            console.error('Dữ liệu giờ xuất bến không hợp lệ');
-            return data;
-        }
+        if (!rows || !Array.isArray(rows)) return data;
         
-        // DEBUG: Hiển thị cấu trúc của vài dòng đầu
-        if (rows.length > 0) {
-            console.log('Cấu trúc dữ liệu gioxuatben (3 dòng đầu):');
-            for (let i = 0; i < Math.min(3, rows.length); i++) {
-                if (rows[i].c) {
-                    console.log(`Dòng ${i}:`, rows[i].c.map((cell, idx) => 
-                        `Cột ${idx}: "${cell ? cell.v : 'null'}"`
-                    ));
-                }
+        console.log('Cấu trúc dữ liệu gioxuatben (3 dòng đầu):');
+        for (let i = 0; i < Math.min(3, rows.length); i++) {
+            if (rows[i].c) {
+                console.log(`Dòng ${i}:`, rows[i].c.map((cell, idx) => 
+                    cell ? `Cột ${idx}: "${cell.v}" (${typeof cell.v})` : `Cột ${idx}: null`
+                ));
             }
         }
         
         rows.forEach((row, index) => {
             if (!row.c) return;
             
-            // Dựa vào log: sheet "gioxuatben" có cột A: "Bến đi", B: "giờ"
-            // Cần xác định đúng cấu trúc từ dữ liệu thực tế
-            const cell0 = row.c[0] ? (row.c[0].v || '').toString().trim() : '';
-            const cell1 = row.c[1] ? (row.c[1].v || '').toString().trim() : '';
-            const cell2 = row.c[2] ? (row.c[2].v || '').toString().trim() : '';
-            const cell3 = row.c[3] ? (row.c[3].v || '').toString().trim() : '';
-            const cell4 = row.c[4] ? (row.c[4].v || '').toString().trim() : '';
+            // CẤU TRÚC TỪ LOG: 
+            // Cột 0: "Thái Nguyên" (Bến đi)
+            // Cột 1: "Date(1899,11,30,6,30,0)" (giờ) - CẦN CHUYỂN ĐỔI
+            // Cột 2: "0963529789" (Số điện thoại)
+            
+            const benDi = row.c[0] ? (row.c[0].v || '').toString().trim() : '';
+            const gioRaw = row.c[1] ? row.c[1].v : '';
+            const soDienThoai = row.c[2] ? (row.c[2].v || '').toString().trim() : '';
             
             // Bỏ qua hàng tiêu đề
-            if (index === 0 && (cell0 === 'Bến đi' || cell0 === 'Điểm đi' || cell0 === 'Tuyến')) {
+            if (index === 0 && (benDi === 'Bến đi' || benDi === 'Điểm đi')) {
                 console.log('Bỏ qua hàng tiêu đề giờ xuất bến');
                 return;
             }
             
             // Bỏ qua hàng trống
-            if (!cell0 && !cell1 && !cell2) return;
+            if (!benDi && !gioRaw) return;
             
-            // PHÂN TÍCH CẤU TRÚC DỮ LIỆU:
-            // Dựa vào tên cột từ log, có thể có các trường hợp:
-            // 1. cell0 = điểm đi, cell1 = giờ, cell2 = điểm đến, cell3 = số điện thoại
-            // 2. cell0 = điểm đi, cell1 = điểm đến, cell2 = giờ, cell3 = số điện thoại
-            // 3. cell0 = tuyến (điểm đi - điểm đến), cell1 = giờ, cell2 = số điện thoại
+            // Chuyển đổi thời gian
+            const gioXuatBen = convertGoogleDate(gioRaw);
             
-            // Thử phân tích tự động dựa trên nội dung
-            let diemDi = '';
-            let diemDen = '';
-            let gioXuatBen = '';
-            let soDienThoai = '';
+            // Sheet này chỉ có "Bến đi", không có "Bến đến"
+            // Giả sử tất cả đều đi từ các tỉnh về Thanh Hóa hoặc ngược lại
+            const diemDen = 'Thanh Hóa'; // Mặc định
             
-            // TRƯỜNG HỢP 1: Nếu cell1 chứa dấu ":" (giờ) hoặc là số giờ
-            if (cell1.includes(':') || /^\d{1,2}[h:]\d{0,2}/.test(cell1)) {
-                diemDi = cell0;
-                gioXuatBen = cell1;
-                diemDen = cell2 || 'Chưa xác định';
-                soDienThoai = cell3 || '0948.531.333';
-            }
-            // TRƯỜNG HỢP 2: Nếu cell2 chứa dấu ":" (giờ)
-            else if (cell2.includes(':') || /^\d{1,2}[h:]\d{0,2}/.test(cell2)) {
-                diemDi = cell0;
-                diemDen = cell1 || 'Chưa xác định';
-                gioXuatBen = cell2;
-                soDienThoai = cell3 || '0948.531.333';
-            }
-            // TRƯỜNG HỢP 3: Nếu cell0 chứa "->" hoặc "→" (tuyến đường)
-            else if (cell0.includes('->') || cell0.includes('→') || cell0.includes('-')) {
-                const parts = cell0.split(/->|→|-/).map(p => p.trim());
-                if (parts.length >= 2) {
-                    diemDi = parts[0];
-                    diemDen = parts[1];
-                    gioXuatBen = cell1 || '';
-                    soDienThoai = cell2 || '0948.531.333';
-                }
-            }
-            // TRƯỜNG HỢP MẶC ĐỊNH: Giả sử cột 0,1,2,3
-            else {
-                diemDi = cell0;
-                diemDen = cell1 || 'Chưa xác định';
-                gioXuatBen = cell2 || '';
-                soDienThoai = cell3 || '0948.531.333';
-            }
-            
-            // Chỉ thêm nếu có thông tin cơ bản
-            if (diemDi || diemDen) {
-                data.push({
-                    id: data.length + 1,
-                    diemDi: diemDi || 'Chưa xác định',
-                    diemDen: diemDen || 'Chưa xác định',
-                    gioXuatBen: gioXuatBen || 'Chưa có lịch',
-                    soDienThoai: soDienThoai || '0948.531.333'
-                });
-            }
+            data.push({
+                id: data.length + 1,
+                diemDi: benDi || 'Chưa xác định',
+                diemDen: diemDen,
+                gioXuatBen: gioXuatBen || 'Chưa có lịch',
+                soDienThoai: soDienThoai || '0948.531.333'
+            });
         });
         
         console.log(`Đã xử lý ${data.length} dòng dữ liệu giờ xuất bến`);
         return data;
     }
 
-    // Xử lý dữ liệu vị trí (sheet vitri)
+    // Xử lý dữ liệu vị trí - CẤU TRÚC MỚI: Bến đi | giờ đi | biển kiểm soát | số điện thoại | Loại xe
     function processVitriData(rows) {
-        console.log('Xử lý dữ liệu vị trí, số rows:', rows ? rows.length : 0);
-        
         const data = [];
         
-        if (!rows || !Array.isArray(rows)) {
-            console.error('Dữ liệu vị trí không hợp lệ');
-            return data;
-        }
+        if (!rows || !Array.isArray(rows)) return data;
         
-        // DEBUG: Hiển thị cấu trúc của vài dòng đầu
-        if (rows.length > 0) {
-            console.log('Cấu trúc dữ liệu vitri (3 dòng đầu):');
-            for (let i = 0; i < Math.min(3, rows.length); i++) {
-                if (rows[i].c) {
-                    console.log(`Dòng ${i}:`, rows[i].c.map((cell, idx) => 
-                        `Cột ${idx}: "${cell ? cell.v : 'null'}"`
-                    ));
-                }
+        console.log('Cấu trúc dữ liệu vitri (3 dòng đầu):');
+        for (let i = 0; i < Math.min(3, rows.length); i++) {
+            if (rows[i].c) {
+                console.log(`Dòng ${i}:`, rows[i].c.map((cell, idx) => 
+                    cell ? `Cột ${idx}: "${cell.v}"` : `Cột ${idx}: null`
+                ));
             }
         }
         
         rows.forEach((row, index) => {
             if (!row.c) return;
             
-            // Dựa vào log: sheet "vitri" có cột A: "Bến đi", B: "giờ đi"
-            const cell0 = row.c[0] ? (row.c[0].v || '').toString().trim() : '';
-            const cell1 = row.c[1] ? (row.c[1].v || '').toString().trim() : '';
-            const cell2 = row.c[2] ? (row.c[2].v || '').toString().trim() : '';
-            const cell3 = row.c[3] ? (row.c[3].v || '').toString().trim() : '';
-            const cell4 = row.c[4] ? (row.c[4].v || '').toString().trim() : '';
+            // CẤU TRÚC TỪ LOG:
+            // Cột 0: "Bến đi" (string)
+            // Cột 1: "giờ đi" (datetime - Date())
+            // Cột 2: "biển kiểm soát" (string)
+            // Cột 3: "số điện thoại" (string)
+            // Cột 4: "Loại xe" (string)
+            
+            const benDi = row.c[0] ? (row.c[0].v || '').toString().trim() : '';
+            const gioDiRaw = row.c[1] ? row.c[1].v : '';
+            const bienKiemSoat = row.c[2] ? (row.c[2].v || '').toString().trim() : '';
+            const soDienThoai = row.c[3] ? (row.c[3].v || '').toString().trim() : '';
+            const loaiXe = row.c[4] ? (row.c[4].v || '').toString().trim() : '';
             
             // Bỏ qua hàng tiêu đề
-            if (index === 0 && (cell0 === 'Bến đi' || cell0 === 'Điểm đi' || cell0 === 'Tuyến')) {
+            if (index === 0 && (benDi === 'Bến đi' || benDi === 'Điểm đi')) {
                 console.log('Bỏ qua hàng tiêu đề vị trí');
                 return;
             }
             
             // Bỏ qua hàng trống
-            if (!cell0 && !cell1 && !cell2) return;
+            if (!benDi && !bienKiemSoat) return;
             
-            // PHÂN TÍCH CẤU TRÚC DỮ LIỆU VỊ TRÍ:
-            // Có thể có các trường hợp:
-            // 1. cell0 = điểm đi, cell1 = điểm đến, cell2 = vị trí, cell3 = ghi chú
-            // 2. cell0 = tuyến, cell1 = vị trí, cell2 = ghi chú
-            // 3. cell0 = điểm đi, cell1 = vị trí, cell2 = điểm đến, cell3 = ghi chú
+            // Chuyển đổi thời gian
+            const gioDi = convertGoogleDate(gioDiRaw);
             
-            let diemDi = '';
-            let diemDen = '';
+            // Tạo vị trí từ thông tin có sẵn
             let viTri = '';
             let ghiChu = '';
             
-            // TRƯỜNG HỢP 1: Nếu cell0 chứa "->" hoặc "→" (tuyến đường)
-            if (cell0.includes('->') || cell0.includes('→') || cell0.includes('-')) {
-                const parts = cell0.split(/->|→|-/).map(p => p.trim());
-                if (parts.length >= 2) {
-                    diemDi = parts[0];
-                    diemDen = parts[1];
-                    viTri = cell1 || '';
-                    ghiChu = cell2 || '';
+            if (bienKiemSoat) {
+                viTri = `Xe biển số: ${bienKiemSoat}`;
+                if (loaiXe) {
+                    viTri += ` (${loaiXe})`;
                 }
-            }
-            // TRƯỜNG HỢP 2: Nếu cell1 chứa dấu hiệu là vị trí (có từ "điểm", "bến", "ngã", "số")
-            else if (cell1.includes('điểm') || cell1.includes('bến') || cell1.includes('ngã') || cell1.includes('số')) {
-                diemDi = cell0;
-                viTri = cell1;
-                diemDen = cell2 || 'Chưa xác định';
-                ghiChu = cell3 || '';
-            }
-            // TRƯỜNG HỢP 3: Mặc định giả sử cột 0,1,2,3
-            else {
-                diemDi = cell0;
-                diemDen = cell1 || 'Chưa xác định';
-                viTri = cell2 || '';
-                ghiChu = cell3 || '';
+            } else if (benDi) {
+                viTri = `Bến đi: ${benDi}`;
             }
             
-            // Chỉ thêm nếu có thông tin
-            if ((diemDi || diemDen) && viTri) {
-                data.push({
-                    id: data.length + 1,
-                    diemDi: diemDi || 'Chưa xác định',
-                    diemDen: diemDen || 'Chưa xác định',
-                    viTri: viTri,
-                    ghiChu: ghiChu
-                });
+            if (gioDi) {
+                ghiChu = `Giờ đi: ${gioDi}`;
+                if (soDienThoai) {
+                    ghiChu += ` - SĐT: ${soDienThoai}`;
+                }
+            } else if (soDienThoai) {
+                ghiChu = `SĐT: ${soDienThoai}`;
             }
+            
+            // Giả sử điểm đến là Thanh Hóa (hoặc ngược lại)
+            const diemDen = 'Thanh Hóa';
+            
+            data.push({
+                id: data.length + 1,
+                diemDi: benDi || 'Chưa xác định',
+                diemDen: diemDen,
+                viTri: viTri || 'Chưa xác định',
+                ghiChu: ghiChu
+            });
         });
         
         console.log(`Đã xử lý ${data.length} dòng dữ liệu vị trí`);
@@ -330,8 +262,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!giaveData || giaveData.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="3" style="text-align: center; padding: 40px; color: #666;">
-                        <i class="fas fa-exclamation-circle"></i> Không có dữ liệu giá vé.
+                    <td colspan="3" style="text-align:center; padding:40px; color:#666;">
+                        <i class="fas fa-info-circle"></i> Không có dữ liệu giá vé
                     </td>
                 </tr>
             `;
@@ -344,10 +276,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'}).format(item.giaVe) : 
                 'Liên hệ';
             
-            const rowClass = index % 2 === 0 ? 'even' : 'odd';
-            
             html += `
-                <tr class="${rowClass}">
+                <tr>
                     <td><strong>${item.diemDi}</strong></td>
                     <td><strong>${item.diemDen}</strong></td>
                     <td class="price">${formattedPrice}</td>
@@ -363,9 +293,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .price {
                 color: #e74c3c;
                 font-weight: bold;
-                font-size: 1.1rem;
             }
-            tr.even {
+            tr:nth-child(even) {
                 background-color: #f8f9fa;
             }
             tr:hover {
@@ -374,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         document.head.appendChild(style);
         
-        console.log(`Đã hiển thị ${giaveData.length} dòng giá vé`);
+        console.log(`Đã hiển thị ${giaveData.length} mục giá vé`);
     }
 
     // Hiển thị giờ xuất bến
@@ -383,28 +312,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!gioxuatbenData || gioxuatbenData.length === 0) {
             container.innerHTML = `
-                <div style="text-align: center; padding: 40px; color: #666;">
-                    <i class="fas fa-clock" style="font-size: 2rem; margin-bottom: 15px;"></i>
-                    <h4>Không có dữ liệu giờ xuất bến</h4>
-                    <p>Vui lòng liên hệ hotline để biết lịch trình.</p>
-                    <div style="margin-top: 20px;">
-                        <button onclick="loadAllData()" style="padding: 8px 20px; background: #2c5aa0; color: white; border: none; border-radius: 5px;">
-                            <i class="fas fa-redo"></i> Tải lại
-                        </button>
-                    </div>
+                <div style="text-align:center; padding:40px; color:#666;">
+                    <i class="fas fa-clock fa-2x"></i>
+                    <p>Không có dữ liệu giờ xuất bến</p>
                 </div>
             `;
             return;
         }
         
-        // Nhóm theo tuyến đường
+        // Nhóm theo điểm đi (vì tất cả đều đến Thanh Hóa)
         const groupedData = {};
         gioxuatbenData.forEach(item => {
-            const key = `${item.diemDi} → ${item.diemDen}`;
+            const key = item.diemDi;
             if (!groupedData[key]) {
                 groupedData[key] = {
                     diemDi: item.diemDi,
-                    diemDen: item.diemDen,
                     schedules: []
                 };
             }
@@ -419,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `
                 <div class="schedule-card">
                     <div class="route-header">
-                        <h3><i class="fas fa-route"></i> ${group.diemDi} → ${group.diemDen}</h3>
+                        <h3><i class="fas fa-bus"></i> ${group.diemDi} → Thanh Hóa</h3>
                         <span class="badge">${group.schedules.length} chuyến</span>
                     </div>
                     <div class="schedule-list">
@@ -458,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 border-radius: 10px;
                 padding: 20px;
                 margin-bottom: 20px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
                 border-left: 4px solid #2c5aa0;
             }
             .route-header {
@@ -532,28 +454,84 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!searchTerm) {
             resultsContainer.innerHTML = `
-                <div class="no-search">
-                    <i class="fas fa-search"></i>
-                    <p>Vui lòng nhập điểm đi/đến để tìm kiếm</p>
+                <div style="text-align:center; padding:40px; color:#666;">
+                    <i class="fas fa-search fa-2x"></i>
+                    <p>Nhập điểm đi hoặc điểm đến để tìm kiếm</p>
                 </div>
             `;
             resultsCount.style.display = 'none';
             return;
         }
         
-        // Tìm kiếm
-        const allData = [...giaveData, ...gioxuatbenData, ...vitriData];
-        const filtered = allData.filter(item => 
-            item.diemDi.toLowerCase().includes(searchTerm) || 
-            item.diemDen.toLowerCase().includes(searchTerm)
-        );
+        // Kết hợp dữ liệu từ 3 nguồn
+        const combinedResults = {};
         
-        const uniqueRoutes = [...new Set(filtered.map(item => `${item.diemDi}-${item.diemDen}`))];
+        // Thêm từ giá vé
+        giaveData.forEach(item => {
+            if (item.diemDi.toLowerCase().includes(searchTerm) || 
+                item.diemDen.toLowerCase().includes(searchTerm)) {
+                const key = `${item.diemDi}-${item.diemDen}`;
+                if (!combinedResults[key]) {
+                    combinedResults[key] = {
+                        diemDi: item.diemDi,
+                        diemDen: item.diemDen,
+                        giaVe: item.giaVe,
+                        schedules: [],
+                        locations: []
+                    };
+                }
+                combinedResults[key].giaVe = item.giaVe;
+            }
+        });
+        
+        // Thêm từ giờ xuất bến
+        gioxuatbenData.forEach(item => {
+            if (item.diemDi.toLowerCase().includes(searchTerm) || 
+                item.diemDen.toLowerCase().includes(searchTerm)) {
+                const key = `${item.diemDi}-${item.diemDen}`;
+                if (!combinedResults[key]) {
+                    combinedResults[key] = {
+                        diemDi: item.diemDi,
+                        diemDen: item.diemDen,
+                        giaVe: 0,
+                        schedules: [],
+                        locations: []
+                    };
+                }
+                combinedResults[key].schedules.push({
+                    gioXuatBen: item.gioXuatBen,
+                    soDienThoai: item.soDienThoai
+                });
+            }
+        });
+        
+        // Thêm từ vị trí
+        vitriData.forEach(item => {
+            if (item.diemDi.toLowerCase().includes(searchTerm) || 
+                item.diemDen.toLowerCase().includes(searchTerm)) {
+                const key = `${item.diemDi}-${item.diemDen}`;
+                if (!combinedResults[key]) {
+                    combinedResults[key] = {
+                        diemDi: item.diemDi,
+                        diemDen: item.diemDen,
+                        giaVe: 0,
+                        schedules: [],
+                        locations: []
+                    };
+                }
+                combinedResults[key].locations.push({
+                    viTri: item.viTri,
+                    ghiChu: item.ghiChu
+                });
+            }
+        });
+        
+        const uniqueRoutes = Object.keys(combinedResults);
         
         if (uniqueRoutes.length === 0) {
             resultsContainer.innerHTML = `
-                <div class="no-results">
-                    <i class="fas fa-exclamation-circle"></i>
+                <div style="text-align:center; padding:40px; color:#666;">
+                    <i class="fas fa-exclamation-circle fa-2x"></i>
                     <p>Không tìm thấy kết quả cho "${searchTerm}"</p>
                 </div>
             `;
@@ -561,34 +539,126 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        resultsCount.innerHTML = `Tìm thấy ${uniqueRoutes.length} kết quả`;
+        resultsCount.innerHTML = `Tìm thấy ${uniqueRoutes.length} kết quả cho "${searchTerm}"`;
         resultsCount.style.display = 'block';
         
-        // Hiển thị kết quả (đơn giản)
         let html = '';
-        uniqueRoutes.forEach((route, index) => {
-            const [diemDi, diemDen] = route.split('-');
+        Object.values(combinedResults).forEach(route => {
+            const formattedPrice = route.giaVe > 0 ? 
+                new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'}).format(route.giaVe) : 
+                'Liên hệ';
+            
             html += `
-                <div class="route-item">
-                    <h4>${diemDi} → ${diemDen}</h4>
-                    <p>Tuyến đường có sẵn, vui lòng liên hệ hotline để biết chi tiết.</p>
-                    <button onclick="window.location.href='tel:0948531333'" class="call-btn">
-                        <i class="fas fa-phone"></i> Gọi đặt vé
+                <div class="route-card">
+                    <h3>${route.diemDi} → ${route.diemDen}</h3>
+                    <p class="price">Giá vé: ${formattedPrice}</p>
+                    
+                    ${route.schedules.length > 0 ? `
+                        <div class="schedules">
+                            <h4>Giờ xuất bến:</h4>
+                            ${route.schedules.map(s => `
+                                <div class="schedule">
+                                    <span>${s.gioXuatBen}</span>
+                                    <a href="tel:${s.soDienThoai.replace(/\s+/g, '')}">${s.soDienThoai}</a>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    ${route.locations.length > 0 ? `
+                        <div class="locations">
+                            <h4>Thông tin xe:</h4>
+                            ${route.locations.map(l => `
+                                <div class="location">
+                                    <p>${l.viTri}</p>
+                                    ${l.ghiChu ? `<small>${l.ghiChu}</small>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    <button class="call-btn" onclick="window.location.href='tel:0948531333'">
+                        <i class="fas fa-phone"></i> Gọi đặt vé: 0948.531.333
                     </button>
                 </div>
             `;
         });
         
         resultsContainer.innerHTML = html;
+        
+        // Thêm CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            .route-card {
+                background: white;
+                border-radius: 10px;
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            .route-card h3 {
+                color: #2c5aa0;
+                margin: 0 0 10px 0;
+            }
+            .price {
+                color: #e74c3c;
+                font-weight: bold;
+                font-size: 1.1rem;
+            }
+            .schedules, .locations {
+                margin: 15px 0;
+            }
+            .schedules h4, .locations h4 {
+                color: #495057;
+                margin-bottom: 8px;
+            }
+            .schedule, .location {
+                padding: 8px 12px;
+                background: #f8f9fa;
+                border-radius: 6px;
+                margin-bottom: 8px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .call-btn {
+                background: #28a745;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-top: 15px;
+            }
+            .call-btn:hover {
+                background: #218838;
+            }
+        `;
+        document.head.appendChild(style);
     }
 
     // Tải tất cả dữ liệu
     async function loadAllData() {
-        console.log('=== BẮT ĐẦU TẢI DỮ LIỆU ===');
+        console.log('Bắt đầu tải dữ liệu...');
         
         try {
             // Hiển thị loading
-            showLoading();
+            document.getElementById('ticket-table-body').innerHTML = `
+                <tr>
+                    <td colspan="3" style="text-align:center; padding:40px;">
+                        <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...
+                    </td>
+                </tr>
+            `;
+            
+            document.getElementById('phone-schedule-content').innerHTML = `
+                <div style="text-align:center; padding:40px;">
+                    <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...
+                </div>
+            `;
             
             // Tải dữ liệu
             const [giaveRows, gioxuatbenRows, vitriRows] = await Promise.all([
@@ -602,85 +672,44 @@ document.addEventListener('DOMContentLoaded', function() {
             gioxuatbenData = processGioxuatbenData(gioxuatbenRows);
             vitriData = processVitriData(vitriRows);
             
-            console.log('Kết quả xử lý:', {
+            // Hiển thị dữ liệu
+            displayGiaveData();
+            displayGioxuatbenData();
+            
+            console.log('Tải dữ liệu hoàn tất:', {
                 giave: giaveData.length,
                 gioxuatben: gioxuatbenData.length,
                 vitri: vitriData.length
             });
             
-            // Hiển thị dữ liệu
-            displayGiaveData();
-            displayGioxuatbenData();
-            
-            // Log thông tin chi tiết
-            if (gioxuatbenData.length > 0) {
-                console.log('Mẫu dữ liệu giờ xuất bến (3 dòng đầu):', 
-                    gioxuatbenData.slice(0, 3).map(d => ({
-                        diemDi: d.diemDi,
-                        diemDen: d.diemDen,
-                        gio: d.gioXuatBen,
-                        phone: d.soDienThoai
-                    }))
-                );
-            }
-            
-            if (vitriData.length > 0) {
-                console.log('Mẫu dữ liệu vị trí (3 dòng đầu):',
-                    vitriData.slice(0, 3).map(d => ({
-                        diemDi: d.diemDi,
-                        diemDen: d.diemDen,
-                        viTri: d.viTri,
-                        ghiChu: d.ghiChu
-                    }))
-                );
-            }
-            
-            console.log('=== HOÀN TẤT TẢI DỮ LIỆU ===');
-            
         } catch (error) {
             console.error('Lỗi khi tải dữ liệu:', error);
-            alert('Có lỗi khi tải dữ liệu. Vui lòng thử lại.');
+            
+            document.getElementById('ticket-table-body').innerHTML = `
+                <tr>
+                    <td colspan="3" style="text-align:center; padding:40px; color:#dc3545;">
+                        <i class="fas fa-exclamation-triangle"></i> Lỗi khi tải dữ liệu
+                    </td>
+                </tr>
+            `;
+            
+            document.getElementById('phone-schedule-content').innerHTML = `
+                <div style="text-align:center; padding:40px; color:#dc3545;">
+                    <i class="fas fa-exclamation-triangle"></i> Lỗi khi tải dữ liệu
+                </div>
+            `;
         }
-    }
-
-    // Hiển thị loading
-    function showLoading() {
-        const tbody = document.getElementById('ticket-table-body');
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="3" style="text-align: center; padding: 40px;">
-                    <i class="fas fa-spinner fa-spin fa-2x"></i>
-                    <p>Đang tải dữ liệu...</p>
-                </td>
-            </tr>
-        `;
-        
-        const container = document.getElementById('phone-schedule-content');
-        container.innerHTML = `
-            <div style="text-align: center; padding: 40px;">
-                <i class="fas fa-spinner fa-spin fa-2x"></i>
-                <p>Đang tải dữ liệu...</p>
-            </div>
-        `;
     }
 
     // Khởi tạo sự kiện
     function initializeEvents() {
-        // Nút tìm kiếm
-        const searchBtn = document.getElementById('search-route-btn');
-        if (searchBtn) {
-            searchBtn.addEventListener('click', searchRoute);
-        }
+        document.getElementById('search-route-btn').addEventListener('click', searchRoute);
         
-        // Enter để tìm kiếm
-        const searchInput = document.getElementById('route-search-input');
-        if (searchInput) {
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    searchRoute();
-                }
-            });
-        }
+        document.getElementById('route-search-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchRoute();
+            }
+        });
     }
 
     // Bắt đầu ứng dụng
