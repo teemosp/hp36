@@ -1,348 +1,672 @@
-// ============================================
-// HÀM TẢI DỮ LIỆU TỪ GOOGLE SHEETS API
-// ============================================
-
-// Hàm chung để gọi API Google Sheets và chuyển đổi dữ liệu
-async function fetchGoogleSheetData(sheetName) {
-    const sheetId = '17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY';
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
-    
-    try {
-        const response = await fetch(url);
-        const text = await response.text();
-        // API trả về dữ liệu có tiền tố "google.visualization.Query.setResponse(", cần cắt bỏ
-        const jsonString = text.substring(47, text.length - 2);
-        const data = JSON.parse(jsonString);
-        
-        // Chuyển đổi dữ liệu từ API thành mảng các đối tượng đơn giản
-        const rows = data.table.rows;
-        const columns = data.table.cols.map(col => col.label);
-        
-        return rows.map(row => {
-            let obj = {};
-            row.c.forEach((cell, index) => {
-                obj[columns[index]] = cell ? cell.v : '';
-            });
-            return obj;
-        });
-    } catch (error) {
-        console.error(`Lỗi khi tải dữ liệu từ sheet "${sheetName}":`, error);
-        return []; // Trả về mảng rỗng nếu có lỗi
-    }
-}
-
-// Hàm tải và xử lý dữ liệu GIÁ VÉ
-async function loadTicketPrices() {
-    const tableBody = document.getElementById('ticket-table-body');
-    tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu giá vé...</td></tr>';
-    
-    const data = await fetchGoogleSheetData('giave');
-    
-    if (data.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#e74c3c; padding: 2rem;">Không thể tải dữ liệu giá vé. Vui lòng thử lại sau.</td></tr>';
-        return;
-    }
-    
-    tableBody.innerHTML = '';
-    
-    // Nhóm dữ liệu theo điểm đi
-    const groupedByFrom = {};
-    data.forEach(ticket => {
-        if (ticket['Điểm đi'] && ticket['Điểm đến'] && ticket['Giá (VNĐ)']) {
-            const from = ticket['Điểm đi'];
-            if (!groupedByFrom[from]) {
-                groupedByFrom[from] = [];
-            }
-            // Định dạng giá tiền: thêm dấu phân cách hàng nghìn
-            const formattedPrice = parseInt(ticket['Giá (VNĐ)']).toLocaleString('vi-VN');
-            groupedByFrom[from].push({
-                from: from,
-                to: ticket['Điểm đến'],
-                price: `${formattedPrice} VNĐ`
-            });
-        }
-    });
-    
-    // Hiển thị dữ liệu đã nhóm
-    for (const fromLocation in groupedByFrom) {
-        const tickets = groupedByFrom[fromLocation];
-        
-        // Thêm hàng tiêu đề cho nhóm
-        const headerRow = document.createElement('tr');
-        headerRow.innerHTML = `
-            <td colspan="3" class="from-cell" style="background-color: #ecf0f1; font-size: 1.1rem; padding: 15px;">
-                <i class="fas fa-map-marker-alt"></i> ${fromLocation}
-            </td>
-        `;
-        tableBody.appendChild(headerRow);
-        
-        // Thêm các hàng giá vé
-        tickets.forEach(ticket => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td></td>
-                <td>${ticket.to}</td>
-                <td class="price-cell">${ticket.price}</td>
-            `;
-            tableBody.appendChild(row);
-        });
-    }
-}
-
-// Hàm tải và xử lý dữ liệu GIỜ XUẤT BẾN & SĐT
-async function loadPhoneSchedules() {
-    const container = document.getElementById('phone-schedule-content');
-    container.innerHTML = '<div class="phone-card" style="text-align:center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang tải lịch trình...</div>';
-    
-    const data = await fetchGoogleSheetData('gioxuatben');
-    
-    if (data.length === 0) {
-        container.innerHTML = '<div class="phone-card" style="text-align:center; color:#e74c3c; padding: 2rem;">Không thể tải lịch trình. Vui lòng thử lại sau.</div>';
-        return;
-    }
-    
-    container.innerHTML = '';
-    
-    // Nhóm dữ liệu theo địa điểm
-    const groupedByLocation = {};
-    data.forEach(schedule => {
-        if (schedule['Địa điểm'] && schedule['Giờ'] && schedule['Số điện thoại']) {
-            const location = schedule['Địa điểm'];
-            if (!groupedByLocation[location]) {
-                groupedByLocation[location] = [];
-            }
-            groupedByLocation[location].push({
-                time: schedule['Giờ'],
-                phone: schedule['Số điện thoại']
-            });
-        }
-    });
-    
-    // Hiển thị dữ liệu đã nhóm
-    for (const location in groupedByLocation) {
-        const schedules = groupedByLocation[location];
-        
-        const card = document.createElement('div');
-        card.className = 'phone-card';
-        
-        let scheduleHTML = '';
-        schedules.forEach(schedule => {
-            scheduleHTML += `
-                <div class="schedule-item">
-                    <div class="schedule-time">${schedule.time}</div>
-                    <div class="schedule-phone">${schedule.phone}</div>
-                </div>
-            `;
-        });
-        
-        card.innerHTML = `
-            <h3><i class="fas fa-map-pin"></i> ${location}</h3>
-            ${scheduleHTML}
-        `;
-        
-        container.appendChild(card);
-    }
-}
-
-// Hàm tải và xử lý dữ liệu VỊ TRÍ (Tra cứu)
-async function loadRoutes() {
-    const container = document.getElementById('route-results-container');
-    const resultsCount = document.getElementById('search-results-count');
-    
-    container.innerHTML = '<div style="text-align:center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu vị trí...</div>';
-    resultsCount.style.display = 'none';
-    
-    const data = await fetchGoogleSheetData('vitri');
-    
-    if (data.length === 0) {
-        container.innerHTML = '<div class="no-results"><i class="fas fa-exclamation-triangle"></i><h3>Không thể tải dữ liệu vị trí</h3><p>Vui lòng thử lại sau.</p></div>';
-        return;
-    }
-    
-    // Nhóm dữ liệu theo địa điểm
-    const routesByLocation = {};
-    data.forEach(route => {
-        if (route['Địa điểm'] && route['Thời gian'] && route['Biển số'] && route['Số điện thoại']) {
-            const location = route['Địa điểm'];
-            if (!routesByLocation[location]) {
-                routesByLocation[location] = [];
-            }
-            routesByLocation[location].push({
-                time: route['Thời gian'],
-                plate: route['Biển số'],
-                phone: route['Số điện thoại']
-            });
-        }
-    });
-    
-    // Lưu dữ liệu toàn cục để tìm kiếm
-    window.allRoutesData = routesByLocation;
-    
-    // Hiển thị tất cả dữ liệu ban đầu
-    displayRoutes(routesByLocation);
-}
-
-// Hàm hiển thị dữ liệu vị trí
-function displayRoutes(routesData) {
-    const container = document.getElementById('route-results-container');
-    const resultsCount = document.getElementById('search-results-count');
-    
-    container.innerHTML = '';
-    
-    let totalRoutes = 0;
-    let locationCount = 0;
-    
-    for (const location in routesData) {
-        const routes = routesData[location];
-        totalRoutes += routes.length;
-        locationCount++;
-        
-        const locationGroup = document.createElement('div');
-        locationGroup.className = 'location-group';
-        
-        let routesHTML = '';
-        routes.forEach(route => {
-            routesHTML += `
-                <tr>
-                    <td>${route.time}</td>
-                    <td>${route.plate}</td>
-                    <td>${route.phone}</td>
-                </tr>
-            `;
-        });
-        
-        locationGroup.innerHTML = `
-            <div class="location-header">
-                <i class="fas fa-map-marker-alt"></i> ${location} (${routes.length} chuyến)
-            </div>
-            <div class="route-table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Thời gian</th>
-                            <th>Biển số</th>
-                            <th>Số điện thoại</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${routesHTML}
-                    </tbody>
-                </table>
-            </div>
-        `;
-        
-        container.appendChild(locationGroup);
-    }
-    
-    // Hiển thị tổng số chuyến
-    if (locationCount > 0) {
-        resultsCount.textContent = `Tìm thấy ${totalRoutes} chuyến xe tại ${locationCount} địa điểm`;
-        resultsCount.style.display = 'block';
-    } else {
-        container.innerHTML = `
-            <div class="no-results">
-                <i class="fas fa-search"></i>
-                <h3>Không có dữ liệu vị trí</h3>
-                <p>Chưa có dữ liệu vị trí nào được nhập.</p>
-            </div>
-        `;
-        resultsCount.style.display = 'none';
-    }
-}
-
-// Hàm tìm kiếm lộ trình
-function searchRoutes() {
-    const searchInput = document.getElementById('route-search-input').value.trim().toLowerCase();
-    const resultsCount = document.getElementById('search-results-count');
-    
-    if (!window.allRoutesData) {
-        return;
-    }
-    
-    if (searchInput === '') {
-        displayRoutes(window.allRoutesData);
-        return;
-    }
-    
-    const filteredRoutes = {};
-    let totalRoutes = 0;
-    let matchedLocations = 0;
-    
-    for (const location in window.allRoutesData) {
-        if (location.toLowerCase().includes(searchInput)) {
-            filteredRoutes[location] = window.allRoutesData[location];
-            totalRoutes += window.allRoutesData[location].length;
-            matchedLocations++;
-        }
-    }
-    
-    if (matchedLocations > 0) {
-        displayRoutes(filteredRoutes);
-        resultsCount.textContent = `Tìm thấy ${totalRoutes} chuyến xe tại ${matchedLocations} địa điểm phù hợp với "${searchInput}"`;
-        resultsCount.style.display = 'block';
-    } else {
-        const container = document.getElementById('route-results-container');
-        container.innerHTML = `
-            <div class="no-results">
-                <i class="fas fa-search"></i>
-                <h3>Không tìm thấy địa điểm phù hợp</h3>
-                <p>Không có địa điểm nào khớp với từ khóa "${searchInput}". Vui lòng thử lại với từ khóa khác.</p>
-            </div>
-        `;
-        resultsCount.style.display = 'none';
-    }
-}
-
-// ============================================
-// KHỞI TẠO TRANG WEB
-// ============================================
-
+// script.js
 document.addEventListener('DOMContentLoaded', function() {
-    // Xử lý điều hướng menu
-    const navLinks = document.querySelectorAll('.nav-menu a');
-    const sections = document.querySelectorAll('.section');
-    
-    navLinks.forEach(link => {
+    // Các API endpoints
+    const API_URLS = {
+        giave: 'https://docs.google.com/spreadsheets/d/17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY/gviz/tq?tqx=out:json&sheet=giave',
+        gioxuatben: 'https://docs.google.com/spreadsheets/d/17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3NjO-b5zqdAaVcSGH3ZWf28erY/gviz/tq?tqx=out:json&sheet=gioxuatben',
+        vitri: 'https://docs.google.com/spreadsheets/d/17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY/gviz/tq?tqx=out:json&sheet=vitri'
+    };
+
+    // Biến lưu trữ dữ liệu
+    let giaveData = [];
+    let gioxuatbenData = [];
+    let vitriData = [];
+
+    // Chuyển đổi navigation
+    document.querySelectorAll('.nav-menu a').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            navLinks.forEach(l => l.classList.remove('active'));
-            sections.forEach(s => s.classList.remove('active'));
+            
+            // Xóa active class từ tất cả
+            document.querySelectorAll('.nav-menu a').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Thêm active class cho link được click
             this.classList.add('active');
+            
+            // Ẩn tất cả sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Hiển thị section tương ứng
             const sectionId = this.getAttribute('data-section');
             document.getElementById(sectionId).classList.add('active');
         });
     });
-    
-    // Tải dữ liệu khi vào các trang tương ứng
-    navLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            const sectionId = this.getAttribute('data-section');
+
+    // Hàm fetch dữ liệu từ Google Sheets
+    async function fetchGoogleSheetData(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
-            // Tải dữ liệu khi chuyển tab
-            if (sectionId === 'ticket-prices') {
-                loadTicketPrices();
-            } else if (sectionId === 'phone-schedule') {
-                loadPhoneSchedules();
-            } else if (sectionId === 'route-search') {
-                loadRoutes();
+            const text = await response.text();
+            const jsonStart = text.indexOf('{');
+            const jsonEnd = text.lastIndexOf('}') + 1;
+            const jsonText = text.substring(jsonStart, jsonEnd);
+            const data = JSON.parse(jsonText);
+            
+            return data.table ? data.table.rows : [];
+        } catch (error) {
+            console.error('Lỗi khi fetch dữ liệu:', error);
+            return [];
+        }
+    }
+
+    // Xử lý dữ liệu giá vé
+    function processGiaveData(rows) {
+        const data = [];
+        rows.forEach((row, index) => {
+            if (row.c && row.c.length >= 3) {
+                data.push({
+                    id: index + 1,
+                    diemDi: row.c[0] ? row.c[0].v : '',
+                    diemDen: row.c[1] ? row.c[1].v : '',
+                    giaVe: row.c[2] ? parseFloat(row.c[2].v) || 0 : 0
+                });
             }
         });
-    });
-    
-    // Tải dữ liệu ban đầu cho trang đang mở
-    if (document.getElementById('ticket-prices').classList.contains('active')) {
-        loadTicketPrices();
-    } else if (document.getElementById('phone-schedule').classList.contains('active')) {
-        loadPhoneSchedules();
-    } else if (document.getElementById('route-search').classList.contains('active')) {
-        loadRoutes();
+        return data;
     }
-    
-    // Xử lý tìm kiếm lộ trình
-    document.getElementById('search-route-btn').addEventListener('click', searchRoutes);
-    document.getElementById('route-search-input').addEventListener('keyup', function(e) {
+
+    // Xử lý dữ liệu giờ xuất bến
+    function processGioxuatbenData(rows) {
+        const data = [];
+        rows.forEach((row, index) => {
+            if (row.c && row.c.length >= 4) {
+                data.push({
+                    id: index + 1,
+                    diemDi: row.c[0] ? row.c[0].v : '',
+                    diemDen: row.c[1] ? row.c[1].v : '',
+                    gioXuatBen: row.c[2] ? row.c[2].v : '',
+                    soDienThoai: row.c[3] ? row.c[3].v : ''
+                });
+            }
+        });
+        return data;
+    }
+
+    // Xử lý dữ liệu vị trí
+    function processVitriData(rows) {
+        const data = [];
+        rows.forEach((row, index) => {
+            if (row.c && row.c.length >= 4) {
+                data.push({
+                    id: index + 1,
+                    diemDi: row.c[0] ? row.c[0].v : '',
+                    diemDen: row.c[1] ? row.c[1].v : '',
+                    viTri: row.c[2] ? row.c[2].v : '',
+                    ghiChu: row.c[3] ? row.c[3].v : ''
+                });
+            }
+        });
+        return data;
+    }
+
+    // Hiển thị bảng giá vé
+    function displayGiaveData() {
+        const tbody = document.getElementById('ticket-table-body');
+        
+        if (giaveData.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 20px;">
+                        <i class="fas fa-info-circle"></i> Đang tải dữ liệu...
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        let html = '';
+        giaveData.forEach(item => {
+            const formattedPrice = new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(item.giaVe);
+            
+            html += `
+                <tr>
+                    <td>${item.diemDi}</td>
+                    <td>${item.diemDen}</td>
+                    <td class="price">${formattedPrice}</td>
+                </tr>
+            `;
+        });
+        
+        tbody.innerHTML = html;
+    }
+
+    // Hiển thị giờ xuất bến & số điện thoại
+    function displayGioxuatbenData() {
+        const container = document.getElementById('phone-schedule-content');
+        
+        if (gioxuatbenData.length === 0) {
+            container.innerHTML = `
+                <div class="loading-message">
+                    <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...
+                </div>
+            `;
+            return;
+        }
+        
+        // Nhóm theo tuyến đường
+        const groupedData = {};
+        gioxuatbenData.forEach(item => {
+            const key = `${item.diemDi} - ${item.diemDen}`;
+            if (!groupedData[key]) {
+                groupedData[key] = {
+                    diemDi: item.diemDi,
+                    diemDen: item.diemDen,
+                    schedules: []
+                };
+            }
+            groupedData[key].schedules.push({
+                gioXuatBen: item.gioXuatBen,
+                soDienThoai: item.soDienThoai
+            });
+        });
+        
+        let html = '';
+        Object.values(groupedData).forEach(group => {
+            html += `
+                <div class="schedule-card">
+                    <div class="route-header">
+                        <h3>${group.diemDi} → ${group.diemDen}</h3>
+                    </div>
+                    <div class="schedule-list">
+            `;
+            
+            group.schedules.forEach(schedule => {
+                html += `
+                    <div class="schedule-item">
+                        <div class="time">
+                            <i class="far fa-clock"></i>
+                            <span>${schedule.gioXuatBen}</span>
+                        </div>
+                        <div class="phone">
+                            <i class="fas fa-phone"></i>
+                            <a href="tel:${schedule.soDienThoai.replace(/\s+/g, '')}">${schedule.soDienThoai}</a>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+
+    // Hàm tìm kiếm tuyến đường
+    function searchRoute() {
+        const searchInput = document.getElementById('route-search-input');
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        const resultsContainer = document.getElementById('route-results-container');
+        const resultsCount = document.getElementById('search-results-count');
+        
+        if (!searchTerm) {
+            resultsContainer.innerHTML = `
+                <div class="no-search">
+                    <i class="fas fa-search"></i>
+                    <p>Vui lòng nhập điểm đi hoặc điểm đến để tìm kiếm</p>
+                </div>
+            `;
+            resultsCount.style.display = 'none';
+            return;
+        }
+        
+        // Tìm kiếm trong tất cả dữ liệu
+        const giaveResults = giaveData.filter(item => 
+            item.diemDi.toLowerCase().includes(searchTerm) || 
+            item.diemDen.toLowerCase().includes(searchTerm)
+        );
+        
+        const gioxuatbenResults = gioxuatbenData.filter(item => 
+            item.diemDi.toLowerCase().includes(searchTerm) || 
+            item.diemDen.toLowerCase().includes(searchTerm)
+        );
+        
+        const vitriResults = vitriData.filter(item => 
+            item.diemDi.toLowerCase().includes(searchTerm) || 
+            item.diemDen.toLowerCase().includes(searchTerm)
+        );
+        
+        const totalResults = [...giaveResults, ...gioxuatbenResults, ...vitriResults];
+        const uniqueRoutes = new Set();
+        
+        if (totalResults.length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="no-results">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Không tìm thấy kết quả cho "${searchTerm}"</p>
+                    <p>Vui lòng thử với từ khóa khác hoặc liên hệ hotline để được tư vấn</p>
+                </div>
+            `;
+            resultsCount.style.display = 'none';
+            return;
+        }
+        
+        // Hiển thị số kết quả
+        resultsCount.innerHTML = `
+            <i class="fas fa-search"></i> 
+            Tìm thấy <strong>${totalResults.length}</strong> kết quả cho "${searchTerm}"
+        `;
+        resultsCount.style.display = 'block';
+        
+        // Hiển thị kết quả
+        let html = '';
+        
+        // Kết hợp dữ liệu từ các nguồn
+        const combinedResults = {};
+        
+        // Thêm kết quả từ giá vé
+        giaveResults.forEach(item => {
+            const key = `${item.diemDi}-${item.diemDen}`;
+            if (!combinedResults[key]) {
+                combinedResults[key] = {
+                    diemDi: item.diemDi,
+                    diemDen: item.diemDen,
+                    giaVe: item.giaVe,
+                    schedules: [],
+                    locations: []
+                };
+            }
+            combinedResults[key].giaVe = item.giaVe;
+        });
+        
+        // Thêm kết quả từ giờ xuất bến
+        gioxuatbenResults.forEach(item => {
+            const key = `${item.diemDi}-${item.diemDen}`;
+            if (!combinedResults[key]) {
+                combinedResults[key] = {
+                    diemDi: item.diemDi,
+                    diemDen: item.diemDen,
+                    giaVe: 0,
+                    schedules: [],
+                    locations: []
+                };
+            }
+            combinedResults[key].schedules.push({
+                gioXuatBen: item.gioXuatBen,
+                soDienThoai: item.soDienThoai
+            });
+        });
+        
+        // Thêm kết quả từ vị trí
+        vitriResults.forEach(item => {
+            const key = `${item.diemDi}-${item.diemDen}`;
+            if (!combinedResults[key]) {
+                combinedResults[key] = {
+                    diemDi: item.diemDi,
+                    diemDen: item.diemDen,
+                    giaVe: 0,
+                    schedules: [],
+                    locations: []
+                };
+            }
+            combinedResults[key].locations.push({
+                viTri: item.viTri,
+                ghiChu: item.ghiChu
+            });
+        });
+        
+        // Hiển thị kết quả
+        Object.values(combinedResults).forEach(route => {
+            const formattedPrice = route.giaVe ? 
+                new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'}).format(route.giaVe) : 
+                'Liên hệ';
+            
+            html += `
+                <div class="route-result-card">
+                    <div class="route-info">
+                        <h3>${route.diemDi} → ${route.diemDen}</h3>
+                        <div class="route-price">
+                            <i class="fas fa-tag"></i> Giá vé: <strong>${formattedPrice}</strong>
+                        </div>
+                    </div>
+            `;
+            
+            // Hiển thị giờ xuất bến
+            if (route.schedules.length > 0) {
+                html += `
+                    <div class="route-schedules">
+                        <h4><i class="far fa-clock"></i> Giờ xuất bến:</h4>
+                        <div class="schedule-list">
+                `;
+                
+                route.schedules.forEach(schedule => {
+                    html += `
+                        <div class="schedule-item">
+                            <span class="time">${schedule.gioXuatBen}</span>
+                            <a href="tel:${schedule.soDienThoai.replace(/\s+/g, '')}" class="phone-link">
+                                <i class="fas fa-phone"></i> ${schedule.soDienThoai}
+                            </a>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Hiển thị vị trí
+            if (route.locations.length > 0) {
+                html += `
+                    <div class="route-locations">
+                        <h4><i class="fas fa-map-marker-alt"></i> Vị trí đón/trả:</h4>
+                        <ul>
+                `;
+                
+                route.locations.forEach(location => {
+                    html += `
+                        <li>
+                            <i class="fas fa-map-pin"></i> ${location.viTri}
+                            ${location.ghiChu ? `<span class="note">(${location.ghiChu})</span>` : ''}
+                        </li>
+                    `;
+                });
+                
+                html += `
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            html += `
+                    <div class="route-actions">
+                        <button class="btn-call" onclick="window.location.href='tel:0948531333'">
+                            <i class="fas fa-phone"></i> Gọi đặt vé ngay
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        resultsContainer.innerHTML = html;
+    }
+
+    // Tải tất cả dữ liệu
+    async function loadAllData() {
+        try {
+            // Hiển thị trạng thái loading
+            document.getElementById('ticket-table-body').innerHTML = `
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 20px;">
+                        <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu giá vé...
+                    </td>
+                </tr>
+            `;
+            
+            document.getElementById('phone-schedule-content').innerHTML = `
+                <div class="loading-message">
+                    <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu giờ xuất bến...
+                </div>
+            `;
+            
+            // Tải dữ liệu đồng thời
+            const [giaveRows, gioxuatbenRows, vitriRows] = await Promise.all([
+                fetchGoogleSheetData(API_URLS.giave),
+                fetchGoogleSheetData(API_URLS.gioxuatben),
+                fetchGoogleSheetData(API_URLS.vitri)
+            ]);
+            
+            // Xử lý dữ liệu
+            giaveData = processGiaveData(giaveRows);
+            gioxuatbenData = processGioxuatbenData(gioxuatbenRows);
+            vitriData = processVitriData(vitriRows);
+            
+            // Hiển thị dữ liệu
+            displayGiaveData();
+            displayGioxuatbenData();
+            
+            console.log('Dữ liệu đã tải thành công:', {
+                giave: giaveData.length,
+                gioxuatben: gioxuatbenData.length,
+                vitri: vitriData.length
+            });
+            
+        } catch (error) {
+            console.error('Lỗi khi tải dữ liệu:', error);
+            
+            // Hiển thị thông báo lỗi
+            document.getElementById('ticket-table-body').innerHTML = `
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 20px; color: #dc3545;">
+                        <i class="fas fa-exclamation-triangle"></i> Không thể tải dữ liệu. Vui lòng thử lại sau.
+                    </td>
+                </tr>
+            `;
+            
+            document.getElementById('phone-schedule-content').innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Không thể tải dữ liệu. Vui lòng thử lại sau.</p>
+                </div>
+            `;
+        }
+    }
+
+    // Thêm CSS động
+    const style = document.createElement('style');
+    style.textContent = `
+        .loading-message, .error-message {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .fa-spin {
+            animation: fa-spin 1s linear infinite;
+        }
+        
+        @keyframes fa-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .schedule-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .route-header h3 {
+            margin: 0 0 15px 0;
+            color: #2c5aa0;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        
+        .schedule-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #2c5aa0;
+        }
+        
+        .time, .phone {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .phone a {
+            color: #2c5aa0;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .phone a:hover {
+            text-decoration: underline;
+        }
+        
+        .route-result-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        }
+        
+        .route-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .route-info h3 {
+            margin: 0;
+            color: #2c5aa0;
+            font-size: 1.3rem;
+        }
+        
+        .route-price {
+            color: #28a745;
+            font-size: 1.1rem;
+        }
+        
+        .route-schedules, .route-locations {
+            margin-bottom: 20px;
+        }
+        
+        .route-schedules h4, .route-locations h4 {
+            color: #495057;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .phone-link {
+            color: #2c5aa0;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .phone-link:hover {
+            text-decoration: underline;
+        }
+        
+        .route-locations ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .route-locations li {
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .route-locations li:last-child {
+            border-bottom: none;
+        }
+        
+        .note {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+        
+        .route-actions {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .btn-call {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .btn-call:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .no-search, .no-results {
+            text-align: center;
+            padding: 50px 20px;
+            color: #6c757d;
+        }
+        
+        .search-results-count {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #2c5aa0;
+            font-size: 1.1rem;
+        }
+        
+        .price {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .route-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .schedule-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .schedule-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Khởi tạo sự kiện
+    document.getElementById('search-route-btn').addEventListener('click', searchRoute);
+    document.getElementById('route-search-input').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
-            searchRoutes();
+            searchRoute();
         }
     });
+
+    // Tải dữ liệu khi trang được tải
+    loadAllData();
 });
