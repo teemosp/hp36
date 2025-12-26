@@ -3,221 +3,1053 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nhà Xe Hoàng Phương - Quản Lý Thông Tin</title>
+    <title>Công Ty Vận Tải Hoàng Phương</title>
     <link rel="icon" type="image/png" href="bus.png">
     <meta name="google-site-verification" content="Ghnp5VF4VtdhYCBEWtLI46SetDkUl7sxUp7Y8QiF4NA" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 25px 0;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo i {
+            font-size: 2.8rem;
+            color: #ffcc00;
+        }
+        
+        .logo-text h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .logo-text p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .contact-header {
+            text-align: right;
+        }
+        
+        .contact-header p {
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        
+        .phone {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        .toc-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .toc-container h2 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toc-container h2 i {
+            color: #2a5298;
+        }
+        
+        .toc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .toc-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 5px solid #2a5298;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .toc-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .toc-card h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toc-card ul {
+            list-style-type: none;
+            padding-left: 5px;
+        }
+        
+        .toc-card li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .toc-card li:before {
+            content: "•";
+            color: #2a5298;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        
+        .toc-card a {
+            color: #333;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .toc-card a:hover {
+            color: #2a5298;
+            text-decoration: underline;
+        }
+        
+        .content-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .section-header h2 {
+            color: #1e3c72;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .back-to-toc {
+            background-color: #2a5298;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+        
+        .back-to-toc:hover {
+            background-color: #1e3c72;
+        }
+        
+        .info-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .info-card h3 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-item {
+            display: flex;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            min-width: 200px;
+            color: #2a5298;
+        }
+        
+        .info-value {
+            flex: 1;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        table th {
+            background-color: #2a5298;
+            color: white;
+            text-align: left;
+            padding: 12px 15px;
+        }
+        
+        table td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        table tr:hover {
+            background-color: #f0f5ff;
+        }
+        
+        .price-cell {
+            font-weight: 600;
+            color: #e74c3c;
+            text-align: right;
+        }
+        
+        .time-cell {
+            font-weight: 600;
+            color: #2a5298;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 30px;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .contact-header {
+                text-align: center;
+            }
+            
+            .toc-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-item {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .info-label {
+                min-width: auto;
+            }
+            
+            table {
+                font-size: 0.9rem;
+            }
+            
+            table th, table td {
+                padding: 8px 10px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
-        <div class="header-container">
-            <div class="logo">
-                 <i class="fas fa-bus"></i> <!-- DÒNG NÀY HIỆN TẠI LÀ ICON XE BUS -->
-
-                <div>
-                    <h1>NHÀ XE HOÀNG PHƯƠNG</h1>
-                    <p>Chuyên tuyến Thanh Hóa - Hà Nội & các tỉnh miền Bắc</p>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-bus"></i>
+                    <div class="logo-text">
+                        <h1>CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ VẬN TẢI HOÀNG PHƯƠNG</h1>
+                        <p>Uy tín - An toàn - Chất lượng</p>
+                    </div>
                 </div>
-            </div>
-            <div class="contact-info">
-                <div class="hotline">
-                    <i class="fas fa-phone-alt"></i>
-                    <span>Hotline: <span class="hotline-number">0948.531.333</span></span>
+                <div class="contact-header">
+                    <p><i class="fas fa-phone-alt"></i> Hotline đặt vé</p>
+                    <p class="phone">0948 955 999</p>
                 </div>
-                <div class="hotline">
-                    <i class="fas fa-phone-alt"></i>
-                    <span><span class="hotline-number">0986.757.575</span></span>
-                </div>
-                <p>Email: ctyhoangphuongth@gmail.com</p>
             </div>
         </div>
     </header>
     
-    <nav>
-        <div class="nav-container">
-            <ul class="nav-menu">
-                <li><a href="#" class="active" data-section="company-info"><i class="fas fa-info-circle"></i> Thông Tin Nhà Xe</a></li>
-                <li><a href="#" data-section="ticket-prices"><i class="fas fa-ticket-alt"></i> Giá Vé</a></li>
-                <li><a href="#" data-section="phone-schedule"><i class="fas fa-clock"></i> Giờ Xuất Bến & SĐT</a></li>
-                <li><a href="#" data-section="route-search"><i class="fas fa-map-marker-alt"></i> Tra Cứu Vị Trí</a></li>
-            </ul>
+    <div class="container">
+        <!-- Mục lục chính -->
+        <div class="toc-container" id="main-toc">
+            <h2><i class="fas fa-list"></i> Mục Lục Nội Dung</h2>
+            <div class="toc-grid">
+                <div class="toc-card">
+                    <h3><i class="fas fa-building"></i> Thông Tin Công Ty</h3>
+                    <ul>
+                        <li><a href="#company-info" class="nav-link" data-section="company-info">Thông tin doanh nghiệp</a></li>
+                        <li><a href="#company-address" class="nav-link" data-section="company-info">Địa chỉ liên hệ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="toc-card">
+                    <h3><i class="fas fa-money-bill-wave"></i> Bảng Giá Vé</h3>
+                    <ul>
+                        <li><a href="#giave-section" class="nav-link" data-section="giave-section">Bảng giá vé theo tuyến</a></li>
+                        <li><a href="#giave-note" class="nav-link" data-section="giave-section">Lưu ý về giá vé</a></li>
+                    </ul>
+                </div>
+                
+                <div class="toc-card">
+                    <h3><i class="fas fa-clock"></i> Giờ Xuất Bến</h3>
+                    <ul>
+                        <li><a href="#gioxuatben-section" class="nav-link" data-section="gioxuatben-section">Lịch xuất bến các tuyến</a></li>
+                        <li><a href="#gioxuatben-note" class="nav-link" data-section="gioxuatben-section">Thông tin liên hệ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="toc-card">
+                    <h3><i class="fas fa-map-marked-alt"></i> Vị Trí Xe</h3>
+                    <ul>
+                        <li><a href="#vitri-section" class="nav-link" data-section="vitri-section">Thông tin vị trí xe</a></li>
+                        <li><a href="#vitri-note" class="nav-link" data-section="vitri-section">Loại xe và liên hệ</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
-    </nav>
-    
-    <main class="container">
-        <!-- Thông tin nhà xe -->
-        <section id="company-info" class="section active">
-            <div class="section-header">
-                <i class="fas fa-info-circle"></i>
-                <h2>Thông Tin Nhà Xe</h2>
-            </div>
-            
-            <div class="company-info-grid">
-                <div class="info-card">
-                    <h3><i class="fas fa-building"></i> Thông Tin Doanh Nghiệp</h3>
-                    <div class="info-item">
-                        <div class="info-label">Tên công ty:</div>
-                        <div class="info-value">CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ VẬN TẢI HOÀNG PHƯƠNG</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Mã số doanh nghiệp:</div>
-                        <div class="info-value">2800836982</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Đăng ký lần đầu:</div>
-                        <div class="info-value">12/04/2005</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Cập nhật lần cuối:</div>
-                        <div class="info-value">11/02/2025</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Vốn điều lệ:</div>
-                        <div class="info-value">8.000.000.000 VNĐ (Tám tỷ đồng)</div>
-                    </div>
-                </div>
-                
-                <div class="info-card">
-                    <h3><i class="fas fa-map-marker-alt"></i> Địa Chỉ Liên Hệ</h3>
-                    <div class="info-item">
-                        <div class="info-label">Trụ sở chính:</div>
-                        <div class="info-value">HH02-17 Vinhome Star City, Phường Hạc Thành, Tỉnh Thanh Hoá</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Điện thoại:</div>
-                        <div class="info-value">0948955999</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Giám đốc:</div>
-                        <div class="info-value">HỒ THỊ HOÀNG</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Thành viên:</div>
-                        <div class="info-value">LÊ VIẾT PHƯƠNG (29.5%)</div>
-                    </div>
-                </div>
-                
-<!--                 <div class="info-card">
-                    <h3><i class="fas fa-file-pdf"></i> Giấy Chứng Nhận Đăng Ký Doanh Nghiệp</h3>
-                    <p>Dưới đây là bản sao Giấy Chứng Nhận Đăng Ký Doanh Nghiệp của Nhà xe Hoàng Phương:</p>
-                    <div class="note">
-                        <i class="fas fa-info-circle"></i> <strong>Lưu ý:</strong> Đây là bản xem trước. Để có bản chính thức, vui lòng liên hệ trực tiếp với nhà xe.
-                    </div>
-                    <div class="pdf-viewer">
-                        <iframe src="https://docs.google.com/viewer?url=https://example.com/DKKD_DOANH_NGHIEP_2025.pdf&embedded=true" width="100%" height="100%" style="border: none;"></iframe>
-                    </div>
-                </div> -->
-            </div>
-        </section>
         
-        <!-- Giá vé -->
-        <section id="ticket-prices" class="section">
+        <!-- Nội dung Thông tin công ty -->
+        <div class="content-section" id="company-info">
             <div class="section-header">
-                <i class="fas fa-ticket-alt"></i>
-                <h2>Bảng Giá Vé Đầy Đủ</h2>
+                <h2><i class="fas fa-building"></i> Thông Tin Doanh Nghiệp</h2>
+                <button class="back-to-toc"><i class="fas fa-arrow-left"></i> Quay lại mục lục</button>
             </div>
             
-            <div class="note">
-                <i class="fas fa-info-circle"></i> <strong>Lưu ý:</strong> Giá vé có thể thay đổi theo mùa và chính sách của nhà xe. Vui lòng liên hệ hotline để biết giá chính xác nhất. Đơn vị tính: nghìn đồng.
+            <div class="info-card">
+                <h3><i class="fas fa-building"></i> Thông Tin Doanh Nghiệp</h3>
+                <div class="info-item">
+                    <div class="info-label">Tên công ty:</div>
+                    <div class="info-value">CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ VẬN TẢI HOÀNG PHƯƠNG</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Mã số doanh nghiệp:</div>
+                    <div class="info-value">2800836982</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Đăng ký lần đầu:</div>
+                    <div class="info-value">12/04/2005</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Cập nhật lần cuối:</div>
+                    <div class="info-value">11/02/2025</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Vốn điều lệ:</div>
+                    <div class="info-value">8.000.000.000 VNĐ (Tám tỷ đồng)</div>
+                </div>
             </div>
             
-            <div class="ticket-table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Điểm đi</th>
-                            <th>Điểm đến</th>
-                            <th>Giá vé (VNĐ)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ticket-table-body">
-                        <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-                    </tbody>
-                </table>
+            <div class="info-card">
+                <h3><i class="fas fa-map-marker-alt"></i> Địa Chỉ Liên Hệ</h3>
+                <div class="info-item">
+                    <div class="info-label">Trụ sở chính:</div>
+                    <div class="info-value">HH02-17 Vinhome Star City, Phường Hạc Thành, Tỉnh Thanh Hoá</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Điện thoại:</div>
+                    <div class="info-value">0948955999</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Giám đốc:</div>
+                    <div class="info-value">HỒ THỊ HOÀNG</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Thành viên:</div>
+                    <div class="info-value">LÊ VIẾT PHƯƠNG (29.5%)</div>
+                </div>
             </div>
-            
-            <div class="note" style="margin-top: 1.5rem;">
-                <i class="fas fa-bus"></i> <strong>Thông tin thêm:</strong> Nhà xe có nhiều loại xe từ 16 chỗ đến 45 chỗ, phục vụ đa dạng nhu cầu của hành khách. Có hỗ trợ đón trả khách tại nhiều điểm trên tuyến đường.
-            </div>
-        </section>
+        </div>
         
-        <!-- Giờ xuất bến & SĐT -->
-        <section id="phone-schedule" class="section">
+        <!-- Nội dung Bảng giá vé -->
+        <div class="content-section" id="giave-section">
             <div class="section-header">
-                <i class="fas fa-clock"></i>
-                <h2>Giờ Xuất Bến & Số Điện Thoại</h2>
+                <h2><i class="fas fa-money-bill-wave"></i> Bảng Giá Vé</h2>
+                <button class="back-to-toc"><i class="fas fa-arrow-left"></i> Quay lại mục lục</button>
             </div>
             
-            <div class="note">
-                <i class="fas fa-phone-alt"></i> <strong>Lưu ý:</strong> Vui lòng gọi trước ít nhất 30 phút để đặt chỗ và xác nhận giờ xe chính xác. Các chuyến xe có thể thay đổi lịch trình vào ngày lễ, Tết.
+            <div class="info-card">
+                <h3><i class="fas fa-info-circle"></i> Giải thích bảng giá</h3>
+                <p>Bảng giá dưới đây hiển thị giá vé từ các điểm ở Thanh Hóa đến các tỉnh thành Miền Bắc. Giá được tính bằng nghìn đồng (VND).</p>
             </div>
             
-            <div class="phone-schedule-container" id="phone-schedule-content">
-                <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Xuất phát (Thanh Hóa)</th>
+                        <th>Điểm đến (Miền Bắc)</th>
+                        <th>Giá vé (nghìn đồng)</th>
+                    </tr>
+                </thead>
+                <tbody id="giave-table-body">
+                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                </tbody>
+            </table>
+            
+            <div class="info-card" id="giave-note">
+                <h3><i class="fas fa-exclamation-circle"></i> Lưu ý về giá vé</h3>
+                <div class="info-item">
+                    <div class="info-label">Giá vé:</div>
+                    <div class="info-value">Giá vé có thể thay đổi theo mùa, ngày lễ. Vui lòng liên hệ hotline để biết giá chính xác nhất.</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Trẻ em:</div>
+                    <div class="info-value">Trẻ em dưới 5 tuổi được miễn phí vé (ngồi cùng ghế với bố mẹ). Trẻ em từ 5 tuổi trở lên mua vé như người lớn.</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Hành lý:</div>
+                    <div class="info-value">Mỗi khách được mang theo 20kg hành lý miễn phí. Hành lý quá cước tính phí theo quy định.</div>
+                </div>
             </div>
-        </section>
+        </div>
         
-        <!-- Tra cứu vị trí -->
-        <section id="route-search" class="section">
+        <!-- Nội dung Giờ xuất bến -->
+        <div class="content-section" id="gioxuatben-section">
             <div class="section-header">
-                <i class="fas fa-map-marker-alt"></i>
-                <h2>Tra Cứu Vị Trí Đón Xe</h2>
+                <h2><i class="fas fa-clock"></i> Giờ Xuất Bến</h2>
+                <button class="back-to-toc"><i class="fas fa-arrow-left"></i> Quay lại mục lục</button>
             </div>
             
-            <div class="note">
-                <i class="fas fa-search"></i> <strong>Hướng dẫn:</strong> Nhập điểm đi hoặc điểm đến để tìm kiếm lộ trình và thông tin xe phù hợp. Mỗi địa điểm có thể có nhiều chuyến xe với giờ khác nhau.
+            <div class="info-card">
+                <h3><i class="fas fa-info-circle"></i> Giải thích bảng giờ</h3>
+                <p>Bảng dưới đây hiển thị giờ xuất bến từ các bến đi khác nhau. Quý khách vui lòng có mặt tại bến trước 15 phút so với giờ xuất bến.</p>
             </div>
             
-            <div class="route-search-container">
-                <div class="search-box">
-                    <input type="text" id="route-search-input" class="search-input" placeholder="Nhập điểm đi/đến (ví dụ: Thái Nguyên, Yên Nghĩa, Quan Hóa, Cẩm Thủy...)">
-                    <button id="search-route-btn" class="search-btn"><i class="fas fa-search"></i> Tìm Kiếm</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bến đi</th>
+                        <th>Giờ xuất bến</th>
+                        <th>Số điện thoại liên hệ</th>
+                    </tr>
+                </thead>
+                <tbody id="gioxuatben-table-body">
+                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                </tbody>
+            </table>
+            
+            <div class="info-card" id="gioxuatben-note">
+                <h3><i class="fas fa-phone-alt"></i> Thông Tin Liên Hệ Đặt Vé</h3>
+                <div class="info-item">
+                    <div class="info-label">Hotline đặt vé:</div>
+                    <div class="info-value">0948 955 999 (24/7)</div>
                 </div>
-                
-                <div id="search-results-count" class="search-results-count" style="display: none;"></div>
-                
-                <div id="route-results-container">
-                    <!-- Kết quả tìm kiếm sẽ được hiển thị ở đây -->
+                <div class="info-item">
+                    <div class="info-label">Đặt vé online:</div>
+                    <div class="info-value">Đang phát triển</div>
                 </div>
-                
-                <div class="note">
-                    <i class="fas fa-map-signs"></i> <strong>Ký hiệu:</strong> TX (Thọ Xuân), TN (Thái Nguyên), BG (Bắc Giang), YN (Yên Nghĩa), HP (Hải Phòng), HD (Hải Dương), GB (Giáp Bát), QH (Quan Hóa), QS (Quan Sơn), BN (Bắc Ninh).
+                <div class="info-item">
+                    <div class="info-label">Lưu ý:</div>
+                    <div class="info-value">Giờ xuất bến có thể thay đổi tùy theo tình hình thực tế. Vui lòng gọi điện xác nhận trước khi đến bến.</div>
                 </div>
             </div>
-        </section>
-    </main>
+        </div>
+        
+        <!-- Nội dung Vị trí xe -->
+        <div class="content-section" id="vitri-section">
+            <div class="section-header">
+                <h2><i class="fas fa-map-marked-alt"></i> Vị Trí Xe</h2>
+                <button class="back-to-toc"><i class="fas fa-arrow-left"></i> Quay lại mục lục</button>
+            </div>
+            
+            <div class="info-card">
+                <h3><i class="fas fa-info-circle"></i> Giải thích bảng vị trí</h3>
+                <p>Bảng dưới đây hiển thị thông tin chi tiết về các chuyến xe bao gồm bến đi, giờ đi, biển số xe, số điện thoại liên hệ và loại xe.</p>
+            </div>
+            
+            <h3><i class="fas fa-bus"></i> Thông Tin Xe Đi</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bến đi</th>
+                        <th>Giờ đi</th>
+                        <th>Biển kiểm soát</th>
+                        <th>Số điện thoại</th>
+                        <th>Loại xe</th>
+                    </tr>
+                </thead>
+                <tbody id="vitri-di-table-body">
+                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                </tbody>
+            </table>
+            
+            <h3 style="margin-top: 30px;"><i class="fas fa-bus"></i> Thông Tin Xe Về</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bến về</th>
+                        <th>Giờ về</th>
+                        <th>Biển kiểm soát</th>
+                        <th>Số điện thoại</th>
+                        <th>Loại xe</th>
+                    </tr>
+                </thead>
+                <tbody id="vitri-ve-table-body">
+                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                </tbody>
+            </table>
+            
+            <div class="info-card" id="vitri-note">
+                <h3><i class="fas fa-car-side"></i> Thông Tin Loại Xe</h3>
+                <div class="info-item">
+                    <div class="info-label">Xe nằm:</div>
+                    <div class="info-value">Xe giường nằm chất lượng cao, có đầy đủ tiện nghi: điều hòa, chăn gối, nước uống, wifi.</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Xe ghế:</div>
+                    <div class="info-value">Xe ghế ngồi chất lượng cao, khoang cách thoải mái, điều hòa, nước uống miễn phí.</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Liên hệ tài xế:</div>
+                    <div class="info-value">Quý khách có thể liên hệ trực tiếp với tài xế qua số điện thoại trong bảng để xác nhận vị trí đón/trả.</div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <footer>
-        <div class="footer-container">
-            <div class="footer-section">
-                <h3><i class="fas fa-bus"></i> NHÀ XE HOÀNG PHƯƠNG</h3>
-                <p>Chuyên cung cấp dịch vụ vận tải hành khách chất lượng cao trên tuyến Thanh Hóa - Hà Nội và các tỉnh miền Bắc.</p>
-                <p>Đã hoạt động hơn 15 năm với đội ngũ lái xe chuyên nghiệp, phương tiện hiện đại.</p>
-            </div>
-            
-            <div class="footer-section">
-                <h3><i class="fas fa-map-marker-alt"></i> LIÊN HỆ</h3>
-                <p><i class="fas fa-location-dot"></i> HH02-17 Vinhome Star City, P. Hạc Thành, Thanh Hoá</p>
-                <p><i class="fas fa-phone"></i> Hotline: 0948.531.333 - 0986.757.575</p>
-                <p><i class="fas fa-phone-office"></i> Điện thoại: 0948955999</p>
-                <p><i class="fas fa-envelope"></i> Email: ctyhoangphuongth@gmail.com</p>
-            </div>
-            
-            <div class="footer-section">
-                <h3><i class="fas fa-clock"></i> THỜI GIAN LÀM VIỆC</h3>
-                <p><i class="fas fa-calendar-day"></i> Mở cửa: 5h00 - 22h00 hàng ngày</p>
-                <p><i class="fas fa-headset"></i> Tư vấn & đặt vé: 24/7 qua hotline</p>
-                <p><i class="fas fa-ticket"></i> Đặt vé trước tối thiểu 2 giờ trước giờ khởi hành</p>
-            </div>
-        </div>
-        
-        <div class="copyright">
-            <p>&copy; 2025 Nhà Xe Hoàng Phương. Mọi quyền được bảo lưu.</p>
-            <p>Thiết kế và phát triển bởi Đội ngũ Quản lý Nhà Xe Hoàng Phương</p>
+        <div class="container">
+            <p>&copy; 2025 CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ VẬN TẢI HOÀNG PHƯƠNG. Bảo lưu mọi quyền.</p>
+            <p>Giấy chứng nhận ĐKKD số: 2800836982 cấp ngày 12/04/2005 tại Sở Kế hoạch và Đầu tư tỉnh Thanh Hóa</p>
         </div>
     </footer>
-    <script src="script.js"></script>
 
+    <script>
+        // Dữ liệu từ file giave.csv
+        const giaveData = [
+            ["Mường Lát, Na mèo", "Yên Thủy", "180"],
+            ["Mường Lát, Na mèo", "Sỏi, chợ bến, Chi Nê", "230"],
+            ["Mường Lát, Na mèo", "Hà Nam, Xuân Mai", "250"],
+            ["Mường Lát, Na mèo", "Hưng Yên,Hải Dương, Hà Nội", "280"],
+            ["Mường Lát, Na mèo", "Bắc Ninh", "330"],
+            ["Mường Lát, Na mèo", "Hải Phòng", "350"],
+            ["Mường Lát, Na mèo", "Bắc Giang, Thái Nguyên", "380"],
+            ["Hiền kiệt, Hiền chung", "Chợ Mía, Yên Thủy", "140"],
+            ["Hiền kiệt, Hiền chung", "Trạm,Sỏi, chợ bến, Chi Nê", "180"],
+            ["Hiền kiệt, Hiền chung", "Hà Nam, Xuân Mai", "210"],
+            ["Hiền kiệt, Hiền chung", "Hưng Yên,Hải Dương, Hà Nội", "230"],
+            ["Hiền kiệt, Hiền chung", "Bắc Ninh", "250"],
+            ["Hiền kiệt, Hiền chung", "Hải Phòng,B.Giang,TháiNguyên", "300"],
+            ["Quan Sơn", "Chợ Mía, Yên Thủy", "140"],
+            ["Quan Sơn", "Trạm,Sỏi, chợ bến, Chi Nê", "180"],
+            ["Quan Sơn", "Hà Nam, Xuân Mai", "210"],
+            ["Quan Sơn", "Hưng Yên,Hải Dương, Hà Nội", "230"],
+            ["Quan Sơn", "Hải PhònG, Bắc Ninh", "280"],
+            ["Quan Sơn", "Bắc Giang, Thái Nguyên", "330"],
+            ["Quan Hóa, Bá Thước, Lang Chánh, Thường Xuân, Thọ Xuân, Ngọc Lặc, Yên Định", "Yên Thủy", "100"],
+            ["Quan Hóa, Bá Thước, Lang Chánh, Thường Xuân, Thọ Xuân, Ngọc Lặc, Yên Định", "Sỏi, chợ bến, Chi Nê", "130"],
+            ["Quan Hóa, Bá Thước, Lang Chánh, Thường Xuân, Thọ Xuân, Ngọc Lặc, Yên Định", "Hà Nam, Xuân Mai", "160"],
+            ["Quan Hóa, Bá Thước, Lang Chánh, Thường Xuân, Thọ Xuân, Ngọc Lặc, Yên Định", "Hưng Yên,Hải Dương, Hà Nội", "180"],
+            ["Quan Hóa, Bá Thước, Lang Chánh, Thường Xuân, Thọ Xuân, Ngọc Lặc, Yên Định", "Hải Phòng, Bắc Ninh", "230"],
+            ["Quan Hóa, Bá Thước, Lang Chánh, Thường Xuân, Thọ Xuân, Ngọc Lặc, Yên Định", "Bắc Giang, Thái Nguyên", "280"],
+            ["Cẩm Thủy, Thạch Quảng", "Yên Thủy", "80"],
+            ["Cẩm Thủy, Thạch Quảng", "Trạm, Sỏi, chợ bến, Chi Nê", "100"],
+            ["Cẩm Thủy, Thạch Quảng", "Hà Nam, Xuân Mai", "140"],
+            ["Cẩm Thủy, Thạch Quảng", "Hưng Yên,Hải Dương, Hà Nội", "160"],
+            ["Cẩm Thủy, Thạch Quảng", "Bắc Ninh", "210"],
+            ["Cẩm Thủy, Thạch Quảng", "Hải Phòng", "230"],
+            ["Cẩm Thủy, Thạch Quảng", "Bắc Giang, Thái Nguyên", "260"],
+            ["Chợ Mía, Yên Thủy", "Sỏi, chợ bến, Chi Nê", "50"],
+            ["Chợ Mía, Yên Thủy", "Hà Nam, Xuân Mai", "80"],
+            ["Chợ Mía, Yên Thủy", "Hưng Yên, Hà Nội", "100"],
+            ["Chợ Mía, Yên Thủy", "Hải Dương", "150"],
+            ["Chợ Mía, Yên Thủy", "Bắc Ninh", "150"],
+            ["Chợ Mía, Yên Thủy", "Hải Phòng", "200"],
+            ["Chợ Mía, Yên Thủy", "Bắc Giang, Thái Nguyên", "230"],
+            ["Trạm, Sỏi, Chi nê, Chợ Bến", "Hà Nam, Xuân Mai", "60"],
+            ["Trạm, Sỏi, Chi nê, Chợ Bến", "Hà Nội", "80"],
+            ["Trạm, Sỏi, Chi nê, Chợ Bến", "Hưng Yên,Hải Dương", "100"],
+            ["Trạm, Sỏi, Chi nê, Chợ Bến", "Bắc Ninh", "120"],
+            ["Trạm, Sỏi, Chi nê, Chợ Bến", "Hải Phòng, Bắc Giang", "150"],
+            ["Trạm, Sỏi, Chi nê, Chợ Bến", "Thái Nguyên", "200"]
+        ];
+
+        // Dữ liệu từ file gioxuatben.csv
+        const gioxuatbenData = [
+            ["Thái Nguyên", "06:30", "0963529789"],
+            ["Thái Nguyên", "13:30", "0961529789"],
+            ["Thái Nguyên", "15:00", "0965529789"],
+            ["Thái Nguyên", "17:00", "0961533789"],
+            ["Bắc Giang", "06:00", "0969029789"],
+            ["Bắc Giang", "07:20", "0961722789"],
+            ["Bắc Giang", "16:40", "0978819121"],
+            ["Bắc Giang", "18:20", "0981941789"],
+            ["Quễ Võ", "06:00", "0961941789"],
+            ["Quễ Võ", "06:20", "0961129789"],
+            ["Quễ Võ", "11:00", "0975148456"],
+            ["Quễ Võ", "13:00", "0966278789"],
+            ["Quễ Võ", "14:00", "0868402789"],
+            ["Giáp Bát", "08:00", "0913051675"],
+            ["Giáp Bát", "14:00", "0973737778"],
+            ["Yên Nghĩa", "06:20", "0973 456 336"],
+            ["Yên Nghĩa", "09:20", "0965 902 789"],
+            ["Yên Nghĩa", "12:10", "0393 999 599"],
+            ["Yên Nghĩa", "14:00", "0986 539 385"],
+            ["Yên Nghĩa", "15:45", "0972 820 789"],
+            ["Yên Nghĩa", "19:00", "0961 005 789"],
+            ["Hải Phòng", "05:45", "0868 430 789"],
+            ["Hải Phòng", "05:46", "0868 403 789"],
+            ["Hải Phòng", "08:00", "0868 401 789"],
+            ["Hải Phòng", "08:01", "0868 410 789"],
+            ["Hải Dương", "13:00", "0868420789"]
+        ];
+
+        // Dữ liệu từ file vitri.csv (phần đầu - xe đi)
+        const vitriDiData = [
+            ["Triệu Sơn", "05:45", "36B02377", "0961129789", "nằm"],
+            ["Triệu Sơn", "10:00", "36H07803", "0961009789", "ghế"],
+            ["Sao vàng", "06:00", "36B02377", "0961129789", "nằm"],
+            ["Sao vàng", "09:10", "36B02569", "0978819121", "Nằm"],
+            ["Sao vàng", "10:20", "36H07803", "0961009789", "ghế"],
+            ["Sao vàng", "13:00", "36B03176", "0973456336", "Nằm"],
+            ["Sao vàng", "16:45", "36b02099", "0965902789", "ghế"],
+            ["Thượng Ninh", "08:30", "36B02569", "0978819121", "Nằm"],
+            ["Thượng Ninh", "16:00", "36b02099", "0965902789", "ghế"],
+            ["Khe Hạ", "08:40", "36B02569", "0978819121", "Nằm"],
+            ["Khe Hạ", "12:00", "36B03176", "0973456336", "Nằm"],
+            ["Khe Hạ", "16:20", "36b02099", "0965902789", "ghế"],
+            ["Thường Xuân", "07:00", "36b02322", "0868420789", "Nằm"],
+            ["Thường Xuân", "11:00", "36b02868", "0981941789", "Nằm"],
+            ["Thường Xuân", "13:00", "36b02993", "0963529789", "Nằm"],
+            ["Mục Sơn", "05:10", "36b02169", "0393999599", "nằm"],
+            ["Mục Sơn", "06:20", "36b03077", "0961529789", "nằm"],
+            ["Mục Sơn", "07:25", "36b02322", "0868420789", "nằm"],
+            ["Mục Sơn", "09:30", "36b02569", "0978819121", "nằm"],
+            ["Mục Sơn", "11:20", "36b02868", "0981941789", "nằm"],
+            ["Mục Sơn", "13:45", "36b03176", "0973456336", "nằm"],
+            ["Mục Sơn", "14:50", "36b02993", "0963529789", "nằm"],
+            ["Mục Sơn", "15:30", "36b02858", "0961722789", "nằm"],
+            ["Mục Sơn", "17:00", "36b02099", "0965902789", "ghế"],
+            ["Sông âm", "07:50", "36b02969", "0868402789", "nằm"],
+            ["Sông âm", "13:40", "36b02856", "0961129789", "nằm"],
+            ["Ba si", "05:25", "36b02169", "0393999599", "nằm"],
+            ["Ba si", "06:35", "36b03077", "0961529789", "nằm"],
+            ["Ba si", "07:40", "36b02322", "0868420789", "nằm"],
+            ["Ba si", "08:20", "36b02969", "0868402789", "nằm"],
+            ["Ba si", "09:45", "36b02569", "0978819121", "nằm"],
+            ["Ba si", "10:45", "36H07803", "0961009789", "ghế"],
+            ["Ba si", "10:55", "36b02868", "0981941789", "nằm"],
+            ["Ba si", "14:00", "36b03176", "0973456336", "nằm"],
+            ["Ba si", "14:10", "36b02856", "0961129789", "nằm"],
+            ["Ba si", "15:05", "36b02993", "0963529789", "nằm"],
+            ["Ba si", "15:45", "36b02858", "0961722789", "nằm"],
+            ["Ba si", "17:10", "36b02099", "0965902789", "ghế"],
+            ["Ngọc Lặc", "06:25", "36b02169", "0393999599", "nằm"],
+            ["Ngọc Lặc", "07:00", "36b03077", "0961529789", "nằm"],
+            ["Ngọc Lặc", "08:05", "36b02322", "0868420789", "nằm"],
+            ["Ngọc Lặc", "08:45", "36b02969", "0868402789", "nằm"],
+            ["Ngọc Lặc", "10:10", "36b02569", "0978819121", "nằm"],
+            ["Ngọc Lặc", "11:50", "36b02868", "0981941789", "nằm"],
+            ["Ngọc Lặc", "14:25", "36b03176", "0973456336", "nằm"],
+            ["Ngọc Lặc", "15:30", "36b02993", "0963529789", "nằm"],
+            ["Ngọc Lặc", "16:00", "36b02858", "0961722789", "nằm"],
+            ["Ngọc Lặc", "17:10", "36b02099", "0965902789", "ghế"],
+            ["Na mèo", "08:40", "36b02662", "0973045567", "nằm"],
+            ["Quan sơn 66", "07:00", "36B02624", "0986.538.385", "nằm"],
+            ["Quan sơn 66", "09:20", "36b02662", "0973045567", "nằm"],
+            ["Quan Sơn 35", "07:40", "36b02624", "986.538.385", "nằm"],
+            ["Quan Sơn 35", "10:00", "36B02662", "973.045.567", "nằm"],
+            ["Quan Sơn 35", "14:00", "36b02599", "969.029.789", "nằm"],
+            ["Mường Chanh", "04:30", "36b00359", "0868430789", "ghế"],
+            ["Mường Chanh", "04:30", "36b03692", "0868403789", "ghế"],
+            ["Tén Tằn", "05:20", "36b00359", "0868430789", "ghế"],
+            ["Tén Tằn", "05:20", "36b03692", "0868403789", "ghế"],
+            ["Tén Tằn", "07:00", "36B02199", "0972820789", "ghế"],
+            ["Hiền kiệt", "07:20", "36b00359", "0868430789", "ghế"],
+            ["Hiền kiệt", "07:20", "36b03692", "0868403789", "ghế"],
+            ["Hiền kiệt", "07:40", "36B02688", "0961533789", "nằm"],
+            ["Hiền kiệt", "09:20", "36B02199", "0972820789", "ghế"],
+            ["Quan Hóa", "06:20", "36F00850", "0973737778", "ghế"],
+            ["Quan Hóa", "08:30", "36b00359", "0868430789", "ghế"],
+            ["Quan Hóa", "08:30", "36b03692", "0868403789", "ghế"],
+            ["Quan Hóa", "09:00", "36b02688", "0961533789", "nằm"],
+            ["Quan Hóa", "10:20", "36B02199", "0972820789", "ghế"],
+            ["Quan Hóa", "14:40", "36F00101", "0913051675", "nằm"],
+            ["Đồng Tâm km0", "06:40", "36F00850", "0973737778", "ghế"],
+            ["Đồng Tâm km0", "08:20", "36B02624", "0986.538.385", "nằm"],
+            ["Đồng Tâm km0", "09:00", "36b00359", "0868430789", "ghế"],
+            ["Đồng Tâm km0", "09:00", "36b03692", "0868403789", "ghế"],
+            ["Đồng Tâm km0", "09:40", "36b02688", "0961533789", "nằm"],
+            ["Đồng Tâm km0", "10:40", "36B02199", "0972820789", "ghế"],
+            ["Đồng Tâm km0", "15:10", "36b02599", "0969029789", "nằm"],
+            ["Đồng Tâm km0", "15:20", "36F00101", "0913051675", "nằm"],
+            ["Bá Thước", "06:10", "36B03192", "0975148456", "ghế"],
+            ["Bá Thước", "08:40", "36B02624", "0986.538.385", "nằm"],
+            ["Bá Thước", "10:00", "36b02688", "0961533789", "nằm"],
+            ["Bá Thước", "11:14", "36B02199", "0972820789", "ghế"],
+            ["Bá Thước", "15:40", "36F00101", "0913051675", "nằm"],
+            ["Lang Chánh", "07:45", "36F00850", "0973737778", "ghế"],
+            ["Lang Chánh", "09:15", "36b00359", "0868430789", "ghế"],
+            ["Lang Chánh", "09:15", "36b03692", "0868403789", "ghế"],
+            ["Lang Chánh", "11:30", "36b02662", "0973045567", "nằm"],
+            ["Lang Chánh", "15:45", "36b02599", "0969029789", "nằm"],
+            ["Cẩm Thủy", "07:00", "36b02169", "0393999599", "nằm"],
+            ["Cẩm Thủy", "07:10", "", "0975148456", "ghế"],
+            ["Cẩm Thủy", "08:10", "36B02377", "0961529789", "Nằm"],
+            ["Cẩm Thủy", "08:35", "36b02568", "0966278789", "Nằm"],
+            ["Cẩm Thủy", "08:25", "36b02322", "0868420789", "Nằm"],
+            ["Cẩm Thủy", "08:40", "36F00850", "0973737778", "ghế"],
+            ["Cẩm Thủy", "09:50", "36b02624", "0986538385", "Nằm"],
+            ["Cẩm Thủy", "09:35", "36b02969", "0868402789", "Nằm"],
+            ["Cẩm Thủy", "10:00", "36b00359", "0868430789", "ghế"],
+            ["Cẩm Thủy", "10:00", "36b03692", "0868403789", "ghế"],
+            ["Cẩm Thủy", "10:55", "36B02569", "0978819121", "Nằm"],
+            ["Cẩm Thủy", "11:00", "36b02688", "0961533789", "nằm"],
+            ["Cẩm Thủy", "12:00", "36b02662", "0973045567", "nằm"],
+            ["Cẩm Thủy", "12:00", "36B02199", "0972820789", "ghế"],
+            ["Cẩm Thủy", "12:00", "36b02868", "0981941789", "Nằm"],
+            ["Cẩm Thủy", "14:45", "36B03176", "0973456336", "Nằm"],
+            ["Cẩm Thủy", "15:10", "36b02856", "0961129789", "nằm"],
+            ["Cẩm Thủy", "16:30", "36b02599", "0969029789", "nằm"],
+            ["Cẩm Thủy", "18:30", "36b02099", "0965902789", "ghế"]
+        ];
+
+        // Dữ liệu từ file vitri.csv (phần sau - xe về)
+        const vitriVeData = [
+            ["Thái Nguyên", "06:30", "36b02993", "0963529789", "Nằm"],
+            ["Thái Nguyên", "13:30", "36B02377", "0961529789", "Nằm"],
+            ["Thái Nguyên", "15:10", "36H07527", "0965529789", "ghế"],
+            ["Thái Nguyên", "17:00", "36b02688", "0961533789", "nằm"],
+            ["Bắc Giang", "06:00", "36b02599", "0969029789", "nằm"],
+            ["Bắc Giang", "07:20", "36B02858", "0961722789", "nằm"],
+            ["Bắc Giang", "16:50", "36B02569", "0978819121", "Nằm"],
+            ["Bắc Giang", "18:20", "36b02868", "0981941789", "Nằm"],
+            ["Quễ võ", "06:20", "36b02856", "0961129789", "nằm"],
+            ["Quễ võ", "07:00", "36b02599", "0969029789", "nằm"],
+            ["Quễ võ", "08:30", "36b02099", "0965902789", "ghế"],
+            ["Quễ võ", "11:00", "36B03192", "0975148456", "ghế"],
+            ["Quễ võ", "13:00", "36B02568", "0966278789", "nằm"],
+            ["Quễ võ", "14:30", "36b02969", "0868402789", "nằm"],
+            ["Quễ võ", "17:30", "36B02569", "0978819121", "Nằm"],
+            ["Quễ võ", "19:10", "36b02868", "0981941789", "Nằm"],
+            ["Yên Phong", "07:00", "36b02856", "0961129789", "nằm"],
+            ["Yên Phong", "07:30", "36b02599", "0969029789", "nằm"],
+            ["Yên Phong", "07:30", "36b02993", "0963529789", "Nằm"],
+            ["Yên Phong", "10:30", "36B03192", "0975148456", "ghế"],
+            ["Yên Phong", "14:30", "36B02377", "0961529789", "Nằm"],
+            ["Yên Phong", "15:10", "36b02969", "0868402789", "nằm"],
+            ["Yên Phong", "18:20", "36b02688", "0961533789", "nằm"],
+            ["Đồng xép, VSip BN, Từ sơn", "07:50", "36b02993", "0963529789", "Nằm"],
+            ["Đồng xép, VSip BN, Từ sơn", "08:45", "36b02099", "0965902789", "ghế"],
+            ["Đồng xép, VSip BN, Từ sơn", "11:20", "36B03192", "0975148456", "ghế"],
+            ["Đồng xép, VSip BN, Từ sơn", "13:30", "36B02568", "0966278789", "nằm"],
+            ["Đồng xép, VSip BN, Từ sơn", "14:50", "36B02377", "0961529789", "Nằm"],
+            ["Đồng xép, VSip BN, Từ sơn", "18:30", "36B02569", "0978819121", "Nằm"],
+            ["Nội Bài, Mê Linh", "07:30", "36b02856", "0961129789", "nằm"],
+            ["Nội Bài, Mê Linh", "08:00", "36b02599", "0969029789", "nằm"],
+            ["Nội Bài, Mê Linh", "09:20", "36B02858", "0961722789", "nằm"],
+            ["Nội Bài, Mê Linh", "15:40", "36b02969", "0868402789", "nằm"],
+            ["Nội Bài, Mê Linh", "18:50", "36b02688", "0961533789", "nằm"],
+            ["Nội Bài, Mê Linh", "20:40", "36b02868", "0981941789", "Nằm"],
+            ["Mễ Trì, Phú Đô", "08:10", "36b02856", "0961129789", "nằm"],
+            ["Mễ Trì, Phú Đô", "08:50", "36b02599", "0969029789", "nằm"],
+            ["Mễ Trì, Phú Đô", "09:05", "36b02993", "0963529789", "Nằm"],
+            ["Mễ Trì, Phú Đô", "10:00", "36b02099", "0965902789", "ghế"],
+            ["Mễ Trì, Phú Đô", "12:20", "36B03192", "0975148456", "ghế"],
+            ["Mễ Trì, Phú Đô", "14:35", "36B02568", "0966278789", "nằm"],
+            ["Mễ Trì, Phú Đô", "16:00", "36B02377", "0961529789", "Nằm"],
+            ["Mễ Trì, Phú Đô", "16:25", "36b02969", "0868402789", "nằm"],
+            ["Mễ Trì, Phú Đô", "19:30", "36B02569", "0978819121", "Nằm"],
+            ["Mễ Trì, Phú Đô", "19:35", "36b02688", "0961533789", "nằm"],
+            ["Mễ Trì, Phú Đô", "21:00", "36b02868", "0981941789", "Nằm"],
+            ["Xuân Mai", "07:10", "36b03176", "0973456336", "nằm"],
+            ["Xuân Mai", "08:55", "36b02856", "0961129789", "nằm"],
+            ["Xuân Mai", "09:30", "36F00101", "0913051675", "nằm"],
+            ["Xuân Mai", "09:40", "36b02993", "0963529789", "Nằm"],
+            ["Xuân Mai", "10:40", "36b02099", "0965902789", "ghế"],
+            ["Xuân Mai", "12:45", "36b02169", "0393999599", "nằm"],
+            ["Xuân Mai", "13:05", "36B03192", "0975148456", "ghế"],
+            ["Xuân Mai", "14:50", "36B02624", "0986.538.385", "nằm"],
+            ["Xuân Mai", "15:10", "36B02568", "0966278789", "nằm"],
+            ["Xuân Mai", "16:20", "36B02199", "0972820789", "ghế"],
+            ["Xuân Mai", "16:50", "36B02377", "0961529789", "Nằm"],
+            ["Xuân Mai", "17:10", "36b02969", "0868402789", "nằm"],
+            ["Xuân Mai", "20:10", "36b02688", "0961533789", "nằm"],
+            ["Xuân Mai", "21:55", "36b02868", "0981941789", "Nằm"],
+            ["Hải Phòng", "05:45", "36b00359", "0868430789", "ghế"],
+            ["Hải Phòng", "05:45", "36b03692", "0868403789", "ghế"],
+            ["Hải Phòng", "08:00", "36b02662", "0868401789", "Nằm"],
+            ["Hải Phòng", "08:00", "xxx", "0868410789", "Nằm"],
+            ["Hải Dương", "07:25", "36b00359", "0868430789", "ghế"],
+            ["Hải Dương", "07:25", "36b03692", "0868403789", "ghế"],
+            ["Hải Dương", "10:40", "36b02662", "0868401789", "Nằm"],
+            ["Hải Dương", "10:40", "xxx", "0868410789", "Nằm"],
+            ["Hải Dương", "13:00", "36b02322", "0868420789", "nằm"],
+            ["Hưng Yên", "08:10", "36b00359", "0868430789", "ghế"],
+            ["Hưng Yên", "08:10", "36b03692", "0868403789", "ghế"],
+            ["Hưng Yên", "11:20", "36b02662", "0868401789", "Nằm"],
+            ["Hưng Yên", "11:20", "xxx", "0868410789", "Nằm"],
+            ["Hưng Yên", "13:40", "36b02322", "0868420789", "nằm"],
+            ["Chi nê", "10:30", "36b00359", "0868430789", "ghế"],
+            ["Chi nê", "10:30", "36b03692", "0868403789", "ghế"],
+            ["Chi nê", "12:40", "36b02662", "0868401789", "Nằm"],
+            ["Chi nê", "12:40", "xxx", "0868410789", "Nằm"],
+            ["Chi nê", "15:40", "36b02322", "0868420789", "nằm"]
+        ];
+
+        // Hàm hiển thị dữ liệu bảng giá vé
+        function displayGiaveData() {
+            const tableBody = document.getElementById('giave-table-body');
+            tableBody.innerHTML = '';
+            
+            giaveData.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                // Xuất phát
+                const td1 = document.createElement('td');
+                td1.textContent = row[0];
+                tr.appendChild(td1);
+                
+                // Điểm đến
+                const td2 = document.createElement('td');
+                td2.textContent = row[1];
+                tr.appendChild(td2);
+                
+                // Giá vé
+                const td3 = document.createElement('td');
+                td3.textContent = row[2] + ' nghìn đồng';
+                td3.className = 'price-cell';
+                tr.appendChild(td3);
+                
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Hàm hiển thị dữ liệu giờ xuất bến
+        function displayGioxuatbenData() {
+            const tableBody = document.getElementById('gioxuatben-table-body');
+            tableBody.innerHTML = '';
+            
+            gioxuatbenData.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                // Bến đi
+                const td1 = document.createElement('td');
+                td1.textContent = row[0];
+                tr.appendChild(td1);
+                
+                // Giờ xuất bến
+                const td2 = document.createElement('td');
+                td2.textContent = row[1];
+                td2.className = 'time-cell';
+                tr.appendChild(td2);
+                
+                // Số điện thoại
+                const td3 = document.createElement('td');
+                td3.textContent = row[2];
+                tr.appendChild(td3);
+                
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Hàm hiển thị dữ liệu vị trí xe đi
+        function displayVitriDiData() {
+            const tableBody = document.getElementById('vitri-di-table-body');
+            tableBody.innerHTML = '';
+            
+            vitriDiData.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                // Bến đi
+                const td1 = document.createElement('td');
+                td1.textContent = row[0];
+                tr.appendChild(td1);
+                
+                // Giờ đi
+                const td2 = document.createElement('td');
+                td2.textContent = row[1];
+                td2.className = 'time-cell';
+                tr.appendChild(td2);
+                
+                // Biển kiểm soát
+                const td3 = document.createElement('td');
+                td3.textContent = row[2];
+                tr.appendChild(td3);
+                
+                // Số điện thoại
+                const td4 = document.createElement('td');
+                td4.textContent = row[3];
+                tr.appendChild(td4);
+                
+                // Loại xe
+                const td5 = document.createElement('td');
+                const loaiXe = row[4].toLowerCase();
+                td5.textContent = loaiXe === 'nằm' ? 'Xe giường nằm' : 'Xe ghế ngồi';
+                td5.style.color = loaiXe === 'nằm' ? '#2a5298' : '#e74c3c';
+                td5.style.fontWeight = '600';
+                tr.appendChild(td5);
+                
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Hàm hiển thị dữ liệu vị trí xe về
+        function displayVitriVeData() {
+            const tableBody = document.getElementById('vitri-ve-table-body');
+            tableBody.innerHTML = '';
+            
+            vitriVeData.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                // Bến về
+                const td1 = document.createElement('td');
+                td1.textContent = row[0];
+                tr.appendChild(td1);
+                
+                // Giờ về
+                const td2 = document.createElement('td');
+                td2.textContent = row[1];
+                td2.className = 'time-cell';
+                tr.appendChild(td2);
+                
+                // Biển kiểm soát
+                const td3 = document.createElement('td');
+                td3.textContent = row[2];
+                tr.appendChild(td3);
+                
+                // Số điện thoại
+                const td4 = document.createElement('td');
+                td4.textContent = row[3];
+                tr.appendChild(td4);
+                
+                // Loại xe
+                const td5 = document.createElement('td');
+                const loaiXe = row[4].toLowerCase();
+                td5.textContent = loaiXe === 'nằm' ? 'Xe giường nằm' : 'Xe ghế ngồi';
+                td5.style.color = loaiXe === 'nằm' ? '#2a5298' : '#e74c3c';
+                td5.style.fontWeight = '600';
+                tr.appendChild(td5);
+                
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Hàm điều hướng giữa các mục lục
+        function setupNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const backButtons = document.querySelectorAll('.back-to-toc');
+            const contentSections = document.querySelectorAll('.content-section');
+            const mainToc = document.getElementById('main-toc');
+            
+            // Xử lý click vào link trong mục lục
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const sectionId = this.getAttribute('data-section');
+                    
+                    // Ẩn tất cả các section và hiện section được chọn
+                    contentSections.forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    
+                    // Hiển thị section được chọn
+                    document.getElementById(sectionId).classList.add('active');
+                    
+                    // Cuộn lên đầu trang
+                    window.scrollTo({top: 0, behavior: 'smooth'});
+                    
+                    // Ẩn mục lục chính
+                    mainToc.style.display = 'none';
+                });
+            });
+            
+            // Xử lý click vào nút quay lại mục lục
+            backButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Ẩn tất cả các section
+                    contentSections.forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    
+                    // Hiện mục lục chính
+                    mainToc.style.display = 'block';
+                    
+                    // Cuộn lên đầu trang
+                    window.scrollTo({top: 0, behavior: 'smooth'});
+                });
+            });
+        }
+
+        // Khởi tạo trang web
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hiển thị dữ liệu
+            displayGiaveData();
+            displayGioxuatbenData();
+            displayVitriDiData();
+            displayVitriVeData();
+            
+            // Thiết lập điều hướng
+            setupNavigation();
+            
+            // Hiển thị mục lục chính khi trang tải
+            document.getElementById('main-toc').style.display = 'block';
+        });
+    </script>
 </body>
 </html>
