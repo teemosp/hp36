@@ -1,718 +1,729 @@
-// script.js - SỬA LỖI CẤU TRÚC VÀ THỜI GIAN
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM đã sẵn sàng, bắt đầu khởi tạo...');
+// Import dữ liệu từ data.js
+// Dữ liệu sẽ được định nghĩa trong data.js
+
+// Hàm chuẩn hóa chuỗi tiếng Việt (bỏ dấu, chuyển về chữ thường)
+function normalizeString(str) {
+    return str
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/[^a-z0-9\s]/g, '')
+        .trim();
+}
+
+// Tạo danh sách các điểm đi và đến từ dữ liệu
+function createLocationList() {
+    const locations = new Set();
     
-    const API_URLS = {
-        giave: 'https://docs.google.com/spreadsheets/d/17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY/gviz/tq?tqx=out:json&sheet=giave',
-        gioxuatben: 'https://docs.google.com/spreadsheets/d/17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY/gviz/tq?tqx=out:json&sheet=gioxuatben',
-        vitri: 'https://docs.google.com/spreadsheets/d/17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY/gviz/tq?tqx=out:json&sheet=vitri'
-    };
+    // Thêm các điểm từ dữ liệu giá vé
+    giaveData.forEach(row => {
+        const fromLocations = row[0].split(',').map(loc => loc.trim());
+        const toLocations = row[1].split(',').map(loc => loc.trim());
+        
+        fromLocations.forEach(loc => locations.add(loc));
+        toLocations.forEach(loc => locations.add(loc));
+    });
+    
+    // Thêm các điểm từ dữ liệu giờ xuất bến
+    gioxuatbenData.forEach(row => {
+        locations.add(row[0].trim());
+    });
+    
+    // Thêm các điểm từ dữ liệu vị trí xe đi
+    vitriDiData.forEach(row => {
+        locations.add(row[0].trim());
+    });
+    
+    // Thêm các điểm từ dữ liệu vị trí xe về
+    vitriVeData.forEach(row => {
+        locations.add(row[0].trim());
+    });
+    
+    return Array.from(locations).filter(loc => loc.length > 0);
+}
 
-    let giaveData = [];
-    let gioxuatbenData = [];
-    let vitriData = [];
-
-    // Chuyển đổi navigation
-    document.querySelectorAll('.nav-menu a').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
+// Tìm kiếm địa điểm phù hợp
+function searchLocations(query, locationList) {
+    if (!query || query.trim() === '') return [];
+    
+    const normalizedQuery = normalizeString(query);
+    const results = [];
+    
+    locationList.forEach(location => {
+        const normalizedLocation = normalizeString(location);
+        
+        // Kiểm tra trùng khớp trực tiếp
+        if (normalizedLocation.includes(normalizedQuery) || 
+            normalizedQuery.includes(normalizedLocation)) {
+            results.push(location);
+        }
+        // Kiểm tra trùng khớp từng từ
+        else {
+            const queryWords = normalizedQuery.split(/\s+/);
+            const locationWords = normalizedLocation.split(/\s+/);
             
-            document.querySelectorAll('.nav-menu a').forEach(item => {
-                item.classList.remove('active');
+            const matchCount = queryWords.filter(qWord => 
+                locationWords.some(lWord => lWord.includes(qWord) || qWord.includes(lWord))
+            ).length;
+            
+            if (matchCount > 0 && matchCount >= Math.min(2, queryWords.length)) {
+                results.push(location);
+            }
+        }
+    });
+    
+    return results;
+}
+
+// Tìm kiếm lộ trình CHÍNH XÁC
+function searchRoute(fromQuery, toQuery) {
+    const results = {
+        fromMatches: [],
+        toMatches: [],
+        priceResults: [],
+        scheduleResults: [],
+        vehicleResults: [],
+        connectedRoutes: [] // Thêm kết quả tuyến đường kết nối
+    };
+    
+    const locationList = createLocationList();
+    
+    // Tìm địa điểm đi
+    if (fromQuery && fromQuery.trim() !== '') {
+        results.fromMatches = searchLocations(fromQuery, locationList);
+    }
+    
+    // Tìm địa điểm đến
+    if (toQuery && toQuery.trim() !== '') {
+        results.toMatches = searchLocations(toQuery, locationList);
+    }
+    
+    // Tìm kiếm trong bảng giá vé - tìm tuyến đường chính xác
+    if (results.fromMatches.length > 0 && results.toMatches.length > 0) {
+        giaveData.forEach(row => {
+            const fromLocations = row[0].split(',').map(loc => loc.trim());
+            const toLocations = row[1].split(',').map(loc => loc.trim());
+            
+            const fromMatch = fromLocations.some(fromLoc => 
+                results.fromMatches.some(match => 
+                    normalizeString(fromLoc) === normalizeString(match) ||
+                    normalizeString(match).includes(normalizeString(fromLoc)) ||
+                    normalizeString(fromLoc).includes(normalizeString(match))
+                )
+            );
+            
+            const toMatch = toLocations.some(toLoc => 
+                results.toMatches.some(match => 
+                    normalizeString(toLoc) === normalizeString(match) ||
+                    normalizeString(match).includes(normalizeString(toLoc)) ||
+                    normalizeString(toLoc).includes(normalizeString(match))
+                )
+            );
+            
+            if (fromMatch && toMatch) {
+                results.priceResults.push({
+                    from: row[0],
+                    to: row[1],
+                    price: row[2]
+                });
+            }
+        });
+    }
+    
+    // Tìm kiếm lộ trình kết nối (nếu không có tuyến trực tiếp)
+    if (results.priceResults.length === 0 && results.fromMatches.length > 0 && results.toMatches.length > 0) {
+        results.connectedRoutes = findConnectedRoutes(results.fromMatches, results.toMatches);
+    }
+    
+    // Tìm kiếm thông tin xe đi - CHỈ tìm xe đi từ điểm đi CHÍNH XÁC
+    if (results.fromMatches.length > 0) {
+        vitriDiData.forEach(row => {
+            const location = row[0].trim();
+            
+            // Kiểm tra chính xác điểm đi
+            const match = results.fromMatches.some(match => {
+                const normalizedLocation = normalizeString(location);
+                const normalizedMatch = normalizeString(match);
+                return normalizedLocation === normalizedMatch ||
+                       normalizedLocation.includes(normalizedMatch) ||
+                       normalizedMatch.includes(normalizedLocation);
             });
             
-            this.classList.add('active');
+            if (match) {
+                results.vehicleResults.push({
+                    type: 'Đi',
+                    location: row[0],
+                    time: row[1],
+                    license: row[2],
+                    phone: row[3],
+                    vehicleType: row[4]
+                });
+            }
+        });
+    }
+    
+    // Tìm kiếm thông tin xe về - CHỈ tìm xe về đến điểm đến CHÍNH XÁC
+    if (results.toMatches.length > 0) {
+        vitriVeData.forEach(row => {
+            const location = row[0].trim();
             
-            document.querySelectorAll('.section').forEach(section => {
+            // Kiểm tra chính xác điểm đến
+            const match = results.toMatches.some(match => {
+                const normalizedLocation = normalizeString(location);
+                const normalizedMatch = normalizeString(match);
+                return normalizedLocation === normalizedMatch ||
+                       normalizedLocation.includes(normalizedMatch) ||
+                       normalizedMatch.includes(normalizedLocation);
+            });
+            
+            if (match) {
+                results.vehicleResults.push({
+                    type: 'Về',
+                    location: row[0],
+                    time: row[1],
+                    license: row[2],
+                    phone: row[3],
+                    vehicleType: row[4]
+                });
+            }
+        });
+    }
+    
+    return results;
+}
+
+// Tìm tuyến đường kết nối (nếu không có tuyến trực tiếp)
+function findConnectedRoutes(fromMatches, toMatches) {
+    const connectedRoutes = [];
+    
+    // Tìm các điểm trung gian từ dữ liệu giá vé
+    giaveData.forEach(route => {
+        const fromLocations = route[0].split(',').map(loc => loc.trim());
+        const toLocations = route[1].split(',').map(loc => loc.trim());
+        
+        // Kiểm tra nếu điểm đi khớp với fromMatches
+        const fromMatch = fromLocations.some(fromLoc => 
+            fromMatches.some(match => 
+                normalizeString(fromLoc) === normalizeString(match) ||
+                normalizeString(match).includes(normalizeString(fromLoc)) ||
+                normalizeString(fromLoc).includes(normalizeString(match))
+            )
+        );
+        
+        // Nếu khớp điểm đi, tìm điểm đến trung gian
+        if (fromMatch) {
+            // Tìm các tuyến từ điểm đến trung gian này đến điểm đến cuối cùng
+            giaveData.forEach(secondRoute => {
+                const secondFromLocations = secondRoute[0].split(',').map(loc => loc.trim());
+                const secondToLocations = secondRoute[1].split(',').map(loc => loc.trim());
+                
+                // Kiểm tra nếu điểm đi của tuyến thứ 2 khớp với điểm đến của tuyến thứ 1
+                const connectionMatch = toLocations.some(toLoc => 
+                    secondFromLocations.some(secondFromLoc => 
+                        normalizeString(toLoc) === normalizeString(secondFromLoc) ||
+                        normalizeString(secondFromLoc).includes(normalizeString(toLoc)) ||
+                        normalizeString(toLoc).includes(normalizeString(secondFromLoc))
+                    )
+                );
+                
+                // Kiểm tra nếu điểm đến của tuyến thứ 2 khớp với toMatches
+                const finalMatch = secondToLocations.some(secondToLoc => 
+                    toMatches.some(match => 
+                        normalizeString(secondToLoc) === normalizeString(match) ||
+                        normalizeString(match).includes(normalizeString(secondToLoc)) ||
+                        normalizeString(secondToLoc).includes(normalizeString(match))
+                    )
+                );
+                
+                if (connectionMatch && finalMatch) {
+                    connectedRoutes.push({
+                        firstLeg: {
+                            from: route[0],
+                            to: route[1],
+                            price: route[2]
+                        },
+                        secondLeg: {
+                            from: secondRoute[0],
+                            to: secondRoute[1],
+                            price: secondRoute[2]
+                        },
+                        totalPrice: parseInt(route[2]) + parseInt(secondRoute[2])
+                    });
+                }
+            });
+        }
+    });
+    
+    return connectedRoutes;
+}
+
+// Hiển thị kết quả tìm kiếm
+function displaySearchResults(results, fromQuery, toQuery) {
+    const resultsContent = document.getElementById('searchResultsContent');
+    const resultCount = document.getElementById('resultCount');
+    
+    let html = '';
+    
+    if (results.fromMatches.length === 0 && results.toMatches.length === 0) {
+        html = `
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <h3>Không tìm thấy kết quả phù hợp</h3>
+                <p>Không tìm thấy địa điểm nào phù hợp với từ khóa tìm kiếm của bạn.</p>
+                <p>Vui lòng thử lại với từ khóa khác hoặc xem gợi ý bên dưới:</p>
+                <ul class="suggestion-list">
+                    <li>Nhập tên đầy đủ của địa điểm (ví dụ: "Mường Lát")</li>
+                    <li>Thử viết tắt (ví dụ: "ML" cho "Mường Lát")</li>
+                    <li>Nhập không dấu (ví dụ: "Muong Lat")</li>
+                    <li>Chỉ nhập một phần của tên địa điểm</li>
+                </ul>
+            </div>
+        `;
+        resultCount.textContent = "Không tìm thấy kết quả nào";
+    } else {
+        // Hiển thị thông tin tìm kiếm
+        let searchInfo = '';
+        if (fromQuery && toQuery) {
+            searchInfo = `Từ <strong>${fromQuery}</strong> đến <strong>${toQuery}</strong>`;
+        } else if (fromQuery) {
+            searchInfo = `Từ <strong>${fromQuery}</strong>`;
+        } else if (toQuery) {
+            searchInfo = `Đến <strong>${toQuery}</strong>`;
+        }
+        
+        // Địa điểm tìm thấy
+        html += `<div class="info-card">`;
+        html += `<h3><i class="fas fa-map-marker-alt"></i> Địa Điểm Tìm Thấy</h3>`;
+        
+        if (results.fromMatches.length > 0) {
+            html += `<div class="info-item">`;
+            html += `<div class="info-label">Nơi đi:</div>`;
+            html += `<div class="info-value">${results.fromMatches.join(', ')}</div>`;
+            html += `</div>`;
+        }
+        
+        if (results.toMatches.length > 0) {
+            html += `<div class="info-item">`;
+            html += `<div class="info-label">Nơi đến:</div>`;
+            html += `<div class="info-value">${results.toMatches.join(', ')}</div>`;
+            html += `</div>`;
+        }
+        html += `</div>`;
+        
+        // Kết quả giá vé (tuyến trực tiếp)
+        if (results.priceResults.length > 0) {
+            html += `<div class="info-card">`;
+            html += `<h3><i class="fas fa-money-bill-wave"></i> Giá Vé Trực Tiếp (${results.priceResults.length} kết quả)</h3>`;
+            html += `<table>`;
+            html += `<thead><tr><th>Từ</th><th>Đến</th><th>Giá vé (nghìn đồng)</th></tr></thead>`;
+            html += `<tbody>`;
+            results.priceResults.forEach(result => {
+                html += `<tr>`;
+                html += `<td>${result.from}</td>`;
+                html += `<td>${result.to}</td>`;
+                html += `<td class="price-cell">${result.price}</td>`;
+                html += `</tr>`;
+            });
+            html += `</tbody>`;
+            html += `</table>`;
+            html += `</div>`;
+        }
+        
+        // Kết quả tuyến đường kết nối (nếu không có tuyến trực tiếp)
+        if (results.connectedRoutes.length > 0) {
+            html += `<div class="info-card">`;
+            html += `<h3><i class="fas fa-route"></i> Tuyến Đường Kết Nối (${results.connectedRoutes.length} kết quả)</h3>`;
+            html += `<p>Không có tuyến đường trực tiếp từ ${fromQuery} đến ${toQuery}. Dưới đây là các tuyến đường kết nối:</p>`;
+            
+            results.connectedRoutes.forEach((route, index) => {
+                html += `<div class="connected-route">`;
+                html += `<h5>Tuyến kết nối ${index + 1}</h5>`;
+                html += `<div class="info-item">`;
+                html += `<div class="info-label">Chặng 1:</div>`;
+                html += `<div class="info-value">${route.firstLeg.from} → ${route.firstLeg.to} (${route.firstLeg.price} nghìn đồng)</div>`;
+                html += `</div>`;
+                html += `<div class="info-item">`;
+                html += `<div class="info-label">Chặng 2:</div>`;
+                html += `<div class="info-value">${route.secondLeg.from} → ${route.secondLeg.to} (${route.secondLeg.price} nghìn đồng)</div>`;
+                html += `</div>`;
+                html += `<div class="info-item">`;
+                html += `<div class="info-label">Tổng giá:</div>`;
+                html += `<div class="info-value"><strong>${route.totalPrice} nghìn đồng</strong></div>`;
+                html += `</div>`;
+                html += `</div>`;
+            });
+            html += `</div>`;
+        }
+        
+        // Kết quả xe đi và xe về
+        const diResults = results.vehicleResults.filter(r => r.type === 'Đi');
+        const veResults = results.vehicleResults.filter(r => r.type === 'Về');
+        
+        if (diResults.length > 0) {
+            html += `<div class="info-card">`;
+            html += `<h3><i class="fas fa-bus"></i> Xe Đi Từ ${fromQuery} (${diResults.length} kết quả)</h3>`;
+            html += `<table>`;
+            html += `<thead><tr><th>Bến đi</th><th>Giờ đi</th><th>Biển số</th><th>Số điện thoại</th><th>Loại xe</th></tr></thead>`;
+            html += `<tbody>`;
+            diResults.forEach(result => {
+                html += `<tr>`;
+                html += `<td>${result.location}</td>`;
+                html += `<td class="time-cell">${result.time}</td>`;
+                html += `<td>${result.license}</td>`;
+                html += `<td>${result.phone}</td>`;
+                html += `<td style="color: ${result.vehicleType.toLowerCase() === 'nằm' ? '#2a5298' : '#e74c3c'}; font-weight: 600;">${result.vehicleType.toLowerCase() === 'nằm' ? 'Xe giường nằm' : 'Xe ghế ngồi'}</td>`;
+                html += `</tr>`;
+            });
+            html += `</tbody>`;
+            html += `</table>`;
+            html += `</div>`;
+        }
+        
+        if (veResults.length > 0) {
+            html += `<div class="info-card">`;
+            html += `<h3><i class="fas fa-bus"></i> Xe Về Đến ${toQuery} (${veResults.length} kết quả)</h3>`;
+            html += `<table>`;
+            html += `<thead><tr><th>Bến về</th><th>Giờ về</th><th>Biển số</th><th>Số điện thoại</th><th>Loại xe</th></tr></thead>`;
+            html += `<tbody>`;
+            veResults.forEach(result => {
+                html += `<tr>`;
+                html += `<td>${result.location}</td>`;
+                html += `<td class="time-cell">${result.time}</td>`;
+                html += `<td>${result.license}</td>`;
+                html += `<td>${result.phone}</td>`;
+                html += `<td style="color: ${result.vehicleType.toLowerCase() === 'nằm' ? '#2a5298' : '#e74c3c'}; font-weight: 600;">${result.vehicleType.toLowerCase() === 'nằm' ? 'Xe giường nằm' : 'Xe ghế ngồi'}</td>`;
+                html += `</tr>`;
+            });
+            html += `</tbody>`;
+            html += `</table>`;
+            html += `</div>`;
+        }
+        
+        // Tổng kết
+        const totalResults = results.priceResults.length + results.connectedRoutes.length + diResults.length + veResults.length;
+        
+        if (totalResults === 0) {
+            resultCount.textContent = `Không tìm thấy thông tin cho ${searchInfo}`;
+            html += `<div class="no-results">`;
+            html += `<i class="fas fa-info-circle"></i>`;
+            html += `<h3>Không có thông tin lộ trình cụ thể</h3>`;
+            html += `<p>Không tìm thấy thông tin lộ trình cụ thể cho tuyến đường này.</p>`;
+            html += `<p>Vui lòng liên hệ hotline <strong>0948 955 999</strong> để được tư vấn chi tiết.</p>`;
+            html += `</div>`;
+        } else {
+            resultCount.textContent = `Tìm thấy ${totalResults} kết quả cho ${searchInfo}`;
+            
+            // Nếu có cả xe đi và xe về nhưng không có giá vé trực tiếp
+            if (results.priceResults.length === 0 && diResults.length > 0 && veResults.length > 0) {
+                html += `<div class="route-connection">`;
+                html += `<h4><i class="fas fa-lightbulb"></i> Gợi Ý</h4>`;
+                html += `<p>Chúng tôi tìm thấy xe đi từ <strong>${fromQuery}</strong> và xe về đến <strong>${toQuery}</strong>, nhưng không có thông tin giá vé trực tiếp cho tuyến đường này.</p>`;
+                html += `<p>Bạn có thể cần phải đổi xe tại một điểm trung gian hoặc liên hệ trực tiếp với nhà xe để biết thông tin chi tiết.</p>`;
+                html += `</div>`;
+            }
+        }
+    }
+    
+    resultsContent.innerHTML = html;
+    
+    // Hiển thị phần kết quả
+    document.getElementById('searchResults').classList.add('active');
+    document.getElementById('main-toc').style.display = 'none';
+    
+    // Ẩn các section khác
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    // Cuộn lên đầu trang
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// Tự động gợi ý
+function setupAutocomplete(inputElement, autocompleteElement) {
+    const locationList = createLocationList();
+    
+    inputElement.addEventListener('input', function() {
+        const query = this.value;
+        if (query.length < 1) {
+            autocompleteElement.style.display = 'none';
+            return;
+        }
+        
+        const matches = searchLocations(query, locationList).slice(0, 10);
+        
+        if (matches.length > 0) {
+            autocompleteElement.innerHTML = '';
+            matches.forEach(match => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.textContent = match;
+                item.addEventListener('click', function() {
+                    inputElement.value = match;
+                    autocompleteElement.style.display = 'none';
+                });
+                autocompleteElement.appendChild(item);
+            });
+            autocompleteElement.style.display = 'block';
+        } else {
+            autocompleteElement.style.display = 'none';
+        }
+    });
+    
+    // Ẩn autocomplete khi click ra ngoài
+    document.addEventListener('click', function(e) {
+        if (!autocompleteElement.contains(e.target) && e.target !== inputElement) {
+            autocompleteElement.style.display = 'none';
+        }
+    });
+}
+
+// Hàm hiển thị dữ liệu bảng giá vé
+function displayGiaveData() {
+    const tableBody = document.getElementById('giave-table-body');
+    tableBody.innerHTML = '';
+    
+    giaveData.forEach(row => {
+        const tr = document.createElement('tr');
+        
+        // Xuất phát
+        const td1 = document.createElement('td');
+        td1.textContent = row[0];
+        tr.appendChild(td1);
+        
+        // Điểm đến
+        const td2 = document.createElement('td');
+        td2.textContent = row[1];
+        tr.appendChild(td2);
+        
+        // Giá vé
+        const td3 = document.createElement('td');
+        td3.textContent = row[2] + ' nghìn đồng';
+        td3.className = 'price-cell';
+        tr.appendChild(td3);
+        
+        tableBody.appendChild(tr);
+    });
+}
+
+// Hàm hiển thị dữ liệu giờ xuất bến
+function displayGioxuatbenData() {
+    const tableBody = document.getElementById('gioxuatben-table-body');
+    tableBody.innerHTML = '';
+    
+    gioxuatbenData.forEach(row => {
+        const tr = document.createElement('tr');
+        
+        // Bến đi
+        const td1 = document.createElement('td');
+        td1.textContent = row[0];
+        tr.appendChild(td1);
+        
+        // Giờ xuất bến
+        const td2 = document.createElement('td');
+        td2.textContent = row[1];
+        td2.className = 'time-cell';
+        tr.appendChild(td2);
+        
+        // Số điện thoại
+        const td3 = document.createElement('td');
+        td3.textContent = row[2];
+        tr.appendChild(td3);
+        
+        tableBody.appendChild(tr);
+    });
+}
+
+// Hàm hiển thị dữ liệu vị trí xe đi
+function displayVitriDiData() {
+    const tableBody = document.getElementById('vitri-di-table-body');
+    tableBody.innerHTML = '';
+    
+    vitriDiData.forEach(row => {
+        const tr = document.createElement('tr');
+        
+        // Bến đi
+        const td1 = document.createElement('td');
+        td1.textContent = row[0];
+        tr.appendChild(td1);
+        
+        // Giờ đi
+        const td2 = document.createElement('td');
+        td2.textContent = row[1];
+        td2.className = 'time-cell';
+        tr.appendChild(td2);
+        
+        // Biển kiểm soát
+        const td3 = document.createElement('td');
+        td3.textContent = row[2];
+        tr.appendChild(td3);
+        
+        // Số điện thoại
+        const td4 = document.createElement('td');
+        td4.textContent = row[3];
+        tr.appendChild(td4);
+        
+        // Loại xe
+        const td5 = document.createElement('td');
+        const loaiXe = row[4].toLowerCase();
+        td5.textContent = loaiXe === 'nằm' ? 'Xe giường nằm' : 'Xe ghế ngồi';
+        td5.style.color = loaiXe === 'nằm' ? '#2a5298' : '#e74c3c';
+        td5.style.fontWeight = '600';
+        tr.appendChild(td5);
+        
+        tableBody.appendChild(tr);
+    });
+}
+
+// Hàm hiển thị dữ liệu vị trí xe về
+function displayVitriVeData() {
+    const tableBody = document.getElementById('vitri-ve-table-body');
+    tableBody.innerHTML = '';
+    
+    vitriVeData.forEach(row => {
+        const tr = document.createElement('tr');
+        
+        // Bến về
+        const td1 = document.createElement('td');
+        td1.textContent = row[0];
+        tr.appendChild(td1);
+        
+        // Giờ về
+        const td2 = document.createElement('td');
+        td2.textContent = row[1];
+        td2.className = 'time-cell';
+        tr.appendChild(td2);
+        
+        // Biển kiểm soát
+        const td3 = document.createElement('td');
+        td3.textContent = row[2];
+        tr.appendChild(td3);
+        
+        // Số điện thoại
+        const td4 = document.createElement('td');
+        td4.textContent = row[3];
+        tr.appendChild(td4);
+        
+        // Loại xe
+        const td5 = document.createElement('td');
+        const loaiXe = row[4].toLowerCase();
+        td5.textContent = loaiXe === 'nằm' ? 'Xe giường nằm' : 'Xe ghế ngồi';
+        td5.style.color = loaiXe === 'nằm' ? '#2a5298' : '#e74c3c';
+        td5.style.fontWeight = '600';
+        tr.appendChild(td5);
+        
+        tableBody.appendChild(tr);
+    });
+}
+
+// Hàm điều hướng giữa các mục lục
+function setupNavigation() {
+    const tocCards = document.querySelectorAll('.toc-card');
+    const backButtons = document.querySelectorAll('.back-to-toc');
+    const contentSections = document.querySelectorAll('.content-section');
+    const mainToc = document.getElementById('main-toc');
+    const backFromResults = document.getElementById('backFromResults');
+    const searchResults = document.getElementById('searchResults');
+    
+    // Xử lý click vào thẻ mục lục
+    tocCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const sectionId = this.getAttribute('data-section');
+            
+            // Ẩn tất cả các section và hiện section được chọn
+            contentSections.forEach(section => {
                 section.classList.remove('active');
             });
             
-            const sectionId = this.getAttribute('data-section');
+            // Hiển thị section được chọn
             document.getElementById(sectionId).classList.add('active');
+            
+            // Ẩn kết quả tìm kiếm
+            searchResults.classList.remove('active');
+            
+            // Cuộn lên đầu trang
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            
+            // Ẩn mục lục chính
+            mainToc.style.display = 'none';
         });
     });
-
-    // Hàm fetch dữ liệu
-    async function fetchGoogleSheetData(url, sheetName) {
-        try {
-            const response = await fetch(url + '&t=' + Date.now());
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            
-            const text = await response.text();
-            const jsonStart = text.indexOf('{');
-            const jsonEnd = text.lastIndexOf('}') + 1;
-            const jsonText = text.substring(jsonStart, jsonEnd);
-            const data = JSON.parse(jsonText);
-            
-            return data.table ? data.table.rows : [];
-        } catch (error) {
-            console.error(`Lỗi khi fetch ${sheetName}:`, error);
-            return [];
-        }
-    }
-
-    // Hàm chuyển đổi thời gian Date(1899,11,30,6,30,0) → "06:30"
-    function convertGoogleDate(dateStr) {
-        if (!dateStr) return '';
-        
-        // Nếu đã là định dạng hh:mm
-        if (typeof dateStr === 'string' && dateStr.includes(':')) {
-            return dateStr;
-        }
-        
-        // Nếu là định dạng Date(1899,11,30,6,30,0)
-        if (typeof dateStr === 'string' && dateStr.startsWith('Date(')) {
-            try {
-                // Lấy các tham số: Date(year,month,day,hour,minute,second)
-                const match = dateStr.match(/Date\((\d+),(\d+),(\d+),(\d+),(\d+),(\d+)\)/);
-                if (match) {
-                    const hour = parseInt(match[4]);
-                    const minute = parseInt(match[5]);
-                    return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-                }
-            } catch (e) {
-                console.error('Lỗi chuyển đổi thời gian:', e);
-            }
-        }
-        
-        return dateStr || '';
-    }
-
-    // Xử lý dữ liệu giá vé (đã hoạt động)
-    function processGiaveData(rows) {
-        const data = [];
-        
-        if (!rows || !Array.isArray(rows)) return data;
-        
-        rows.forEach((row, index) => {
-            if (!row.c) return;
-            
-            const diemDi = row.c[0] ? (row.c[0].v || '').toString().trim() : '';
-            const diemDen = row.c[1] ? (row.c[1].v || '').toString().trim() : '';
-            const giaVeRaw = row.c[2] ? row.c[2].v : '';
-            
-            // Bỏ qua hàng tiêu đề
-            if (index === 0 && (diemDi === 'Thanh Hóa' || diemDi === 'Điểm đi')) return;
-            
-            if (!diemDi && !diemDen) return;
-            
-            let giaVe = 0;
-            if (giaVeRaw) {
-                if (typeof giaVeRaw === 'number') {
-                    giaVe = giaVeRaw;
-                } else if (typeof giaVeRaw === 'string') {
-                    const cleaned = giaVeRaw.replace(/[^\d]/g, '');
-                    giaVe = parseInt(cleaned) || 0;
-                }
-            }
-            
-            data.push({
-                id: data.length + 1,
-                diemDi: diemDi || 'Chưa xác định',
-                diemDen: diemDen || 'Chưa xác định',
-                giaVe: giaVe
+    
+    // Xử lý click vào nút quay lại mục lục
+    backButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Ẩn tất cả các section
+            contentSections.forEach(section => {
+                section.classList.remove('active');
             });
+            
+            // Ẩn kết quả tìm kiếm
+            searchResults.classList.remove('active');
+            
+            // Hiện mục lục chính
+            mainToc.style.display = 'block';
+            
+            // Cuộn lên đầu trang
+            window.scrollTo({top: 0, behavior: 'smooth'});
         });
+    });
+    
+    // Xử lý click vào nút quay lại từ kết quả tìm kiếm
+    backFromResults.addEventListener('click', function() {
+        // Ẩn kết quả tìm kiếm
+        searchResults.classList.remove('active');
         
-        console.log(`Đã xử lý ${data.length} dòng dữ liệu giá vé`);
-        return data;
-    }
+        // Hiện mục lục chính
+        mainToc.style.display = 'block';
+        
+        // Cuộn lên đầu trang
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+}
 
-    // Xử lý dữ liệu giờ xuất bến - CẤU TRÚC MỚI: Bến đi | giờ | Số điện thoại
-    function processGioxuatbenData(rows) {
-        const data = [];
+// Khởi tạo trang web
+function initializePage() {
+    // Hiển thị dữ liệu
+    displayGiaveData();
+    displayGioxuatbenData();
+    displayVitriDiData();
+    displayVitriVeData();
+    
+    // Thiết lập điều hướng
+    setupNavigation();
+    
+    // Thiết lập autocomplete
+    setupAutocomplete(
+        document.getElementById('fromLocation'),
+        document.getElementById('fromAutocomplete')
+    );
+    
+    setupAutocomplete(
+        document.getElementById('toLocation'),
+        document.getElementById('toAutocomplete')
+    );
+    
+    // Xử lý form tìm kiếm
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+        e.preventDefault();
         
-        if (!rows || !Array.isArray(rows)) return data;
+        const fromQuery = document.getElementById('fromLocation').value.trim();
+        const toQuery = document.getElementById('toLocation').value.trim();
         
-        console.log('Cấu trúc dữ liệu gioxuatben (3 dòng đầu):');
-        for (let i = 0; i < Math.min(3, rows.length); i++) {
-            if (rows[i].c) {
-                console.log(`Dòng ${i}:`, rows[i].c.map((cell, idx) => 
-                    cell ? `Cột ${idx}: "${cell.v}" (${typeof cell.v})` : `Cột ${idx}: null`
-                ));
-            }
-        }
-        
-        rows.forEach((row, index) => {
-            if (!row.c) return;
-            
-            // CẤU TRÚC TỪ LOG: 
-            // Cột 0: "Thái Nguyên" (Bến đi)
-            // Cột 1: "Date(1899,11,30,6,30,0)" (giờ) - CẦN CHUYỂN ĐỔI
-            // Cột 2: "0963529789" (Số điện thoại)
-            
-            const benDi = row.c[0] ? (row.c[0].v || '').toString().trim() : '';
-            const gioRaw = row.c[1] ? row.c[1].v : '';
-            const soDienThoai = row.c[2] ? (row.c[2].v || '').toString().trim() : '';
-            
-            // Bỏ qua hàng tiêu đề
-            if (index === 0 && (benDi === 'Bến đi' || benDi === 'Điểm đi')) {
-                console.log('Bỏ qua hàng tiêu đề giờ xuất bến');
-                return;
-            }
-            
-            // Bỏ qua hàng trống
-            if (!benDi && !gioRaw) return;
-            
-            // Chuyển đổi thời gian
-            const gioXuatBen = convertGoogleDate(gioRaw);
-            
-            // Sheet này chỉ có "Bến đi", không có "Bến đến"
-            // Giả sử tất cả đều đi từ các tỉnh về Thanh Hóa hoặc ngược lại
-            const diemDen = 'Thanh Hóa'; // Mặc định
-            
-            data.push({
-                id: data.length + 1,
-                diemDi: benDi || 'Chưa xác định',
-                diemDen: diemDen,
-                gioXuatBen: gioXuatBen || 'Chưa có lịch',
-                soDienThoai: soDienThoai || '0948.531.333'
-            });
-        });
-        
-        console.log(`Đã xử lý ${data.length} dòng dữ liệu giờ xuất bến`);
-        return data;
-    }
-
-    // Xử lý dữ liệu vị trí - CẤU TRÚC MỚI: Bến đi | giờ đi | biển kiểm soát | số điện thoại | Loại xe
-    function processVitriData(rows) {
-        const data = [];
-        
-        if (!rows || !Array.isArray(rows)) return data;
-        
-        console.log('Cấu trúc dữ liệu vitri (3 dòng đầu):');
-        for (let i = 0; i < Math.min(3, rows.length); i++) {
-            if (rows[i].c) {
-                console.log(`Dòng ${i}:`, rows[i].c.map((cell, idx) => 
-                    cell ? `Cột ${idx}: "${cell.v}"` : `Cột ${idx}: null`
-                ));
-            }
-        }
-        
-        rows.forEach((row, index) => {
-            if (!row.c) return;
-            
-            // CẤU TRÚC TỪ LOG:
-            // Cột 0: "Bến đi" (string)
-            // Cột 1: "giờ đi" (datetime - Date())
-            // Cột 2: "biển kiểm soát" (string)
-            // Cột 3: "số điện thoại" (string)
-            // Cột 4: "Loại xe" (string)
-            
-            const benDi = row.c[0] ? (row.c[0].v || '').toString().trim() : '';
-            const gioDiRaw = row.c[1] ? row.c[1].v : '';
-            const bienKiemSoat = row.c[2] ? (row.c[2].v || '').toString().trim() : '';
-            const soDienThoai = row.c[3] ? (row.c[3].v || '').toString().trim() : '';
-            const loaiXe = row.c[4] ? (row.c[4].v || '').toString().trim() : '';
-            
-            // Bỏ qua hàng tiêu đề
-            if (index === 0 && (benDi === 'Bến đi' || benDi === 'Điểm đi')) {
-                console.log('Bỏ qua hàng tiêu đề vị trí');
-                return;
-            }
-            
-            // Bỏ qua hàng trống
-            if (!benDi && !bienKiemSoat) return;
-            
-            // Chuyển đổi thời gian
-            const gioDi = convertGoogleDate(gioDiRaw);
-            
-            // Tạo vị trí từ thông tin có sẵn
-            let viTri = '';
-            let ghiChu = '';
-            
-            if (bienKiemSoat) {
-                viTri = `Xe biển số: ${bienKiemSoat}`;
-                if (loaiXe) {
-                    viTri += ` (${loaiXe})`;
-                }
-            } else if (benDi) {
-                viTri = `Bến đi: ${benDi}`;
-            }
-            
-            if (gioDi) {
-                ghiChu = `Giờ đi: ${gioDi}`;
-                if (soDienThoai) {
-                    ghiChu += ` - SĐT: ${soDienThoai}`;
-                }
-            } else if (soDienThoai) {
-                ghiChu = `SĐT: ${soDienThoai}`;
-            }
-            
-            // Giả sử điểm đến là Thanh Hóa (hoặc ngược lại)
-            const diemDen = 'Thanh Hóa';
-            
-            data.push({
-                id: data.length + 1,
-                diemDi: benDi || 'Chưa xác định',
-                diemDen: diemDen,
-                viTri: viTri || 'Chưa xác định',
-                ghiChu: ghiChu
-            });
-        });
-        
-        console.log(`Đã xử lý ${data.length} dòng dữ liệu vị trí`);
-        return data;
-    }
-
-    // Hiển thị bảng giá vé
-    function displayGiaveData() {
-        const tbody = document.getElementById('ticket-table-body');
-        
-        if (!giaveData || giaveData.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="3" style="text-align:center; padding:40px; color:#666;">
-                        <i class="fas fa-info-circle"></i> Không có dữ liệu giá vé
-                    </td>
-                </tr>
-            `;
+        if (!fromQuery && !toQuery) {
+            alert('Vui lòng nhập ít nhất một địa điểm để tìm kiếm');
             return;
         }
         
-        let html = '';
-        giaveData.forEach((item, index) => {
-            const formattedPrice = item.giaVe > 0 ? 
-                new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'}).format(item.giaVe) : 
-                'Liên hệ';
-            
-            html += `
-                <tr>
-                    <td><strong>${item.diemDi}</strong></td>
-                    <td><strong>${item.diemDen}</strong></td>
-                    <td class="price">${formattedPrice}</td>
-                </tr>
-            `;
-        });
-        
-        tbody.innerHTML = html;
-        
-        // Thêm CSS
-        const style = document.createElement('style');
-        style.textContent = `
-            .price {
-                color: #e74c3c;
-                font-weight: bold;
-            }
-            tr:nth-child(even) {
-                background-color: #f8f9fa;
-            }
-            tr:hover {
-                background-color: #e9ecef;
-            }
-        `;
-        document.head.appendChild(style);
-        
-        console.log(`Đã hiển thị ${giaveData.length} mục giá vé`);
-    }
+        // Thực hiện tìm kiếm
+        const results = searchRoute(fromQuery, toQuery);
+        displaySearchResults(results, fromQuery, toQuery);
+    });
+    
+    // Hiển thị mục lục chính khi trang tải
+    document.getElementById('main-toc').style.display = 'block';
+}
 
-    // Hiển thị giờ xuất bến
-    function displayGioxuatbenData() {
-        const container = document.getElementById('phone-schedule-content');
-        
-        if (!gioxuatbenData || gioxuatbenData.length === 0) {
-            container.innerHTML = `
-                <div style="text-align:center; padding:40px; color:#666;">
-                    <i class="fas fa-clock fa-2x"></i>
-                    <p>Không có dữ liệu giờ xuất bến</p>
-                </div>
-            `;
-            return;
-        }
-        
-        // Nhóm theo điểm đi (vì tất cả đều đến Thanh Hóa)
-        const groupedData = {};
-        gioxuatbenData.forEach(item => {
-            const key = item.diemDi;
-            if (!groupedData[key]) {
-                groupedData[key] = {
-                    diemDi: item.diemDi,
-                    schedules: []
-                };
-            }
-            groupedData[key].schedules.push({
-                gioXuatBen: item.gioXuatBen,
-                soDienThoai: item.soDienThoai
-            });
-        });
-        
-        let html = '';
-        Object.values(groupedData).forEach(group => {
-            html += `
-                <div class="schedule-card">
-                    <div class="route-header">
-                        <h3><i class="fas fa-bus"></i> ${group.diemDi} → Thanh Hóa</h3>
-                        <span class="badge">${group.schedules.length} chuyến</span>
-                    </div>
-                    <div class="schedule-list">
-            `;
-            
-            group.schedules.forEach(schedule => {
-                html += `
-                    <div class="schedule-item">
-                        <div class="time">
-                            <i class="far fa-clock"></i>
-                            <span>${schedule.gioXuatBen}</span>
-                        </div>
-                        <div class="phone">
-                            <i class="fas fa-phone"></i>
-                            <a href="tel:${schedule.soDienThoai.replace(/\s+/g, '')}">
-                                ${schedule.soDienThoai}
-                            </a>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += `
-                    </div>
-                </div>
-            `;
-        });
-        
-        container.innerHTML = html;
-        
-        // Thêm CSS
-        const style = document.createElement('style');
-        style.textContent = `
-            .schedule-card {
-                background: white;
-                border-radius: 10px;
-                padding: 20px;
-                margin-bottom: 20px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                border-left: 4px solid #2c5aa0;
-            }
-            .route-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 15px;
-                padding-bottom: 10px;
-                border-bottom: 1px solid #eee;
-            }
-            .route-header h3 {
-                margin: 0;
-                color: #2c5aa0;
-                font-size: 1.2rem;
-            }
-            .badge {
-                background: #2c5aa0;
-                color: white;
-                padding: 4px 12px;
-                border-radius: 20px;
-                font-size: 0.9rem;
-            }
-            .schedule-list {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 10px;
-            }
-            .schedule-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 10px 15px;
-                background: #f8f9fa;
-                border-radius: 8px;
-            }
-            .time, .phone {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            .phone a {
-                color: #28a745;
-                text-decoration: none;
-                font-weight: 500;
-            }
-            .phone a:hover {
-                text-decoration: underline;
-            }
-            @media (max-width: 768px) {
-                .schedule-list {
-                    grid-template-columns: 1fr;
-                }
-                .schedule-item {
-                    flex-direction: column;
-                    align-items: flex-start;
-                    gap: 10px;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-        
-        console.log(`Đã hiển thị ${Object.keys(groupedData).length} tuyến giờ xuất bến`);
-    }
-
-    // Hàm tìm kiếm
-    function searchRoute() {
-        const searchInput = document.getElementById('route-search-input');
-        const searchTerm = searchInput.value.trim().toLowerCase();
-        const resultsContainer = document.getElementById('route-results-container');
-        const resultsCount = document.getElementById('search-results-count');
-        
-        if (!searchTerm) {
-            resultsContainer.innerHTML = `
-                <div style="text-align:center; padding:40px; color:#666;">
-                    <i class="fas fa-search fa-2x"></i>
-                    <p>Nhập điểm đi hoặc điểm đến để tìm kiếm</p>
-                </div>
-            `;
-            resultsCount.style.display = 'none';
-            return;
-        }
-        
-        // Kết hợp dữ liệu từ 3 nguồn
-        const combinedResults = {};
-        
-        // Thêm từ giá vé
-        giaveData.forEach(item => {
-            if (item.diemDi.toLowerCase().includes(searchTerm) || 
-                item.diemDen.toLowerCase().includes(searchTerm)) {
-                const key = `${item.diemDi}-${item.diemDen}`;
-                if (!combinedResults[key]) {
-                    combinedResults[key] = {
-                        diemDi: item.diemDi,
-                        diemDen: item.diemDen,
-                        giaVe: item.giaVe,
-                        schedules: [],
-                        locations: []
-                    };
-                }
-                combinedResults[key].giaVe = item.giaVe;
-            }
-        });
-        
-        // Thêm từ giờ xuất bến
-        gioxuatbenData.forEach(item => {
-            if (item.diemDi.toLowerCase().includes(searchTerm) || 
-                item.diemDen.toLowerCase().includes(searchTerm)) {
-                const key = `${item.diemDi}-${item.diemDen}`;
-                if (!combinedResults[key]) {
-                    combinedResults[key] = {
-                        diemDi: item.diemDi,
-                        diemDen: item.diemDen,
-                        giaVe: 0,
-                        schedules: [],
-                        locations: []
-                    };
-                }
-                combinedResults[key].schedules.push({
-                    gioXuatBen: item.gioXuatBen,
-                    soDienThoai: item.soDienThoai
-                });
-            }
-        });
-        
-        // Thêm từ vị trí
-        vitriData.forEach(item => {
-            if (item.diemDi.toLowerCase().includes(searchTerm) || 
-                item.diemDen.toLowerCase().includes(searchTerm)) {
-                const key = `${item.diemDi}-${item.diemDen}`;
-                if (!combinedResults[key]) {
-                    combinedResults[key] = {
-                        diemDi: item.diemDi,
-                        diemDen: item.diemDen,
-                        giaVe: 0,
-                        schedules: [],
-                        locations: []
-                    };
-                }
-                combinedResults[key].locations.push({
-                    viTri: item.viTri,
-                    ghiChu: item.ghiChu
-                });
-            }
-        });
-        
-        const uniqueRoutes = Object.keys(combinedResults);
-        
-        if (uniqueRoutes.length === 0) {
-            resultsContainer.innerHTML = `
-                <div style="text-align:center; padding:40px; color:#666;">
-                    <i class="fas fa-exclamation-circle fa-2x"></i>
-                    <p>Không tìm thấy kết quả cho "${searchTerm}"</p>
-                </div>
-            `;
-            resultsCount.style.display = 'none';
-            return;
-        }
-        
-        resultsCount.innerHTML = `Tìm thấy ${uniqueRoutes.length} kết quả cho "${searchTerm}"`;
-        resultsCount.style.display = 'block';
-        
-        let html = '';
-        Object.values(combinedResults).forEach(route => {
-            const formattedPrice = route.giaVe > 0 ? 
-                new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'}).format(route.giaVe) : 
-                'Liên hệ';
-            
-            html += `
-                <div class="route-card">
-                    <h3>${route.diemDi} → ${route.diemDen}</h3>
-                    <p class="price">Giá vé: ${formattedPrice}</p>
-                    
-                    ${route.schedules.length > 0 ? `
-                        <div class="schedules">
-                            <h4>Giờ xuất bến:</h4>
-                            ${route.schedules.map(s => `
-                                <div class="schedule">
-                                    <span>${s.gioXuatBen}</span>
-                                    <a href="tel:${s.soDienThoai.replace(/\s+/g, '')}">${s.soDienThoai}</a>
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-                    
-                    ${route.locations.length > 0 ? `
-                        <div class="locations">
-                            <h4>Thông tin xe:</h4>
-                            ${route.locations.map(l => `
-                                <div class="location">
-                                    <p>${l.viTri}</p>
-                                    ${l.ghiChu ? `<small>${l.ghiChu}</small>` : ''}
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-                    
-                    <button class="call-btn" onclick="window.location.href='tel:0948531333'">
-                        <i class="fas fa-phone"></i> Gọi đặt vé: 0948.531.333
-                    </button>
-                </div>
-            `;
-        });
-        
-        resultsContainer.innerHTML = html;
-        
-        // Thêm CSS
-        const style = document.createElement('style');
-        style.textContent = `
-            .route-card {
-                background: white;
-                border-radius: 10px;
-                padding: 20px;
-                margin-bottom: 20px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .route-card h3 {
-                color: #2c5aa0;
-                margin: 0 0 10px 0;
-            }
-            .price {
-                color: #e74c3c;
-                font-weight: bold;
-                font-size: 1.1rem;
-            }
-            .schedules, .locations {
-                margin: 15px 0;
-            }
-            .schedules h4, .locations h4 {
-                color: #495057;
-                margin-bottom: 8px;
-            }
-            .schedule, .location {
-                padding: 8px 12px;
-                background: #f8f9fa;
-                border-radius: 6px;
-                margin-bottom: 8px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .call-btn {
-                background: #28a745;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                border-radius: 5px;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                margin-top: 15px;
-            }
-            .call-btn:hover {
-                background: #218838;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    // Tải tất cả dữ liệu
-    async function loadAllData() {
-        console.log('Bắt đầu tải dữ liệu...');
-        
-        try {
-            // Hiển thị loading
-            document.getElementById('ticket-table-body').innerHTML = `
-                <tr>
-                    <td colspan="3" style="text-align:center; padding:40px;">
-                        <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...
-                    </td>
-                </tr>
-            `;
-            
-            document.getElementById('phone-schedule-content').innerHTML = `
-                <div style="text-align:center; padding:40px;">
-                    <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...
-                </div>
-            `;
-            
-            // Tải dữ liệu
-            const [giaveRows, gioxuatbenRows, vitriRows] = await Promise.all([
-                fetchGoogleSheetData(API_URLS.giave, 'giave'),
-                fetchGoogleSheetData(API_URLS.gioxuatben, 'gioxuatben'),
-                fetchGoogleSheetData(API_URLS.vitri, 'vitri')
-            ]);
-            
-            // Xử lý dữ liệu
-            giaveData = processGiaveData(giaveRows);
-            gioxuatbenData = processGioxuatbenData(gioxuatbenRows);
-            vitriData = processVitriData(vitriRows);
-            
-            // Hiển thị dữ liệu
-            displayGiaveData();
-            displayGioxuatbenData();
-            
-            console.log('Tải dữ liệu hoàn tất:', {
-                giave: giaveData.length,
-                gioxuatben: gioxuatbenData.length,
-                vitri: vitriData.length
-            });
-            
-        } catch (error) {
-            console.error('Lỗi khi tải dữ liệu:', error);
-            
-            document.getElementById('ticket-table-body').innerHTML = `
-                <tr>
-                    <td colspan="3" style="text-align:center; padding:40px; color:#dc3545;">
-                        <i class="fas fa-exclamation-triangle"></i> Lỗi khi tải dữ liệu
-                    </td>
-                </tr>
-            `;
-            
-            document.getElementById('phone-schedule-content').innerHTML = `
-                <div style="text-align:center; padding:40px; color:#dc3545;">
-                    <i class="fas fa-exclamation-triangle"></i> Lỗi khi tải dữ liệu
-                </div>
-            `;
-        }
-    }
-
-    // Khởi tạo sự kiện
-    function initializeEvents() {
-        document.getElementById('search-route-btn').addEventListener('click', searchRoute);
-        
-        document.getElementById('route-search-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchRoute();
-            }
-        });
-    }
-
-    // Bắt đầu ứng dụng
-    initializeEvents();
-    loadAllData();
-});
+// Khi DOM đã tải xong
+document.addEventListener('DOMContentLoaded', initializePage);
