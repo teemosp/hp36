@@ -1,15 +1,36 @@
-// Import dữ liệu từ data.js
-// Dữ liệu sẽ được định nghĩa trong data.js
-
-// Hàm chuẩn hóa chuỗi tiếng Việt (bỏ dấu, chuyển về chữ thường)
+// Hàm chuẩn hóa chuỗi tiếng Việt (bỏ dấu, chuyển về chữ thường) - VERSION FIXED
 function normalizeString(str) {
+    if (!str) return '';
+    
     return str
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'd')
         .replace(/[^a-z0-9\s]/g, '')
         .trim();
+}
+
+// Hàm kiểm tra khớp địa điểm thông minh
+function isLocationMatch(loc1, loc2) {
+    const norm1 = normalizeString(loc1);
+    const norm2 = normalizeString(loc2);
+    
+    // Khớp chính xác
+    if (norm1 === norm2) return true;
+    
+    // Khớp một trong hai chứa nhau
+    if (norm1.includes(norm2) || norm2.includes(norm1)) return true;
+    
+    // Khớp từng từ
+    const words1 = norm1.split(/\s+/);
+    const words2 = norm2.split(/\s+/);
+    
+    // Nếu có ít nhất một từ chung
+    return words1.some(w1 => words2.some(w2 => 
+        w1 === w2 || w1.includes(w2) || w2.includes(w1)
+    ));
 }
 
 // Tạo danh sách các điểm đi và đến từ dữ liệu
@@ -43,40 +64,131 @@ function createLocationList() {
     return Array.from(locations).filter(loc => loc.length > 0);
 }
 
-// Tìm kiếm địa điểm phù hợp
-function searchLocations(query, locationList) {
+// Hàm tìm kiếm địa điểm nâng cao
+function searchLocationsAdvanced(query, locationList) {
     if (!query || query.trim() === '') return [];
     
     const normalizedQuery = normalizeString(query);
-    const results = [];
+    const queryWords = normalizedQuery.split(/\s+/).filter(w => w.length > 0);
+    const results = new Map(); // Dùng Map để tránh trùng lặp
     
     locationList.forEach(location => {
         const normalizedLocation = normalizeString(location);
         
-        // Kiểm tra trùng khớp trực tiếp
-        if (normalizedLocation.includes(normalizedQuery) || 
-            normalizedQuery.includes(normalizedLocation)) {
-            results.push(location);
+        // 1. Khớp chính xác (điểm cao nhất)
+        if (normalizedLocation === normalizedQuery) {
+            results.set(location, 100);
         }
-        // Kiểm tra trùng khớp từng từ
+        // 2. Khớp chứa nhau
+        else if (normalizedLocation.includes(normalizedQuery)) {
+            results.set(location, 80);
+        }
+        // 3. Query chứa location
+        else if (normalizedQuery.includes(normalizedLocation)) {
+            results.set(location, 60);
+        }
+        // 4. Khớp viết tắt (ví dụ: "ML" cho "Mường Lát")
+        else if (query.length <= 3 && 
+                 normalizedLocation.split(' ').some(word => 
+                    word.startsWith(normalizedQuery))) {
+            results.set(location, 70);
+        }
+        // 5. Khớp từng từ
         else {
-            const queryWords = normalizedQuery.split(/\s+/);
             const locationWords = normalizedLocation.split(/\s+/);
+            let matchScore = 0;
+            let wordMatchCount = 0;
             
-            const matchCount = queryWords.filter(qWord => 
-                locationWords.some(lWord => lWord.includes(qWord) || qWord.includes(lWord))
-            ).length;
+            queryWords.forEach(qWord => {
+                locationWords.forEach(lWord => {
+                    if (lWord === qWord) {
+                        matchScore += 40;
+                        wordMatchCount++;
+                    }
+                    else if (lWord.includes(qWord)) {
+                        matchScore += 30;
+                        wordMatchCount++;
+                    }
+                    else if (qWord.includes(lWord)) {
+                        matchScore += 20;
+                        wordMatchCount++;
+                    }
+                });
+            });
             
-            if (matchCount > 0 && matchCount >= Math.min(2, queryWords.length)) {
-                results.push(location);
+            if (wordMatchCount > 0) {
+                const avgScore = matchScore / (queryWords.length * locationWords.length);
+                if (avgScore > 0.3) { // Ngưỡng tối thiểu
+                    results.set(location, avgScore * 100);
+                }
+            }
+        }
+        
+        // 6. Kiểm tra khớp một phần (để tìm "Tén Tằn" khi gõ "ten" hoặc "tan")
+        if (!results.has(location)) {
+            const words = normalizedLocation.split(/\s+/);
+            const hasPartialMatch = words.some(word => 
+                normalizedQuery.split(/\s+/).some(qWord => 
+                    word.includes(qWord) || qWord.includes(word)
+                )
+            );
+            
+            if (hasPartialMatch) {
+                results.set(location, 30); // Điểm thấp cho khớp một phần
             }
         }
     });
     
-    return results;
+    // Chuyển Map thành mảng và sắp xếp theo điểm
+    const sortedResults = Array.from(results.entries())
+        .sort((a, b) => b[1] - a[1])
+        .map(entry => entry[0]);
+    
+    // Ưu tiên kết quả có độ dài gần với query
+    sortedResults.sort((a, b) => {
+        const aDiff = Math.abs(a.length - query.length);
+        const bDiff = Math.abs(b.length - query.length);
+        return aDiff - bDiff;
+    });
+    
+    return sortedResults.slice(0, 10); // Giới hạn 10 kết quả
 }
 
-// Tìm kiếm lộ trình CHÍNH XÁC
+// Hàm highlight từ khóa trong kết quả
+function highlightMatch(text, query) {
+    const normalizedText = normalizeString(text);
+    const normalizedQuery = normalizeString(query);
+    
+    if (normalizedText.includes(normalizedQuery)) {
+        const startIndex = normalizedText.indexOf(normalizedQuery);
+        const originalStart = text.substring(startIndex, startIndex + query.length);
+        
+        return text.replace(
+            new RegExp(originalStart.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
+            `<strong>${originalStart}</strong>`
+        );
+    }
+    
+    // Highlight từng từ nếu có thể
+    const words = text.split(/(\s+)/);
+    const queryWords = normalizedQuery.split(/\s+/);
+    
+    const highlightedWords = words.map(word => {
+        const normalizedWord = normalizeString(word);
+        const matchingQueryWord = queryWords.find(qWord => 
+            normalizedWord.includes(qWord) || qWord.includes(normalizedWord)
+        );
+        
+        if (matchingQueryWord && normalizedWord.length > 0) {
+            return `<strong>${word}</strong>`;
+        }
+        return word;
+    });
+    
+    return highlightedWords.join('');
+}
+
+// Tìm kiếm lộ trình CHÍNH XÁC với tìm kiếm nâng cao
 function searchRoute(fromQuery, toQuery) {
     const results = {
         fromMatches: [],
@@ -84,42 +196,40 @@ function searchRoute(fromQuery, toQuery) {
         priceResults: [],
         scheduleResults: [],
         vehicleResults: [],
-        connectedRoutes: [] // Thêm kết quả tuyến đường kết nối
+        connectedRoutes: []
     };
     
     const locationList = createLocationList();
     
-    // Tìm địa điểm đi
+    // Tìm địa điểm đi với thuật toán nâng cao
     if (fromQuery && fromQuery.trim() !== '') {
-        results.fromMatches = searchLocations(fromQuery, locationList);
+        results.fromMatches = searchLocationsAdvanced(fromQuery, locationList);
     }
     
-    // Tìm địa điểm đến
+    // Tìm địa điểm đến với thuật toán nâng cao
     if (toQuery && toQuery.trim() !== '') {
-        results.toMatches = searchLocations(toQuery, locationList);
+        results.toMatches = searchLocationsAdvanced(toQuery, locationList);
     }
     
-    // Tìm kiếm trong bảng giá vé - tìm tuyến đường chính xác
+    // Tìm kiếm trong bảng giá vé với tìm kiếm thông minh
     if (results.fromMatches.length > 0 && results.toMatches.length > 0) {
         giaveData.forEach(row => {
             const fromLocations = row[0].split(',').map(loc => loc.trim());
             const toLocations = row[1].split(',').map(loc => loc.trim());
             
-            const fromMatch = fromLocations.some(fromLoc => 
-                results.fromMatches.some(match => 
-                    normalizeString(fromLoc) === normalizeString(match) ||
-                    normalizeString(match).includes(normalizeString(fromLoc)) ||
-                    normalizeString(fromLoc).includes(normalizeString(match))
-                )
-            );
+            // Kiểm tra khớp thông minh cho điểm đi
+            const fromMatch = fromLocations.some(fromLoc => {
+                return results.fromMatches.some(match => 
+                    isLocationMatch(fromLoc, match)
+                );
+            });
             
-            const toMatch = toLocations.some(toLoc => 
-                results.toMatches.some(match => 
-                    normalizeString(toLoc) === normalizeString(match) ||
-                    normalizeString(match).includes(normalizeString(toLoc)) ||
-                    normalizeString(toLoc).includes(normalizeString(match))
-                )
-            );
+            // Kiểm tra khớp thông minh cho điểm đến
+            const toMatch = toLocations.some(toLoc => {
+                return results.toMatches.some(match => 
+                    isLocationMatch(toLoc, match)
+                );
+            });
             
             if (fromMatch && toMatch) {
                 results.priceResults.push({
@@ -143,11 +253,7 @@ function searchRoute(fromQuery, toQuery) {
             
             // Kiểm tra chính xác điểm đi
             const match = results.fromMatches.some(match => {
-                const normalizedLocation = normalizeString(location);
-                const normalizedMatch = normalizeString(match);
-                return normalizedLocation === normalizedMatch ||
-                       normalizedLocation.includes(normalizedMatch) ||
-                       normalizedMatch.includes(normalizedLocation);
+                return isLocationMatch(location, match);
             });
             
             if (match) {
@@ -170,11 +276,7 @@ function searchRoute(fromQuery, toQuery) {
             
             // Kiểm tra chính xác điểm đến
             const match = results.toMatches.some(match => {
-                const normalizedLocation = normalizeString(location);
-                const normalizedMatch = normalizeString(match);
-                return normalizedLocation === normalizedMatch ||
-                       normalizedLocation.includes(normalizedMatch) ||
-                       normalizedMatch.includes(normalizedLocation);
+                return isLocationMatch(location, match);
             });
             
             if (match) {
@@ -205,9 +307,7 @@ function findConnectedRoutes(fromMatches, toMatches) {
         // Kiểm tra nếu điểm đi khớp với fromMatches
         const fromMatch = fromLocations.some(fromLoc => 
             fromMatches.some(match => 
-                normalizeString(fromLoc) === normalizeString(match) ||
-                normalizeString(match).includes(normalizeString(fromLoc)) ||
-                normalizeString(fromLoc).includes(normalizeString(match))
+                isLocationMatch(fromLoc, match)
             )
         );
         
@@ -221,18 +321,14 @@ function findConnectedRoutes(fromMatches, toMatches) {
                 // Kiểm tra nếu điểm đi của tuyến thứ 2 khớp với điểm đến của tuyến thứ 1
                 const connectionMatch = toLocations.some(toLoc => 
                     secondFromLocations.some(secondFromLoc => 
-                        normalizeString(toLoc) === normalizeString(secondFromLoc) ||
-                        normalizeString(secondFromLoc).includes(normalizeString(toLoc)) ||
-                        normalizeString(toLoc).includes(normalizeString(secondFromLoc))
+                        isLocationMatch(toLoc, secondFromLoc)
                     )
                 );
                 
                 // Kiểm tra nếu điểm đến của tuyến thứ 2 khớp với toMatches
                 const finalMatch = secondToLocations.some(secondToLoc => 
                     toMatches.some(match => 
-                        normalizeString(secondToLoc) === normalizeString(match) ||
-                        normalizeString(match).includes(normalizeString(secondToLoc)) ||
-                        normalizeString(secondToLoc).includes(normalizeString(match))
+                        isLocationMatch(secondToLoc, match)
                     )
                 );
                 
@@ -258,6 +354,31 @@ function findConnectedRoutes(fromMatches, toMatches) {
     return connectedRoutes;
 }
 
+// Hàm lấy điểm đến gợi ý
+function getSuggestedDestinations(fromLocation) {
+    const destinations = new Set();
+    
+    giaveData.forEach(row => {
+        const fromLocations = row[0].split(',').map(loc => loc.trim());
+        const toLocations = row[1].split(',').map(loc => loc.trim());
+        
+        if (fromLocations.some(loc => isLocationMatch(loc, fromLocation))) {
+            toLocations.forEach(toLoc => destinations.add(toLoc));
+        }
+    });
+    
+    return Array.from(destinations).slice(0, 10); // Giới hạn 10 điểm đến
+}
+
+// Hàm tìm kiếm từ gợi ý
+function searchFromSuggestion(from, to) {
+    document.getElementById('fromLocation').value = from;
+    document.getElementById('toLocation').value = to;
+    
+    const results = searchRoute(from, to);
+    displaySearchResults(results, from, to);
+}
+
 // Hiển thị kết quả tìm kiếm
 function displaySearchResults(results, fromQuery, toQuery) {
     const resultsContent = document.getElementById('searchResultsContent');
@@ -277,6 +398,7 @@ function displaySearchResults(results, fromQuery, toQuery) {
                     <li>Thử viết tắt (ví dụ: "ML" cho "Mường Lát")</li>
                     <li>Nhập không dấu (ví dụ: "Muong Lat")</li>
                     <li>Chỉ nhập một phần của tên địa điểm</li>
+                    <li>Gõ "Tén Tằn", "ten tan", hoặc "tt" để tìm Tén Tằn</li>
                 </ul>
             </div>
         `;
@@ -356,6 +478,27 @@ function displaySearchResults(results, fromQuery, toQuery) {
             html += `</div>`;
         }
         
+        // Thêm phần gợi ý tìm kiếm nếu không có kết quả giá vé
+        if (results.priceResults.length === 0 && results.fromMatches.length > 0) {
+            html += `<div class="info-card">`;
+            html += `<h3><i class="fas fa-lightbulb"></i> Gợi ý tìm kiếm</h3>`;
+            html += `<p>Không tìm thấy tuyến đường trực tiếp từ <strong>${fromQuery}</strong> đến <strong>${toQuery}</strong>.</p>`;
+            
+            // Gợi ý các điểm đến từ điểm đi này
+            const suggestedDestinations = getSuggestedDestinations(results.fromMatches[0]);
+            if (suggestedDestinations.length > 0) {
+                html += `<p>Các điểm đến có sẵn từ ${results.fromMatches[0]}:</p>`;
+                html += `<ul class="suggestion-list">`;
+                suggestedDestinations.forEach(dest => {
+                    html += `<li onclick="searchFromSuggestion('${results.fromMatches[0]}', '${dest}')">`;
+                    html += `<i class="fas fa-arrow-right"></i> ${results.fromMatches[0]} → ${dest}`;
+                    html += `</li>`;
+                });
+                html += `</ul>`;
+            }
+            html += `</div>`;
+        }
+        
         // Kết quả xe đi và xe về
         const diResults = results.vehicleResults.filter(r => r.type === 'Đi');
         const veResults = results.vehicleResults.filter(r => r.type === 'Về');
@@ -409,7 +552,7 @@ function displaySearchResults(results, fromQuery, toQuery) {
             html += `<i class="fas fa-info-circle"></i>`;
             html += `<h3>Không có thông tin lộ trình cụ thể</h3>`;
             html += `<p>Không tìm thấy thông tin lộ trình cụ thể cho tuyến đường này.</p>`;
-            html += `<p>Vui lòng liên hệ hotline <strong>0948 955 999</strong> để được tư vấn chi tiết.</p>`;
+            html += `<p>Vui lòng liên hệ hotline <strong>0948 531 333</strong> để được tư vấn chi tiết.</p>`;
             html += `</div>`;
         } else {
             resultCount.textContent = `Tìm thấy ${totalResults} kết quả cho ${searchInfo}`;
@@ -440,7 +583,7 @@ function displaySearchResults(results, fromQuery, toQuery) {
     window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
-// Tự động gợi ý
+// Tự động gợi ý nâng cao
 function setupAutocomplete(inputElement, autocompleteElement) {
     const locationList = createLocationList();
     
@@ -451,14 +594,19 @@ function setupAutocomplete(inputElement, autocompleteElement) {
             return;
         }
         
-        const matches = searchLocations(query, locationList).slice(0, 10);
+        // Sử dụng hàm tìm kiếm nâng cao
+        const matches = searchLocationsAdvanced(query, locationList);
         
         if (matches.length > 0) {
             autocompleteElement.innerHTML = '';
             matches.forEach(match => {
                 const item = document.createElement('div');
                 item.className = 'autocomplete-item';
-                item.textContent = match;
+                
+                // Highlight từ khóa tìm kiếm trong kết quả
+                const displayText = highlightMatch(match, query);
+                item.innerHTML = displayText;
+                
                 item.addEventListener('click', function() {
                     inputElement.value = match;
                     autocompleteElement.style.display = 'none';
@@ -475,6 +623,35 @@ function setupAutocomplete(inputElement, autocompleteElement) {
     document.addEventListener('click', function(e) {
         if (!autocompleteElement.contains(e.target) && e.target !== inputElement) {
             autocompleteElement.style.display = 'none';
+        }
+    });
+    
+    // Xử lý phím tắt
+    inputElement.addEventListener('keydown', function(e) {
+        const items = autocompleteElement.querySelectorAll('.autocomplete-item');
+        const activeItem = autocompleteElement.querySelector('.autocomplete-item.active');
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (!activeItem) {
+                items[0]?.classList.add('active');
+            } else {
+                activeItem.classList.remove('active');
+                const nextItem = activeItem.nextElementSibling || items[0];
+                nextItem.classList.add('active');
+            }
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (!activeItem) {
+                items[items.length - 1]?.classList.add('active');
+            } else {
+                activeItem.classList.remove('active');
+                const prevItem = activeItem.previousElementSibling || items[items.length - 1];
+                prevItem.classList.add('active');
+            }
+        } else if (e.key === 'Enter' && activeItem) {
+            e.preventDefault();
+            activeItem.click();
         }
     });
 }
@@ -704,16 +881,54 @@ function initializePage() {
         document.getElementById('toAutocomplete')
     );
     
-    // Xử lý form tìm kiếm
+    // Xử lý form tìm kiếm với xử lý viết tắt
     document.getElementById('searchForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const fromQuery = document.getElementById('fromLocation').value.trim();
-        const toQuery = document.getElementById('toLocation').value.trim();
+        let fromQuery = document.getElementById('fromLocation').value.trim();
+        let toQuery = document.getElementById('toLocation').value.trim();
         
         if (!fromQuery && !toQuery) {
             alert('Vui lòng nhập ít nhất một địa điểm để tìm kiếm');
             return;
+        }
+        
+        // Xử lý viết tắt phổ biến
+        const abbreviationMap = {
+            'ml': 'Mường Lát',
+            'tn': 'Thái Nguyên',
+            'hp': 'Hải Phòng',
+            'hn': 'Hà Nội',
+            'th': 'Thanh Hóa',
+            'qv': 'Quễ Võ',
+            'tt': 'Tén Tằn',
+            'na': 'Na mèo',
+            'ct': 'Cẩm Thủy',
+            'qh': 'Quan Hóa',
+            'qs': 'Quan Sơn',
+            'bg': 'Bắc Giang',
+            'bn': 'Bắc Ninh',
+            'hd': 'Hải Dương',
+            'hy': 'Hưng Yên',
+            'xb': 'Xuân Bái',
+            'xm': 'Xuân Mai',
+            'cn': 'Chi Nê',
+            'yc': 'Yên Châu',
+            'yt': 'Yên Thủy'
+        };
+        
+        // Kiểm tra viết tắt cho điểm đi
+        const normalizedFrom = normalizeString(fromQuery);
+        if (abbreviationMap[normalizedFrom]) {
+            fromQuery = abbreviationMap[normalizedFrom];
+            document.getElementById('fromLocation').value = fromQuery;
+        }
+        
+        // Kiểm tra viết tắt cho điểm đến
+        const normalizedTo = normalizeString(toQuery);
+        if (abbreviationMap[normalizedTo]) {
+            toQuery = abbreviationMap[normalizedTo];
+            document.getElementById('toLocation').value = toQuery;
         }
         
         // Thực hiện tìm kiếm
