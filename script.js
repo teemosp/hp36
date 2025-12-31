@@ -201,7 +201,7 @@ function removeDuplicates(array, key1, key2) {
     });
 }
 
-// Tìm kiếm lộ trình CHÍNH XÁC với tìm kiếm nâng cao - VERSION FIXED
+// Tìm kiếm lộ trình CHÍNH XÁC với tìm kiếm nâng cao - VERSION 2 CHIỀU
 function searchRoute(fromQuery, toQuery) {
     const results = {
         fromMatches: [],
@@ -224,7 +224,7 @@ function searchRoute(fromQuery, toQuery) {
         results.toMatches = searchLocationsAdvanced(toQuery, locationList);
     }
     
-    // Tìm kiếm trong bảng giá vé - FIXED VERSION
+    // Tìm kiếm trong bảng giá vé với tìm kiếm THÔNG MINH 2 CHIỀU
     if ((results.fromMatches.length > 0 || results.toMatches.length > 0)) {
         giaveData.forEach(row => {
             const fromLocations = row[0].split(',').map(loc => loc.trim());
@@ -254,11 +254,33 @@ function searchRoute(fromQuery, toQuery) {
                         direction: 'forward' // Chiều xuôi
                     });
                 }
+                
+                // KIỂM TRA CHIỀU NGƯỢC: Quễ Võ là điểm đi, nhưng trong dữ liệu nó là điểm đến
+                const reverseFromMatch = toLocations.some(toLoc => {
+                    return results.fromMatches.some(match => 
+                        isLocationMatch(toLoc, match)
+                    );
+                });
+                
+                const reverseToMatch = fromLocations.some(fromLoc => {
+                    return results.toMatches.some(match => 
+                        isLocationMatch(fromLoc, match)
+                    );
+                });
+                
+                if (reverseFromMatch && reverseToMatch) {
+                    results.priceResults.push({
+                        from: row[1], // Đảo ngược
+                        to: row[0],   // Đảo ngược
+                        price: 'Liên hệ', // Không có giá ngược
+                        direction: 'reverse' // Chiều ngược
+                    });
+                }
             }
             
             // TRƯỜNG HỢP 2: Chỉ có điểm đi (tìm tất cả các điểm đến từ điểm đi này)
             else if (fromQuery && results.fromMatches.length > 0 && !toQuery) {
-                // Chỉ tìm các tuyến mà điểm đi KHỚP với điểm đi người dùng nhập
+                // Kiểm tra điểm đi khớp với cột "từ"
                 const fromMatch = fromLocations.some(fromLoc => {
                     return results.fromMatches.some(match => 
                         isLocationMatch(fromLoc, match)
@@ -274,11 +296,28 @@ function searchRoute(fromQuery, toQuery) {
                         isFromSearch: true
                     });
                 }
+                
+                // Kiểm tra điểm đi khớp với cột "đến" (chiều ngược)
+                const reverseFromMatch = toLocations.some(toLoc => {
+                    return results.fromMatches.some(match => 
+                        isLocationMatch(toLoc, match)
+                    );
+                });
+                
+                if (reverseFromMatch) {
+                    results.priceResults.push({
+                        from: row[1], // Đảo ngược
+                        to: row[0],   // Đảo ngược
+                        price: 'Liên hệ',
+                        direction: 'reverse',
+                        isFromSearch: true
+                    });
+                }
             }
             
             // TRƯỜNG HỢP 3: Chỉ có điểm đến (tìm tất cả các điểm đi đến điểm đến này)
             else if (toQuery && results.toMatches.length > 0 && !fromQuery) {
-                // Chỉ tìm các tuyến mà điểm đến KHỚP với điểm đến người dùng nhập
+                // Kiểm tra điểm đến khớp với cột "đến"
                 const toMatch = toLocations.some(toLoc => {
                     return results.toMatches.some(match => 
                         isLocationMatch(toLoc, match)
@@ -294,6 +333,23 @@ function searchRoute(fromQuery, toQuery) {
                         isToSearch: true
                     });
                 }
+                
+                // Kiểm tra điểm đến khớp với cột "từ" (chiều ngược)
+                const reverseToMatch = fromLocations.some(fromLoc => {
+                    return results.toMatches.some(match => 
+                        isLocationMatch(fromLoc, match)
+                    );
+                });
+                
+                if (reverseToMatch) {
+                    results.priceResults.push({
+                        from: row[1], // Đảo ngược
+                        to: row[0],   // Đảo ngược
+                        price: 'Liên hệ',
+                        direction: 'reverse',
+                        isToSearch: true
+                    });
+                }
             }
         });
     }
@@ -303,7 +359,7 @@ function searchRoute(fromQuery, toQuery) {
         results.connectedRoutes = findConnectedRoutes(results.fromMatches, results.toMatches);
     }
     
-    // Tìm kiếm thông tin xe đi - CHỈ khi có điểm đi
+    // Tìm kiếm thông tin xe đi - tìm cả 2 chiều
     if (results.fromMatches.length > 0) {
         vitriDiData.forEach(row => {
             const location = row[0].trim();
@@ -325,9 +381,30 @@ function searchRoute(fromQuery, toQuery) {
                 });
             }
         });
+        
+        // Kiểm tra xe về có điểm về trùng với điểm đi người dùng nhập
+        vitriVeData.forEach(row => {
+            const location = row[0].trim();
+            
+            const match = results.fromMatches.some(match => {
+                return isLocationMatch(location, match);
+            });
+            
+            if (match) {
+                results.vehicleResults.push({
+                    type: 'Về (tại điểm đi)',
+                    location: row[0],
+                    time: row[1],
+                    license: row[2],
+                    phone: row[3],
+                    vehicleType: row[4],
+                    direction: 'reverse_at_from'
+                });
+            }
+        });
     }
     
-    // Tìm kiếm thông tin xe về - CHỈ khi có điểm đến
+    // Tìm kiếm thông tin xe về - tìm cả 2 chiều
     if (results.toMatches.length > 0) {
         vitriVeData.forEach(row => {
             const location = row[0].trim();
@@ -346,6 +423,27 @@ function searchRoute(fromQuery, toQuery) {
                     phone: row[3],
                     vehicleType: row[4],
                     direction: 'forward'
+                });
+            }
+        });
+        
+        // Kiểm tra xe đi có điểm đi trùng với điểm đến người dùng nhập
+        vitriDiData.forEach(row => {
+            const location = row[0].trim();
+            
+            const match = results.toMatches.some(match => {
+                return isLocationMatch(location, match);
+            });
+            
+            if (match) {
+                results.vehicleResults.push({
+                    type: 'Đi (từ điểm đến)',
+                    location: row[0],
+                    time: row[1],
+                    license: row[2],
+                    phone: row[3],
+                    vehicleType: row[4],
+                    direction: 'reverse_at_to'
                 });
             }
         });
@@ -442,7 +540,7 @@ function searchFromSuggestion(from, to) {
     displaySearchResults(results, from, to);
 }
 
-// Hiển thị kết quả tìm kiếm - FIXED VERSION
+// Hiển thị kết quả tìm kiếm
 function displaySearchResults(results, fromQuery, toQuery) {
     const resultsContent = document.getElementById('searchResultsContent');
     const resultCount = document.getElementById('resultCount');
@@ -476,8 +574,6 @@ function displaySearchResults(results, fromQuery, toQuery) {
             searchInfo = `Tìm tất cả điểm đi đến <strong>${toQuery}</strong>`;
         }
         
-        resultCount.textContent = `Đang tìm kiếm cho ${searchInfo}`;
-        
         // Địa điểm tìm thấy
         html += `<div class="info-card">`;
         html += `<h3><i class="fas fa-map-marker-alt"></i> Địa Điểm Tìm Thấy</h3>`;
@@ -497,26 +593,51 @@ function displaySearchResults(results, fromQuery, toQuery) {
         }
         html += `</div>`;
         
+        // Phân loại kết quả giá vé
+        const forwardResults = results.priceResults.filter(r => r.direction === 'forward');
+        const reverseResults = results.priceResults.filter(r => r.direction === 'reverse');
+        
         // Kết quả giá vé CHIỀU XUÔI
-        if (results.priceResults.length > 0) {
+        if (forwardResults.length > 0) {
             html += `<div class="info-card">`;
-            
             if (fromQuery && toQuery) {
-                html += `<h3><i class="fas fa-money-bill-wave"></i> Giá Vé Tìm Thấy (${results.priceResults.length} kết quả)</h3>`;
+                html += `<h3><i class="fas fa-money-bill-wave"></i> Giá Vé Chiều Xuôi (${forwardResults.length} kết quả)</h3>`;
             } else if (fromQuery) {
-                html += `<h3><i class="fas fa-money-bill-wave"></i> Các Tuyến Xuất Phát Từ ${fromQuery} (${results.priceResults.length} kết quả)</h3>`;
+                html += `<h3><i class="fas fa-money-bill-wave"></i> Các Tuyến Xuất Phát Từ ${fromQuery} (${forwardResults.length} kết quả)</h3>`;
             } else if (toQuery) {
-                html += `<h3><i class="fas fa-money-bill-wave"></i> Các Tuyến Đến ${toQuery} (${results.priceResults.length} kết quả)</h3>`;
+                html += `<h3><i class="fas fa-money-bill-wave"></i> Các Tuyến Đến ${toQuery} (${forwardResults.length} kết quả)</h3>`;
             }
             
             html += `<table>`;
-            html += `<thead><tr><th>Từ</th><th>Đến</th><th>Giá vé (nghìn đồng)</th></tr></thead>`;
+            html += `<thead><tr><th>Từ</th><th>Đến</th><th>Giá vé (nghìn đồng)</th><th>Ghi chú</th></tr></thead>`;
             html += `<tbody>`;
-            results.priceResults.forEach(result => {
+            forwardResults.forEach(result => {
                 html += `<tr>`;
                 html += `<td>${result.from}</td>`;
                 html += `<td>${result.to}</td>`;
                 html += `<td class="price-cell">${result.price}</td>`;
+                html += `<td><span class="direction-badge forward">Chiều xuôi</span></td>`;
+                html += `</tr>`;
+            });
+            html += `</tbody>`;
+            html += `</table>`;
+            html += `</div>`;
+        }
+        
+        // Kết quả giá vé CHIỀU NGƯỢC (nếu có)
+        if (reverseResults.length > 0) {
+            html += `<div class="info-card">`;
+            html += `<h3><i class="fas fa-exchange-alt"></i> Tuyến Ngược Chiều (${reverseResults.length} kết quả)</h3>`;
+            html += `<p><i class="fas fa-info-circle"></i> Đây là các tuyến ngược chiều. Vui lòng liên hệ hotline để biết giá chính xác.</p>`;
+            html += `<table>`;
+            html += `<thead><tr><th>Từ</th><th>Đến</th><th>Giá vé</th><th>Ghi chú</th></tr></thead>`;
+            html += `<tbody>`;
+            reverseResults.forEach(result => {
+                html += `<tr>`;
+                html += `<td>${result.from}</td>`;
+                html += `<td>${result.to}</td>`;
+                html += `<td class="price-cell">${result.price}</td>`;
+                html += `<td><span class="direction-badge reverse">Chiều ngược (liên hệ)</span></td>`;
                 html += `</tr>`;
             });
             html += `</tbody>`;
@@ -550,9 +671,37 @@ function displaySearchResults(results, fromQuery, toQuery) {
             html += `</div>`;
         }
         
-        // Kết quả xe đi và xe về
+        // Gợi ý tìm kiếm nếu chỉ tìm một chiều
+        if (fromQuery && !toQuery && forwardResults.length === 0 && reverseResults.length === 0) {
+            html += `<div class="info-card">`;
+            html += `<h3><i class="fas fa-lightbulb"></i> Không tìm thấy tuyến từ ${fromQuery}</h3>`;
+            html += `<p>Không tìm thấy tuyến đường nào xuất phát từ <strong>${fromQuery}</strong>.</p>`;
+            html += `<p>Thử tìm kiếm với:</p>`;
+            html += `<ul class="suggestion-list">`;
+            html += `<li><button onclick="document.getElementById('toLocation').value = '${fromQuery}'; document.getElementById('searchForm').submit();">Tìm các điểm đi đến ${fromQuery}</button></li>`;
+            html += `<li><button onclick="document.getElementById('toLocation').value = 'Hà Nội'; document.getElementById('searchForm').submit();">Tìm từ ${fromQuery} đến Hà Nội</button></li>`;
+            html += `<li><button onclick="document.getElementById('toLocation').value = 'Hải Phòng'; document.getElementById('searchForm').submit();">Tìm từ ${fromQuery} đến Hải Phòng</button></li>`;
+            html += `</ul>`;
+            html += `</div>`;
+        }
+        
+        if (toQuery && !fromQuery && forwardResults.length === 0 && reverseResults.length === 0) {
+            html += `<div class="info-card">`;
+            html += `<h3><i class="fas fa-lightbulb"></i> Không tìm thấy tuyến đến ${toQuery}</h3>`;
+            html += `<p>Không tìm thấy tuyến đường nào đến <strong>${toQuery}</strong>.</p>`;
+            html += `<p>Thử tìm kiếm với:</p>`;
+            html += `<ul class="suggestion-list">`;
+            html += `<li><button onclick="document.getElementById('fromLocation').value = '${toQuery}'; document.getElementById('searchForm').submit();">Tìm các điểm đi từ ${toQuery}</button></li>`;
+            html += `<li><button onclick="document.getElementById('fromLocation').value = 'Hà Nội'; document.getElementById('toLocation').value = '${toQuery}'; document.getElementById('searchForm').submit();">Tìm từ Hà Nội đến ${toQuery}</button></li>`;
+            html += `</ul>`;
+            html += `</div>`;
+        }
+        
+        // Kết quả xe đi và xe về - PHÂN LOẠI RÕ RÀNG
         const diResults = results.vehicleResults.filter(r => r.type === 'Đi');
         const veResults = results.vehicleResults.filter(r => r.type === 'Về');
+        const diFromTo = results.vehicleResults.filter(r => r.type === 'Đi (từ điểm đến)');
+        const veAtFrom = results.vehicleResults.filter(r => r.type === 'Về (tại điểm đi)');
         
         if (diResults.length > 0) {
             html += `<div class="info-card">`;
@@ -594,25 +743,63 @@ function displaySearchResults(results, fromQuery, toQuery) {
             html += `</div>`;
         }
         
+        // Các kết quả đặc biệt
+        if (diFromTo.length > 0) {
+            html += `<div class="info-card">`;
+            html += `<h3><i class="fas fa-bus"></i> Xe Đi Từ ${toQuery} (${diFromTo.length} kết quả)</h3>`;
+            html += `<p><i class="fas fa-info-circle"></i> Các xe này đi từ điểm đến bạn đã nhập:</p>`;
+            html += `<table>`;
+            html += `<thead><tr><th>Bến đi</th><th>Giờ đi</th><th>Biển số</th><th>Số điện thoại</th><th>Loại xe</th></tr></thead>`;
+            html += `<tbody>`;
+            diFromTo.forEach(result => {
+                html += `<tr>`;
+                html += `<td>${result.location}</td>`;
+                html += `<td class="time-cell">${result.time}</td>`;
+                html += `<td>${result.license}</td>`;
+                html += `<td>${result.phone}</td>`;
+                html += `<td style="color: ${result.vehicleType.toLowerCase() === 'nằm' ? '#2a5298' : '#e74c3c'}; font-weight: 600;">${result.vehicleType.toLowerCase() === 'nằm' ? 'Xe giường nằm' : 'Xe ghế ngồi'}</td>`;
+                html += `</tr>`;
+            });
+            html += `</tbody>`;
+            html += `</table>`;
+            html += `</div>`;
+        }
+        
+        if (veAtFrom.length > 0) {
+            html += `<div class="info-card">`;
+            html += `<h3><i class="fas fa-bus"></i> Xe Về Tại ${fromQuery} (${veAtFrom.length} kết quả)</h3>`;
+            html += `<p><i class="fas fa-info-circle"></i> Các xe này về tại điểm đi bạn đã nhập:</p>`;
+            html += `<table>`;
+            html += `<thead><tr><th>Bến về</th><th>Giờ về</th><th>Biển số</th><th>Số điện thoại</th><th>Loại xe</th></tr></thead>`;
+            html += `<tbody>`;
+            veAtFrom.forEach(result => {
+                html += `<tr>`;
+                html += `<td>${result.location}</td>`;
+                html += `<td class="time-cell">${result.time}</td>`;
+                html += `<td>${result.license}</td>`;
+                html += `<td>${result.phone}</td>`;
+                html += `<td style="color: ${result.vehicleType.toLowerCase() === 'nằm' ? '#2a5298' : '#e74c3c'}; font-weight: 600;">${result.vehicleType.toLowerCase() === 'nằm' ? 'Xe giường nằm' : 'Xe ghế ngồi'}</td>`;
+                html += `</tr>`;
+            });
+            html += `</tbody>`;
+            html += `</table>`;
+            html += `</div>`;
+        }
+        
         // Tổng kết
-        const totalResults = results.priceResults.length + results.connectedRoutes.length + diResults.length + veResults.length;
+        const totalResults = forwardResults.length + reverseResults.length + 
+                            results.connectedRoutes.length + 
+                            diResults.length + veResults.length + 
+                            diFromTo.length + veAtFrom.length;
         
         if (totalResults === 0) {
+            resultCount.textContent = `Không tìm thấy thông tin cho ${searchInfo}`;
             html += `<div class="no-results">`;
             html += `<i class="fas fa-info-circle"></i>`;
-            if (fromQuery && !toQuery) {
-                html += `<h3>Không tìm thấy tuyến nào xuất phát từ ${fromQuery}</h3>`;
-                html += `<p>Không tìm thấy tuyến đường nào xuất phát từ <strong>${fromQuery}</strong>.</p>`;
-            } else if (!fromQuery && toQuery) {
-                html += `<h3>Không tìm thấy tuyến nào đến ${toQuery}</h3>`;
-                html += `<p>Không tìm thấy tuyến đường nào đến <strong>${toQuery}</strong>.</p>`;
-            } else {
-                html += `<h3>Không có thông tin lộ trình cụ thể</h3>`;
-                html += `<p>Không tìm thấy thông tin lộ trình cụ thể cho tìm kiếm này.</p>`;
-            }
+            html += `<h3>Không có thông tin lộ trình cụ thể</h3>`;
+            html += `<p>Không tìm thấy thông tin lộ trình cụ thể cho tìm kiếm này.</p>`;
             html += `<p>Vui lòng liên hệ hotline <strong>0948 531 333</strong> để được tư vấn chi tiết.</p>`;
             html += `</div>`;
-            resultCount.textContent = `Không tìm thấy thông tin cho ${searchInfo}`;
         } else {
             resultCount.textContent = `Tìm thấy ${totalResults} kết quả cho ${searchInfo}`;
         }
