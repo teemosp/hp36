@@ -434,6 +434,62 @@ footer {
     font-size: 0.9rem;
 }
 
+/* Badge cho chiều đi */
+.direction-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.direction-badge.forward {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.direction-badge.reverse {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Autocomplete improvements */
+.autocomplete-item.active {
+    background-color: #2a5298;
+    color: white;
+}
+
+.autocomplete-item.active strong {
+    color: white;
+}
+
+.autocomplete-item strong {
+    color: #2a5298;
+    font-weight: bold;
+}
+
+/* Nút trong suggestion list */
+.suggestion-list button {
+    background: none;
+    border: 1px solid #2a5298;
+    color: #2a5298;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 5px;
+}
+
+.suggestion-list button:hover {
+    background-color: #2a5298;
+    color: white;
+}
+
+/* Responsive cho bảng */
 @media (max-width: 768px) {
     .header-content {
         flex-direction: column;
@@ -468,5 +524,21 @@ footer {
     
     table th, table td {
         padding: 8px 10px;
+    }
+    
+    /* Ẩn cột ghi chú trên mobile */
+    table th:nth-child(4),
+    table td:nth-child(4) {
+        display: none;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .back-to-toc {
+        align-self: flex-end;
     }
 }
