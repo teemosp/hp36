@@ -829,3 +829,59 @@ footer {
 .toc-card {
     animation: fadeIn 0.5s ease-out;
 }
+/* =========================
+   FIX IOS SAFARI TABLE
+========================= */
+
+/* Bọc table để iPhone scroll ngang đúng */
+.table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Safari rất kỵ table-layout fixed */
+table {
+    width: 100%;
+    table-layout: auto !important;
+    border-collapse: collapse;
+}
+
+/* FIX mất chữ trong td */
+th, td {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow: visible !important;
+}
+
+/* CẤM flex trong td (Safari lỗi) */
+td {
+    display: table-cell !important;
+}
+
+/* FIX riêng giờ – giá – điện thoại */
+.time-cell {
+    white-space: nowrap !important;
+    font-weight: 600;
+}
+
+.phone-cell {
+    white-space: nowrap !important;
+    font-weight: 600;
+    color: #1565c0;
+}
+
+.price-cell {
+    white-space: nowrap !important;
+    font-weight: 700;
+    color: #d32f2f;
+}
+
+/* iPhone font nhỏ hơn chút cho dễ vừa */
+@media (max-width: 768px) {
+    table {
+        font-size: 14px;
+    }
+}
+
+
