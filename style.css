@@ -3,27 +3,47 @@
     padding: 0;
     box-sizing: border-box;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    -webkit-tap-highlight-color: transparent; /* Quan trọng cho iOS */
+}
+
+html {
+    -webkit-text-size-adjust: 100%; /* Ngăn zoom trên iOS */
+    -webkit-font-smoothing: antialiased;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+    overflow-x: hidden;
 }
 
 body {
     background-color: #f5f7fa;
     color: #333;
     line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    padding-bottom: env(safe-area-inset-bottom); /* Safe area cho iPhone X */
+    padding-top: env(safe-area-inset-top); /* Safe area cho iPhone X */
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    padding-left: max(20px, env(safe-area-inset-left)); /* Safe area */
+    padding-right: max(20px, env(safe-area-inset-right)); /* Safe area */
 }
 
 header {
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     color: white;
     padding: 25px 0;
+    padding-top: max(25px, env(safe-area-inset-top)); /* Safe area cho notch */
+    padding-bottom: 15px;
     border-radius: 0 0 10px 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+    position: relative;
+    width: 100%;
 }
 
 .header-content {
@@ -31,87 +51,100 @@ header {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
+    padding: 0 20px;
 }
 
 .logo {
     display: flex;
     align-items: center;
     gap: 15px;
+    flex: 1;
+    min-width: 250px;
 }
 
 .logo i {
-    font-size: 2.8rem;
+    font-size: 2.2rem; /* Giảm cho mobile */
     color: #ffcc00;
 }
 
 .logo-text h1 {
-    font-size: 1.8rem;
+    font-size: 1.5rem; /* Giảm cho mobile */
     margin-bottom: 5px;
+    line-height: 1.3;
 }
 
 .logo-text p {
-    font-size: 1rem;
+    font-size: 0.9rem; /* Giảm cho mobile */
     opacity: 0.9;
 }
 
 .contact-header {
     text-align: right;
+    flex-shrink: 0;
 }
 
 .contact-header p {
     margin-bottom: 5px;
-    font-size: 1.1rem;
+    font-size: 1rem;
 }
 
 .phone {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: bold;
     color: #ffcc00;
+    display: inline-block;
 }
 
 .search-container {
     background-color: white;
     border-radius: 10px;
-    padding: 25px;
+    padding: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    margin-bottom: 30px;
+    margin-bottom: 25px;
+    position: relative;
+    z-index: 10;
 }
 
 .search-container h2 {
     color: #1e3c72;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 2px solid #f0f0f0;
     display: flex;
     align-items: center;
     gap: 10px;
+    font-size: 1.3rem;
 }
 
 .search-form {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
+    display: flex;
+    flex-direction: column;
     gap: 15px;
-    align-items: end;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
     position: relative;
+    width: 100%;
 }
 
 .form-group label {
     margin-bottom: 8px;
     font-weight: 600;
     color: #2a5298;
+    font-size: 0.95rem;
 }
 
 .form-control {
-    padding: 12px 15px;
+    padding: 14px 15px;
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.3s;
+    -webkit-appearance: none; /* Quan trọng cho iOS */
+    appearance: none;
+    width: 100%;
 }
 
 .form-control:focus {
@@ -124,8 +157,8 @@ header {
     background-color: #2a5298;
     color: white;
     border: none;
-    padding: 12px 25px;
-    border-radius: 5px;
+    padding: 15px 25px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 1rem;
     font-weight: 600;
@@ -134,7 +167,9 @@ header {
     justify-content: center;
     gap: 8px;
     transition: background-color 0.3s;
-    height: 44px;
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .search-btn:hover {
@@ -143,8 +178,9 @@ header {
 
 .search-examples {
     margin-top: 15px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: #666;
+    line-height: 1.5;
 }
 
 .search-examples span {
@@ -155,41 +191,45 @@ header {
 .toc-container {
     background-color: white;
     border-radius: 10px;
-    padding: 25px;
+    padding: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
 .toc-container h2 {
     color: #1e3c72;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 2px solid #f0f0f0;
     display: flex;
     align-items: center;
     gap: 10px;
+    font-size: 1.3rem;
 }
 
 .toc-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
+    grid-template-columns: 1fr; /* Mobile first */
+    gap: 15px;
 }
 
 .toc-card {
     background-color: #f8f9fa;
     border-radius: 8px;
-    padding: 25px;
+    padding: 20px;
     border-left: 5px solid #2a5298;
     transition: transform 0.3s, box-shadow 0.3s;
     cursor: pointer;
     text-align: center;
+    -webkit-tap-highlight-color: rgba(42, 82, 152, 0.1);
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-.toc-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-    background-color: #eef2f7;
+.toc-card:active {
+    transform: scale(0.98); /* Feedback khi chạm */
 }
 
 .toc-card h3 {
@@ -199,33 +239,39 @@ header {
     justify-content: center;
     align-items: center;
     gap: 10px;
+    font-size: 1.1rem;
 }
 
 .toc-card p {
     color: #666;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 
 .content-section {
     background-color: white;
     border-radius: 10px;
-    padding: 25px;
+    padding: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    margin-bottom: 30px;
+    margin-bottom: 25px;
     display: none;
+    position: relative;
+    min-height: 200px; /* Đảm bảo chiều cao tối thiểu */
 }
 
 .content-section.active {
     display: block;
+    animation: fadeIn 0.3s ease-out;
 }
 
 .section-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
+    align-items: flex-start;
+    margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 2px solid #f0f0f0;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .section-header h2 {
@@ -233,13 +279,15 @@ header {
     display: flex;
     align-items: center;
     gap: 10px;
+    font-size: 1.3rem;
+    flex: 1;
 }
 
 .back-to-toc {
     background-color: #2a5298;
     color: white;
     border: none;
-    padding: 8px 15px;
+    padding: 10px 15px;
     border-radius: 5px;
     cursor: pointer;
     display: flex;
@@ -247,6 +295,9 @@ header {
     gap: 8px;
     font-size: 0.9rem;
     transition: background-color 0.3s;
+    -webkit-appearance: none;
+    appearance: none;
+    white-space: nowrap;
 }
 
 .back-to-toc:hover {
@@ -256,50 +307,76 @@ header {
 .info-card {
     background-color: #f8f9fa;
     border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 25px;
+    padding: 15px;
+    margin-bottom: 20px;
+    overflow: hidden; /* Ngăn tràn nội dung */
 }
 
 .info-card h3 {
     color: #1e3c72;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     display: flex;
     align-items: center;
     gap: 10px;
+    font-size: 1.1rem;
 }
 
 .info-item {
     display: flex;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    margin-bottom: 12px;
+    width: 100%;
 }
 
 .info-label {
     font-weight: 600;
-    min-width: 200px;
     color: #2a5298;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
 }
 
 .info-value {
     flex: 1;
+    font-size: 0.95rem;
+    word-break: break-word; /* Quan trọng cho mobile */
+}
+
+/* FIX QUAN TRỌNG: Bảng trên mobile */
+.table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scroll cho iOS */
+    margin: 15px 0;
+    border-radius: 5px;
+    border: 1px solid #eee;
+    position: relative;
+    min-height: 50px; /* Đảm bảo bảng có không gian */
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    font-size: 0.9rem;
+    min-width: 600px; /* Đảm bảo bảng đủ rộng để scroll */
+    table-layout: fixed;
 }
 
 table th {
     background-color: #2a5298;
     color: white;
     text-align: left;
-    padding: 12px 15px;
+    padding: 12px 10px;
+    font-weight: 600;
+    position: sticky;
+    left: 0;
+    white-space: nowrap;
 }
 
 table td {
-    padding: 10px 15px;
+    padding: 10px;
     border-bottom: 1px solid #e0e0e0;
+    vertical-align: top;
+    word-break: break-word;
+    min-width: 100px; /* Đảm bảo ô không quá nhỏ */
 }
 
 table tr:nth-child(even) {
@@ -314,32 +391,36 @@ table tr:hover {
     font-weight: 600;
     color: #e74c3c;
     text-align: right;
+    white-space: nowrap;
 }
 
 .time-cell {
     font-weight: 600;
     color: #2a5298;
+    white-space: nowrap;
 }
 
 .search-results {
     background-color: white;
     border-radius: 10px;
-    padding: 25px;
+    padding: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    margin-bottom: 30px;
+    margin-bottom: 25px;
     display: none;
+    position: relative;
 }
 
 .search-results.active {
     display: block;
+    animation: fadeIn 0.3s ease-out;
 }
 
 .result-count {
     margin-bottom: 20px;
     color: #2a5298;
     font-weight: 600;
-    font-size: 1.1rem;
-    padding: 10px 15px;
+    font-size: 1rem;
+    padding: 12px 15px;
     background-color: #f0f5ff;
     border-radius: 5px;
     border-left: 4px solid #2a5298;
@@ -352,7 +433,7 @@ table tr:hover {
 }
 
 .no-results i {
-    font-size: 3rem;
+    font-size: 2.5rem;
     color: #ddd;
     margin-bottom: 15px;
 }
@@ -364,12 +445,8 @@ table tr:hover {
 
 .suggestion-list li {
     margin-bottom: 8px;
-    cursor: pointer;
     color: #2a5298;
-}
-
-.suggestion-list li:hover {
-    text-decoration: underline;
+    font-size: 0.9rem;
 }
 
 .autocomplete-list {
@@ -385,13 +462,15 @@ table tr:hover {
     display: none;
     top: 100%;
     left: 0;
+    -webkit-overflow-scrolling: touch;
 }
 
 .autocomplete-item {
-    padding: 10px 15px;
+    padding: 12px 15px;
     cursor: pointer;
     border-bottom: 1px solid #f0f0f0;
     transition: background-color 0.2s;
+    font-size: 0.95rem;
 }
 
 .autocomplete-item:hover {
@@ -402,147 +481,141 @@ table tr:hover {
     border-bottom: none;
 }
 
-.route-connection {
-    background-color: #e8f4ff;
-    border-left: 4px solid #2a5298;
-    padding: 15px;
-    margin: 20px 0;
-    border-radius: 5px;
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.route-connection h4 {
-    color: #1e3c72;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+/* Đặc biệt cho iPhone X */
+@media screen and (max-width: 375px) and (max-height: 812px) {
+    /* iPhone X specific fixes */
+    body {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+    
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .logo-text h1 {
+        font-size: 1.2rem;
+    }
+    
+    table {
+        min-width: 500px; /* Giảm cho iPhone X */
+    }
+    
+    table th, table td {
+        padding: 8px 6px;
+        font-size: 0.85rem;
+    }
+    
+    /* Ẩn cột không cần thiết trên iPhone X */
+    table th:nth-child(4),
+    table td:nth-child(4),
+    table th:nth-child(5),
+    table td:nth-child(5) {
+        display: none;
+    }
 }
 
-.connected-route {
-    background-color: #f0f8ff;
-    border: 1px solid #d1e3ff;
-    border-radius: 5px;
-    padding: 15px;
-    margin: 15px 0;
+/* Responsive cho tablet và desktop */
+@media (min-width: 768px) {
+    .toc-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .search-form {
+        flex-direction: row;
+        align-items: flex-end;
+    }
+    
+    .form-group {
+        flex: 1;
+    }
+    
+    .search-btn {
+        width: auto;
+        min-width: 120px;
+    }
+    
+    .info-item {
+        flex-direction: row;
+    }
+    
+    .info-label {
+        min-width: 180px;
+        margin-bottom: 0;
+    }
+    
+    table {
+        min-width: 0;
+        font-size: 0.95rem;
+    }
+    
+    table th:nth-child(4),
+    table td:nth-child(4),
+    table th:nth-child(5),
+    table td:nth-child(5) {
+        display: table-cell;
+    }
 }
 
-.connected-route h5 {
-    color: #2a5298;
-    margin-bottom: 10px;
+@media (min-width: 992px) {
+    .toc-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .header-content {
+        flex-wrap: nowrap;
+    }
+    
+    .logo-text h1 {
+        font-size: 1.6rem;
+    }
 }
 
-/* Badge cho chiều đi */
-.direction-badge {
-    padding: 4px 8px;
+/* Fix cho Safari iOS */
+@supports (-webkit-touch-callout: none) {
+    /* CSS chỉ cho iOS */
+    body {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .search-btn, .back-to-toc, .toc-card {
+        cursor: pointer;
+    }
+    
+    /* Fix cho input trên iOS */
+    input, select, textarea {
+        font-size: 16px !important; /* Ngăn zoom trên iOS */
+    }
+    
+    .form-control {
+        font-size: 16px;
+    }
+}
+
+/* Scrollbar cho webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #2a5298;
     border-radius: 4px;
-    font-size: 0.8rem;
-    font-weight: 600;
 }
 
-.direction-badge.forward {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.direction-badge.reverse {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-/* Autocomplete improvements */
-.autocomplete-item.active {
-    background-color: #2a5298;
-    color: white;
-}
-
-.autocomplete-item.active strong {
-    color: white;
-}
-
-.autocomplete-item strong {
-    color: #2a5298;
-    font-weight: bold;
-}
-
-/* Nút trong suggestion list */
-.suggestion-list button {
-    background: none;
-    border: 1px solid #2a5298;
-    color: #2a5298;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.3s;
-    width: 100%;
-    text-align: left;
-    margin-bottom: 5px;
-}
-
-.suggestion-list button:hover {
-    background-color: #2a5298;
-    color: white;
-}
-
-/* Loại xe style */
-.vehicle-type-nam {
-    color: #2a5298;
-    font-weight: 600;
-}
-
-.vehicle-type-ghe {
-    color: #e74c3c;
-    font-weight: 600;
-}
-
-/* Thông báo tìm kiếm */
-.search-message {
-    padding: 15px;
-    margin: 15px 0;
-    border-radius: 5px;
-    border-left: 4px solid #2a5298;
-    background-color: #f0f5ff;
-}
-
-.search-message.info {
-    border-left-color: #17a2b8;
-    background-color: #e8f4f8;
-}
-
-.search-message.warning {
-    border-left-color: #ffc107;
-    background-color: #fff8e1;
-}
-
-.search-message.success {
-    border-left-color: #28a745;
-    background-color: #e8f5e9;
-}
-
-/* Phân trang cho bảng lớn */
-.table-container {
-    overflow-x: auto;
-    margin: 20px 0;
-}
-
-/* Hiệu ứng loading */
-.loading-spinner {
-    text-align: center;
-    padding: 30px;
-}
-
-.loading-spinner i {
-    font-size: 2rem;
-    color: #2a5298;
-    margin-bottom: 15px;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+::-webkit-scrollbar-thumb:hover {
+    background: #1e3c72;
 }
 
 footer {
@@ -551,337 +624,78 @@ footer {
     margin-top: 30px;
     color: #666;
     border-top: 1px solid #e0e0e0;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    background: white;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
 }
 
-/* Responsive styles */
-@media (max-width: 768px) {
-    .header-content {
-        flex-direction: column;
-        text-align: center;
-        gap: 15px;
-    }
-    
-    .contact-header {
-        text-align: center;
-    }
-    
-    .search-form {
-        grid-template-columns: 1fr;
-    }
-    
-    .toc-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .info-item {
-        flex-direction: column;
-        gap: 5px;
-    }
-    
-    .info-label {
-        min-width: auto;
-    }
-    
-    table {
-        font-size: 0.85rem;
-    }
-    
-    table th, table td {
-        padding: 8px 10px;
-    }
-    
-    /* Ẩn cột biển số và loại xe trên mobile để tiết kiệm không gian */
-    table th:nth-child(3),
-    table td:nth-child(3),
-    table th:nth-child(5),
-    table td:nth-child(5) {
-        display: none;
-    }
-    
-    .section-header {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
-    }
-    
-    .back-to-toc {
-        align-self: flex-end;
-        font-size: 0.8rem;
-        padding: 6px 12px;
-    }
-    
-    .logo i {
-        font-size: 2.2rem;
-    }
-    
-    .logo-text h1 {
-        font-size: 1.4rem;
-    }
-    
-    .phone {
-        font-size: 1.2rem;
-    }
-    
-    .container {
-        padding: 15px;
-    }
-    
-    .search-container,
-    .toc-container,
-    .content-section,
-    .search-results {
-        padding: 20px;
-    }
-    
-    .result-count {
-        font-size: 1rem;
-        padding: 8px 12px;
-    }
-}
-
-@media (max-width: 480px) {
-    .logo-text h1 {
-        font-size: 1.2rem;
-    }
-    
-    .logo-text p {
-        font-size: 0.9rem;
-    }
-    
-    .contact-header p {
-        font-size: 1rem;
-    }
-    
-    .phone {
-        font-size: 1.1rem;
-    }
-    
-    .search-container h2,
-    .toc-container h2,
-    .section-header h2,
-    .info-card h3 {
-        font-size: 1.2rem;
-    }
-    
-    .toc-card h3 {
-        font-size: 1.1rem;
-    }
-    
-    table {
-        font-size: 0.8rem;
-    }
-    
-    table th, table td {
-        padding: 6px 8px;
-    }
-    
-    /* Trên màn hình rất nhỏ, ẩn thêm cột */
-    table th:nth-child(4),
-    table td:nth-child(4) {
-        display: none;
-    }
-    
-    .form-control {
-        padding: 10px 12px;
-        font-size: 0.9rem;
-    }
-    
-    .search-btn {
-        padding: 10px 15px;
-        font-size: 0.9rem;
-    }
-    
-    .back-to-toc {
-        font-size: 0.75rem;
-        padding: 5px 10px;
-    }
-}
-
-/* In đậm các tiêu đề quan trọng */
-.important-text {
-    font-weight: 700;
-    color: #1e3c72;
-}
-
-/* Màu cho các trạng thái */
-.status-active {
-    color: #28a745;
-    font-weight: 600;
-}
-
-.status-inactive {
-    color: #dc3545;
-    font-weight: 600;
-}
-
-/* Scrollbar tùy chỉnh */
-.autocomplete-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.autocomplete-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-}
-
-.autocomplete-list::-webkit-scrollbar-thumb {
-    background: #2a5298;
-    border-radius: 3px;
-}
-
-.autocomplete-list::-webkit-scrollbar-thumb:hover {
-    background: #1e3c72;
-}
-
-/* Hiệu ứng chuyển động mượt mà */
-.toc-card,
-.info-card,
-.autocomplete-item,
-.search-btn,
-.back-to-toc {
-    transition: all 0.3s ease;
-}
-
-/* Bóng đổ nâng cao cho card */
-.toc-card:hover,
-.info-card:hover {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-
-/* Border radius nhất quán */
-.search-container,
-.toc-container,
-.content-section,
-.search-results,
-.info-card,
-.toc-card {
+/* Loading indicator */
+.loading {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
     border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Màu sắc cho các icon */
-.fa-bus {
-    color: #2a5298;
+.loading.active {
+    display: block;
 }
 
-.fa-money-bill-wave {
-    color: #28a745;
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2a5298;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
 }
 
-.fa-clock {
-    color: #ffc107;
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-.fa-map-marker-alt {
-    color: #dc3545;
+/* Mobile navigation helper */
+.mobile-helper {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: #2a5298;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    font-size: 1.5rem;
+    cursor: pointer;
 }
 
-.fa-building {
-    color: #6c757d;
-}
-
-.fa-search {
-    color: #2a5298;
-}
-
-.fa-route {
-    color: #17a2b8;
-}
-
-.fa-lightbulb {
-    color: #ffc107;
-}
-
-.fa-info-circle {
-    color: #17a2b8;
-}
-
-.fa-exclamation-circle {
-    color: #dc3545;
-}
-
-/* Gradient cho các nút */
-.search-btn {
-    background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
-}
-
-.search-btn:hover {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-}
-
-.back-to-toc {
-    background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
-}
-
-.back-to-toc:hover {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-}
-
-/* Animation cho các phần tử */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.content-section.active,
-.search-results.active,
-.info-card,
-.toc-card {
-    animation: fadeIn 0.5s ease-out;
-}
-/* =========================
-   FIX IOS SAFARI TABLE
-========================= */
-
-/* Bọc table để iPhone scroll ngang đúng */
-.table-wrap {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* Safari rất kỵ table-layout fixed */
-table {
-    width: 100%;
-    table-layout: auto !important;
-    border-collapse: collapse;
-}
-
-/* FIX mất chữ trong td */
-th, td {
-    white-space: normal !important;
-    word-break: break-word !important;
-    overflow: visible !important;
-}
-
-/* CẤM flex trong td (Safari lỗi) */
-td {
-    display: table-cell !important;
-}
-
-/* FIX riêng giờ – giá – điện thoại */
-.time-cell {
-    white-space: nowrap !important;
-    font-weight: 600;
-}
-
-.phone-cell {
-    white-space: nowrap !important;
-    font-weight: 600;
-    color: #1565c0;
-}
-
-.price-cell {
-    white-space: nowrap !important;
-    font-weight: 700;
-    color: #d32f2f;
-}
-
-/* iPhone font nhỏ hơn chút cho dễ vừa */
 @media (max-width: 768px) {
-    table {
-        font-size: 14px;
+    .mobile-helper {
+        display: flex;
+    }
+    
+    /* Đảm bảo bảng luôn hiển thị */
+    .table-wrapper {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    /* Fix cho safari rendering */
+    .content-section.active {
+        opacity: 1;
+        transform: none;
     }
 }
-
-
