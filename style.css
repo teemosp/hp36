@@ -1,240 +1,104 @@
-/* RESET và cơ bản */
+/* EMERGENCY FIX FOR iOS - ĐẶT ĐẦU FILE CSS */
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
 }
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f7fa;
-    color: #333;
-    line-height: 1.6;
-    overflow-x: hidden;
-    -webkit-text-size-adjust: 100%; /* QUAN TRỌNG: Ngăn zoom trên iOS */
+html, body {
+    width: 100% !important;
+    overflow-x: hidden !important;
+    position: relative !important;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 15px;
-}
-
-/* HEADER */
-header {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    color: white;
-    padding: 20px 15px;
-    margin-bottom: 20px;
-}
-
-.header-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.logo i {
-    font-size: 2rem;
-    color: #ffcc00;
-}
-
-.logo-text h1 {
-    font-size: 1.2rem;
-    margin-bottom: 5px;
-}
-
-.logo-text p {
-    font-size: 0.9rem;
-    opacity: 0.9;
-}
-
-.phone {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #ffcc00;
-    display: block;
-    margin-top: 10px;
-}
-
-/* SEARCH FORM */
-.search-container {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.search-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.form-group {
-    width: 100%;
-}
-
-.form-control {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px; /* QUAN TRỌNG: Ngăn zoom trên iOS */
-}
-
-.search-btn {
-    background: #2a5298;
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 5px;
-    font-size: 1rem;
-    width: 100%;
-    cursor: pointer;
-}
-
-/* TOC */
-.toc-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.toc-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    cursor: pointer;
-    text-align: center;
-}
-
-/* TABLES - FIX QUAN TRỌNG */
-.table-container {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch; /* Scroll mượt trên iOS */
-    margin: 15px 0;
-    border: 1px solid #eee;
-    border-radius: 5px;
-    background: white;
-}
-
+/* FORCE TABLE VISIBILITY ON iOS */
 table {
-    width: 100%;
-    min-width: 600px; /* Đảm bảo bảng đủ rộng để scroll */
-    border-collapse: collapse;
-    font-size: 14px;
+    display: table !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
 }
 
-table th {
-    background: #2a5298;
-    color: white;
-    padding: 10px;
-    text-align: left;
-    position: sticky;
-    left: 0;
+/* OVERRIDE ANY HIDING */
+#giave-section table,
+#gioxuatben-section table,
+#vitri-section table,
+.content-section table,
+.search-results table {
+    display: table !important;
+    visibility: visible !important;
+    width: 100% !important;
 }
 
-table td {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
+/* TABLE CONTAINER FIX */
+.table-container {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin: 15px 0 !important;
+    border: 1px solid #ddd !important;
+    border-radius: 5px !important;
+    background: white !important;
 }
 
-table tr:nth-child(even) {
-    background: #f8f9fa;
+/* Đảm bảo tbody hiển thị */
+tbody {
+    display: table-row-group !important;
 }
 
-/* Content sections */
-.content-section {
-    display: none;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+tr {
+    display: table-row !important;
 }
 
-.content-section.active {
-    display: block;
+td, th {
+    display: table-cell !important;
+    padding: 8px !important;
+    border: 1px solid #eee !important;
 }
 
-/* Responsive */
-@media (min-width: 768px) {
-    .header-content {
-        flex-direction: row;
-        justify-content: space-between;
-        text-align: left;
-    }
-    
-    .search-form {
-        flex-direction: row;
-    }
-    
-    .form-group {
-        flex: 1;
-    }
-    
-    .search-btn {
-        width: auto;
-    }
-    
-    .toc-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 992px) {
-    .toc-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-/* iPhone X specific fixes */
-@media only screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
+/* iOS SPECIFIC FIXES */
+@supports (-webkit-touch-callout: none) {
     body {
-        padding-top: env(safe-area-inset-top);
-        padding-bottom: env(safe-area-inset-bottom);
+        padding-top: env(safe-area-inset-top) !important;
+        padding-bottom: env(safe-area-inset-bottom) !important;
     }
     
     .container {
-        padding-left: env(safe-area-inset-left);
-        padding-right: env(safe-area-inset-right);
+        padding-left: max(15px, env(safe-area-inset-left)) !important;
+        padding-right: max(15px, env(safe-area-inset-right)) !important;
     }
     
+    /* Force all tables to be visible */
     table {
-        font-size: 13px;
+        min-width: 500px !important;
     }
     
-    table th, table td {
-        padding: 8px 6px;
+    /* Ensure sections are visible */
+    .content-section.active {
+        display: block !important;
+        position: relative !important;
+        z-index: 1 !important;
     }
 }
 
-/* Loading indicator */
-.loading {
-    display: none;
+/* DEBUG OVERLAY - CHỈ HIỆN KHI CÓ PARAM ?debug */
+body.debug-mode::before {
+    content: "DEBUG MODE - Tables: " attr(data-table-count);
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255,255,255,0.9);
-    padding: 20px;
-    border-radius: 10px;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
     z-index: 9999;
+    font-size: 12px;
 }
 
-.loading.active {
-    display: block;
-}
+/* === PHẦN CSS GỐC CỦA BẠN GIỮ NGUYÊN TỪ ĐÂY === */
+/* ... phần CSS cũ của bạn ... */
