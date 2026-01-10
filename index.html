@@ -308,5 +308,51 @@
     <!-- Tách JavaScript ra file riêng -->
     <script src="./data.js"></script>
     <script src="./script.js"></script>
+    <!-- EMERGENCY iOS FIX ELEMENT -->
+<div id="ios-emergency-fix" style="
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: #ff4444;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 99999;
+    display: none;
+    font-size: 12px;
+">
+    <strong>iOS FIX ACTIVE</strong><br>
+    <button onclick="location.reload()" style="background:white;color:#ff4444;border:none;padding:5px;margin-top:5px;border-radius:3px;">
+        Reload Page
+    </button>
+</div>
+
+<script>
+// Hiển thị emergency fix trên iOS
+if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    document.getElementById('ios-emergency-fix').style.display = 'block';
+    
+    // Auto-hide sau 10 giây
+    setTimeout(() => {
+        document.getElementById('ios-emergency-fix').style.display = 'none';
+    }, 10000);
+    
+    // Log tất cả elements để debug
+    setTimeout(() => {
+        console.log('=== FULL DOM DEBUG ===');
+        const sections = ['giave-section', 'gioxuatben-section', 'vitri-section'];
+        sections.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                console.log(id, {
+                    display: window.getComputedStyle(el).display,
+                    visible: el.offsetWidth > 0,
+                    children: el.children.length
+                });
+            }
+        });
+    }, 2000);
+}
+</script>
 </body>
 </html>
