@@ -2,15 +2,20 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Công Ty Vận Tải Hoàng Phương</title>
     <link rel="icon" type="image/png" href="bus.png">
     <meta name="google-site-verification" content="Ghnp5VF4VtdhYCBEWtLI46SetDkUl7sxUp7Y8QiF4NA" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <!-- Loading Indicator -->
+    <div id="loading" class="loading">
+        <div class="loading-spinner"></div>
+        <p>Đang tải dữ liệu...</p>
+    </div>
+    
     <header>
         <div class="container">
             <div class="header-content">
@@ -22,32 +27,34 @@
                     </div>
                 </div>
                 <div class="contact-header">
-                <p>
-                    <i class="fas fa-phone-alt"></i> Hotline/Zalo:
-                    <span class="phone">0948 531 333</span>
-                    <a href="https://zalo.me/0948531333" target="_blank" style="margin-left: 10px;">
-                        <i class="fab fa-zalo"style="color: #ffffff;"></i> Chat ngay
-                    </a>
-                </p>
+                    <p>
+                        <i class="fas fa-phone-alt"></i> Hotline/Zalo:
+                        <span class="phone">0948 531 333</span>
+                    </p>
+                    <p>
+                        <a href="https://zalo.me/0948531333" target="_blank" style="color: white; text-decoration: none;">
+                            <i class="fab fa-zalo"></i> Chat ngay
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>
     </header>
     
     <div class="container">
-        <!-- Tìm kiếm lộ trình -->
+        <!-- Search Section -->
         <div class="search-container">
             <h2><i class="fas fa-search"></i> Tìm Kiếm Lộ Trình</h2>
             <form id="searchForm" class="search-form">
                 <div class="form-group">
                     <label for="fromLocation">Nơi đi</label>
-                    <input type="text" id="fromLocation" class="form-control" placeholder="Ví dụ: Tén tằn..." autocomplete="off">
+                    <input type="text" id="fromLocation" class="form-control" placeholder="Ví dụ: Mường Lát..." autocomplete="off">
                     <div id="fromAutocomplete" class="autocomplete-list"></div>
                 </div>
                 
                 <div class="form-group">
                     <label for="toLocation">Nơi đến</label>
-                    <input type="text" id="toLocation" class="form-control" placeholder="Ví dụ: Quễ Võ" autocomplete="off">
+                    <input type="text" id="toLocation" class="form-control" placeholder="Ví dụ: Hà Nội" autocomplete="off">
                     <div id="toAutocomplete" class="autocomplete-list"></div>
                 </div>
                 
@@ -56,59 +63,59 @@
                 </button>
             </form>
             <div class="search-examples">
-                <p><span>Gợi ý tìm kiếm:</span> Bạn có thể nhập tên đầy đủ, viết tắt, có dấu hoặc không dấu. Ví dụ: "Mường Lát", "ML", "ml", "Thái Nguyên", "TN", "tn"...</p>
+                <p><span>Gợi ý:</span> Nhập tên đầy đủ hoặc viết tắt. Ví dụ: "ML", "TN", "Hà Nội"...</p>
             </div>
         </div>
         
-        <!-- Kết quả tìm kiếm -->
+        <!-- Search Results -->
         <div class="search-results" id="searchResults">
             <div class="section-header">
                 <h2><i class="fas fa-route"></i> Kết Quả Tìm Kiếm</h2>
-                <button class="back-to-toc" id="backFromResults"><i class="fas fa-arrow-left"></i> Quay lại tìm kiếm</button>
+                <button class="back-to-toc" id="backFromResults">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </button>
             </div>
-            
-            <div class="result-count" id="resultCount">Đang tìm kiếm...</div>
-            
-            <div id="searchResultsContent">
-                <!-- Nội dung kết quả sẽ được hiển thị ở đây -->
-            </div>
+            <div class="result-count" id="resultCount"></div>
+            <div id="searchResultsContent"></div>
         </div>
         
-        <!-- Mục lục chính -->
+        <!-- Main TOC -->
         <div class="toc-container" id="main-toc">
             <h2><i class="fas fa-list"></i> Mục Lục Nội Dung</h2>
             <div class="toc-grid">
                 <div class="toc-card" data-section="company-info">
                     <h3><i class="fas fa-building"></i> Thông Tin Công Ty</h3>
-                    <p>Thông tin doanh nghiệp và địa chỉ liên hệ</p>
+                    <p>Thông tin doanh nghiệp và liên hệ</p>
                 </div>
                 
                 <div class="toc-card" data-section="giave-section">
                     <h3><i class="fas fa-money-bill-wave"></i> Bảng Giá Vé</h3>
-                    <p>Bảng giá vé theo tuyến và các lưu ý</p>
+                    <p>Giá vé theo tuyến</p>
                 </div>
                 
                 <div class="toc-card" data-section="gioxuatben-section">
                     <h3><i class="fas fa-clock"></i> Giờ Xuất Bến</h3>
-                    <p>Lịch xuất bến các tuyến và thông tin liên hệ</p>
+                    <p>Lịch xuất bến các tuyến</p>
                 </div>
                 
                 <div class="toc-card" data-section="vitri-section">
                     <h3><i class="fas fa-map-marked-alt"></i> Vị Trí Xe</h3>
-                    <p>Thông tin vị trí xe, loại xe và liên hệ</p>
+                    <p>Thông tin xe đi và về</p>
                 </div>
             </div>
         </div>
         
-        <!-- Nội dung Thông tin công ty -->
+        <!-- Company Info -->
         <div class="content-section" id="company-info">
             <div class="section-header">
                 <h2><i class="fas fa-building"></i> Thông Tin Doanh Nghiệp</h2>
-                <button class="back-to-toc"><i class="fas fa-arrow-left"></i> Quay lại mục lục</button>
+                <button class="back-to-toc">
+                    <i class="fas fa-arrow-left"></i> Quay lại mục lục
+                </button>
             </div>
             
             <div class="info-card">
-                <h3><i class="fas fa-building"></i> Thông Tin Doanh Nghiệp</h3>
+                <h3><i class="fas fa-building"></i> Thông Tin Công Ty</h3>
                 <div class="info-item">
                     <div class="info-label">Tên công ty:</div>
                     <div class="info-value">CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ VẬN TẢI HOÀNG PHƯƠNG</div>
@@ -118,182 +125,127 @@
                     <div class="info-value">2800836982</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">Đăng ký lần đầu:</div>
-                    <div class="info-value">12/04/2005</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Cập nhật lần cuối:</div>
-                    <div class="info-value">11/02/2025</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Vốn điều lệ:</div>
-                    <div class="info-value">8.000.000.000 VNĐ (Tám tỷ đồng)</div>
-                </div>
-            </div>
-            
-            <div class="info-card">
-                <h3><i class="fas fa-map-marker-alt"></i> Địa Chỉ Liên Hệ</h3>
-                <div class="info-item">
-                    <div class="info-label">Trụ sở chính:</div>
+                    <div class="info-label">Địa chỉ:</div>
                     <div class="info-value">HH02-17 Vinhome Star City, Phường Hạc Thành, Tỉnh Thanh Hoá</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">Điện thoại:</div>
-                    <div class="info-value">0948955999</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Giám đốc:</div>
-                    <div class="info-value">HỒ THỊ HOÀNG</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Thành viên:</div>
-                    <div class="info-value">LÊ VIẾT PHƯƠNG (29.5%)</div>
+                    <div class="info-label">Hotline:</div>
+                    <div class="info-value">0948 531 333</div>
                 </div>
             </div>
         </div>
         
-        <!-- Nội dung Bảng giá vé -->
+        <!-- Giá Vé Section -->
         <div class="content-section" id="giave-section">
             <div class="section-header">
                 <h2><i class="fas fa-money-bill-wave"></i> Bảng Giá Vé</h2>
-                <button class="back-to-toc"><i class="fas fa-arrow-left"></i> Quay lại mục lục</button>
+                <button class="back-to-toc">
+                    <i class="fas fa-arrow-left"></i> Quay lại mục lục
+                </button>
             </div>
             
             <div class="info-card">
                 <h3><i class="fas fa-info-circle"></i> Giải thích bảng giá</h3>
-                <p>Bảng giá dưới đây hiển thị giá vé từ các điểm ở Thanh Hóa đến các tỉnh thành Miền Bắc. Giá được tính bằng nghìn đồng (VND).</p>
+                <p>Bảng giá vé từ các điểm ở Thanh Hóa đến các tỉnh thành Miền Bắc. Giá tính bằng nghìn đồng (VND).</p>
             </div>
             
-            <table>
-                <thead>
-                    <tr>
-                        <th>Xuất phát (Thanh Hóa)</th>
-                        <th>Điểm đến (Miền Bắc)</th>
-                        <th>Giá vé (nghìn đồng)</th>
-                    </tr>
-                </thead>
-                <tbody id="giave-table-body">
-                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-                </tbody>
-            </table>
-            
-            <div class="info-card">
-                <h3><i class="fas fa-exclamation-circle"></i> Lưu ý về giá vé</h3>
-                <div class="info-item">
-                    <div class="info-label">Giá vé:</div>
-                    <div class="info-value">Giá vé có thể thay đổi theo mùa, ngày lễ. Vui lòng liên hệ hotline để biết giá chính xác nhất.</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Trẻ em:</div>
-                    <div class="info-value">Trẻ em dưới 5 tuổi được miễn phí vé (ngồi cùng ghế với bố mẹ). Trẻ em từ 5 tuổi trở lên mua vé như người lớn.</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Hành lý:</div>
-                    <div class="info-value">Mỗi khách được mang theo 20kg hành lý miễn phí. Hành lý quá cước tính phí theo quy định.</div>
-                </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Xuất phát (Thanh Hóa)</th>
+                            <th>Điểm đến (Miền Bắc)</th>
+                            <th>Giá vé (nghìn đồng)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="giave-table-body">
+                        <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                    </tbody>
+                </table>
             </div>
         </div>
         
-        <!-- Nội dung Giờ xuất bến -->
+        <!-- Giờ Xuất Bến Section -->
         <div class="content-section" id="gioxuatben-section">
             <div class="section-header">
                 <h2><i class="fas fa-clock"></i> Giờ Xuất Bến</h2>
-                <button class="back-to-toc"><i class="fas fa-arrow-left"></i> Quay lại mục lục</button>
+                <button class="back-to-toc">
+                    <i class="fas fa-arrow-left"></i> Quay lại mục lục
+                </button>
             </div>
             
             <div class="info-card">
                 <h3><i class="fas fa-info-circle"></i> Giải thích bảng giờ</h3>
-                <p>Bảng dưới đây hiển thị giờ xuất bến từ các bến đi khác nhau. Quý khách vui lòng có mặt tại bến trước 15 phút so với giờ xuất bến.</p>
+                <p>Giờ xuất bến từ các bến đi khác nhau. Có mặt trước 15 phút so với giờ xuất bến.</p>
             </div>
             
-            <table>
-                <thead>
-                    <tr>
-                        <th>Bến đi</th>
-                        <th>Giờ xuất bến</th>
-                        <th>Số điện thoại liên hệ</th>
-                    </tr>
-                </thead>
-                <tbody id="gioxuatben-table-body">
-                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-                </tbody>
-            </table>
-            
-            <div class="info-card">
-                <h3><i class="fas fa-phone-alt"></i> Thông Tin Liên Hệ Đặt Vé</h3>
-                <div class="info-item">
-                    <div class="info-label">Hotline đặt vé:</div>
-                    <div class="info-value">0948 531 333 (24/7)</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Đặt vé online:</div>
-                    <div class="info-value">Đang phát triển</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Lưu ý:</div>
-                    <div class="info-value">Giờ xuất bến có thể thay đổi tùy theo tình hình thực tế. Vui lòng gọi điện xác nhận trước khi đến bến.</div>
-                </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bến đi</th>
+                            <th>Giờ xuất bến</th>
+                            <th>Số điện thoại</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gioxuatben-table-body">
+                        <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                    </tbody>
+                </table>
             </div>
         </div>
         
-        <!-- Nội dung Vị trí xe -->
+        <!-- Vị Trí Xe Section -->
         <div class="content-section" id="vitri-section">
             <div class="section-header">
                 <h2><i class="fas fa-map-marked-alt"></i> Vị Trí Xe</h2>
-                <button class="back-to-toc"><i class="fas fa-arrow-left"></i> Quay lại mục lục</button>
+                <button class="back-to-toc">
+                    <i class="fas fa-arrow-left"></i> Quay lại mục lục
+                </button>
             </div>
             
             <div class="info-card">
-                <h3><i class="fas fa-info-circle"></i> Giải thích bảng vị trí</h3>
-                <p>Bảng dưới đây hiển thị thông tin chi tiết về các chuyến xe bao gồm bến đi, giờ đi, biển số xe, số điện thoại liên hệ và loại xe.</p>
+                <h3><i class="fas fa-info-circle"></i> Thông Tin Xe Đi</h3>
+                <p>Thông tin chi tiết các chuyến xe đi</p>
             </div>
             
-            <h3><i class="fas fa-bus"></i> Thông Tin Xe Đi</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Bến đi</th>
-                        <th>Giờ đi</th>
-                        <th>Biển kiểm soát</th>
-                        <th>Số điện thoại</th>
-                        <th>Loại xe</th>
-                    </tr>
-                </thead>
-                <tbody id="vitri-di-table-body">
-                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-                </tbody>
-            </table>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bến đi</th>
+                            <th>Giờ đi</th>
+                            <th>Biển số</th>
+                            <th>Số điện thoại</th>
+                            <th>Loại xe</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vitri-di-table-body">
+                        <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                    </tbody>
+                </table>
+            </div>
             
-            <h3 style="margin-top: 30px;"><i class="fas fa-bus"></i> Thông Tin Xe Về</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Bến về</th>
-                        <th>Giờ về</th>
-                        <th>Biển kiểm soát</th>
-                        <th>Số điện thoại</th>
-                        <th>Loại xe</th>
-                    </tr>
-                </thead>
-                <tbody id="vitri-ve-table-body">
-                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-                </tbody>
-            </table>
+            <div class="info-card" style="margin-top: 30px;">
+                <h3><i class="fas fa-info-circle"></i> Thông Tin Xe Về</h3>
+                <p>Thông tin chi tiết các chuyến xe về</p>
+            </div>
             
-            <div class="info-card">
-                <h3><i class="fas fa-car-side"></i> Thông Tin Loại Xe</h3>
-                <div class="info-item">
-                    <div class="info-label">Xe nằm:</div>
-                    <div class="info-value">Xe giường nằm chất lượng cao, có đầy đủ tiện nghi: điều hòa, chăn gối, nước uống, wifi.</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Xe ghế:</div>
-                    <div class="info-value">Xe ghế ngồi chất lượng cao, khoang cách thoải mái, điều hòa, nước uống miễn phí.</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Liên hệ tài xế:</div>
-                    <div class="info-value">Quý khách có thể liên hệ trực tiếp với tài xế qua số điện thoại trong bảng để xác nhận vị trí đón/trả.</div>
-                </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bến về</th>
+                            <th>Giờ về</th>
+                            <th>Biển số</th>
+                            <th>Số điện thoại</th>
+                            <th>Loại xe</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vitri-ve-table-body">
+                        <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -304,55 +256,54 @@
             <p>Giấy chứng nhận ĐKKD số: 2800836982 cấp ngày 12/04/2005 tại Sở Kế hoạch và Đầu tư tỉnh Thanh Hóa</p>
         </div>
     </footer>
-
-    <!-- Tách JavaScript ra file riêng -->
+    
+    <!-- TEST ELEMENT -->
+    <div id="ios-test" style="
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        background: #4CAF50;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        z-index: 9999;
+        display: none;
+        max-width: 200px;
+    ">
+        <strong>iOS Test</strong><br>
+        <span id="test-status">Testing...</span>
+    </div>
+    
+    <!-- SCRIPTS -->
     <script src="./data.js"></script>
     <script src="./script.js"></script>
-    <!-- EMERGENCY iOS FIX ELEMENT -->
-<div id="ios-emergency-fix" style="
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background: #ff4444;
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
-    z-index: 99999;
-    display: none;
-    font-size: 12px;
-">
-    <strong>iOS FIX ACTIVE</strong><br>
-    <button onclick="location.reload()" style="background:white;color:#ff4444;border:none;padding:5px;margin-top:5px;border-radius:3px;">
-        Reload Page
-    </button>
-</div>
-
-<script>
-// Hiển thị emergency fix trên iOS
-if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-    document.getElementById('ios-emergency-fix').style.display = 'block';
     
-    // Auto-hide sau 10 giây
-    setTimeout(() => {
-        document.getElementById('ios-emergency-fix').style.display = 'none';
-    }, 10000);
-    
-    // Log tất cả elements để debug
-    setTimeout(() => {
-        console.log('=== FULL DOM DEBUG ===');
-        const sections = ['giave-section', 'gioxuatben-section', 'vitri-section'];
-        sections.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                console.log(id, {
-                    display: window.getComputedStyle(el).display,
-                    visible: el.offsetWidth > 0,
-                    children: el.children.length
-                });
+    <!-- TEST SCRIPT -->
+    <script>
+        // Test if tables are visible
+        setTimeout(() => {
+            const testDiv = document.getElementById('ios-test');
+            const statusSpan = document.getElementById('test-status');
+            
+            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                testDiv.style.display = 'block';
+                
+                const tables = document.querySelectorAll('table');
+                const rows = document.querySelectorAll('tbody tr');
+                
+                statusSpan.innerHTML = `
+                    Tables: ${tables.length}<br>
+                    Rows: ${rows.length}<br>
+                    ${tables.length > 0 ? '✅ Tables found' : '❌ No tables'}
+                `;
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    testDiv.style.display = 'none';
+                }, 5000);
             }
-        });
-    }, 2000);
-}
-</script>
+        }, 2000);
+    </script>
 </body>
 </html>
