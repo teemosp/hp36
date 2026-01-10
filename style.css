@@ -591,12 +591,7 @@ footer {
         padding: 8px 10px;
     }
     
-    /* Ẩn cột biển số và loại xe trên mobile để tiết kiệm không gian */
-    table th:nth-child(3),
-    table td:nth-child(3),
-    table th:nth-child(5),
-    table td:nth-child(5) {
-        display: none;
+
     }
     
     .section-header {
@@ -676,10 +671,7 @@ footer {
         padding: 6px 8px;
     }
     
-    /* Trên màn hình rất nhỏ, ẩn thêm cột */
-    table th:nth-child(4),
-    table td:nth-child(4) {
-        display: none;
+
     }
     
     .form-control {
