@@ -304,6 +304,32 @@
             <p>Giấy chứng nhận ĐKKD số: 2800836982 cấp ngày 12/04/2005 tại Sở Kế hoạch và Đầu tư tỉnh Thanh Hóa</p>
         </div>
     </footer>
+    <!-- Thêm trước </body> -->
+<div style="display:none;" id="mobile-test">
+    <!-- Test element để kiểm tra hiển thị -->
+</div>
+
+<script>
+// Test script cho iPhone
+if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    console.log("=== iOS DETECTED ===");
+    
+    // Test 1: Kiểm tra DOM
+    setTimeout(function() {
+        const testDiv = document.getElementById('mobile-test');
+        if (testDiv) {
+            testDiv.innerHTML = '<p style="color:green;">✓ DOM working on iOS</p>';
+            testDiv.style.display = 'block';
+        }
+    }, 1000);
+    
+    // Test 2: Kiểm tra JavaScript
+    setTimeout(function() {
+        console.log("iOS Test: JavaScript is executing");
+        alert('Trang đã tải xong. Vui lòng kiểm tra bảng giá vé.');
+    }, 1500);
+}
+</script>
 
     <!-- Tách JavaScript ra file riêng -->
     <script src="./data.js"></script>
