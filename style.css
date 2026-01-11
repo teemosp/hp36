@@ -284,10 +284,12 @@ header {
     flex: 1;
 }
 
+/* ĐẢM BẢO BẢNG LUÔN HIỂN THỊ ĐÚNG TRÊN MOBILE */
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    table-layout: auto;
 }
 
 table th {
@@ -300,6 +302,18 @@ table th {
 table td {
     padding: 10px 15px;
     border-bottom: 1px solid #e0e0e0;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+}
+
+/* Đảm bảo tất cả cột đều hiển thị */
+table th,
+table td {
+    display: table-cell !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 table tr:nth-child(even) {
@@ -554,7 +568,8 @@ footer {
     font-size: 0.9rem;
 }
 
-/* Responsive styles */
+/* ========== RESPONSIVE STYLES ========== */
+/* Tablet và Mobile nhỏ */
 @media (max-width: 768px) {
     .header-content {
         flex-direction: column;
@@ -583,16 +598,97 @@ footer {
         min-width: auto;
     }
     
+    /* ========== FIX BẢNG CHO MOBILE (768px) ========== */
+    /* Giảm padding và font-size */
     table {
-        font-size: 0.85rem;
+        font-size: 0.82rem !important;
+        width: 100% !important;
+        table-layout: fixed !important;
     }
     
-    table th, table td {
-        padding: 8px 10px;
+    table th,
+    table td {
+        padding: 8px 5px !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        line-height: 1.3 !important;
     }
     
-
+    /* Thiết lập width % cho từng cột - BẢNG 3 CỘT (giá vé) */
+    table th:nth-child(1),
+    table td:nth-child(1) {
+        width: 30% !important; /* Xuất phát */
+        font-size: 0.8rem !important;
     }
+    
+    table th:nth-child(2),
+    table td:nth-child(2) {
+        width: 40% !important; /* Điểm đến */
+        font-size: 0.8rem !important;
+    }
+    
+    table th:nth-child(3),
+    table td:nth-child(3) {
+        width: 30% !important; /* Giá vé */
+        text-align: right !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Bảng VỊ TRÍ XE (5 cột) - Xe đi */
+    #vitri-di-table-body ~ thead th:nth-child(1),
+    #vitri-di-table-body td:nth-child(1),
+    #vitri-ve-table-body ~ thead th:nth-child(1),
+    #vitri-ve-table-body td:nth-child(1) {
+        width: 20% !important; /* Bến đi/về */
+    }
+    
+    #vitri-di-table-body ~ thead th:nth-child(2),
+    #vitri-di-table-body td:nth-child(2),
+    #vitri-ve-table-body ~ thead th:nth-child(2),
+    #vitri-ve-table-body td:nth-child(2) {
+        width: 15% !important; /* Giờ */
+    }
+    
+    #vitri-di-table-body ~ thead th:nth-child(3),
+    #vitri-di-table-body td:nth-child(3),
+    #vitri-ve-table-body ~ thead th:nth-child(3),
+    #vitri-ve-table-body td:nth-child(3) {
+        width: 15% !important; /* Biển số */
+        font-size: 0.75rem !important;
+    }
+    
+    #vitri-di-table-body ~ thead th:nth-child(4),
+    #vitri-di-table-body td:nth-child(4),
+    #vitri-ve-table-body ~ thead th:nth-child(4),
+    #vitri-ve-table-body td:nth-child(4) {
+        width: 25% !important; /* Số điện thoại */
+        font-size: 0.8rem !important;
+        color: #2a5298 !important;
+        font-weight: 600 !important;
+    }
+    
+    #vitri-di-table-body ~ thead th:nth-child(5),
+    #vitri-di-table-body td:nth-child(5),
+    #vitri-ve-table-body ~ thead th:nth-child(5),
+    #vitri-ve-table-body td:nth-child(5) {
+        width: 25% !important; /* Loại xe */
+        font-size: 0.8rem !important;
+    }
+    
+    /* Đảm bảo các cột giá vé nổi bật */
+    .price-cell {
+        color: #e74c3c !important;
+        font-weight: bold !important;
+        white-space: nowrap !important;
+    }
+    
+    .time-cell {
+        color: #2a5298 !important;
+        font-weight: 600 !important;
+        white-space: nowrap !important;
+    }
+    /* ========== KẾT THÚC FIX BẢNG ========== */
     
     .section-header {
         flex-direction: column;
@@ -635,6 +731,7 @@ footer {
     }
 }
 
+/* Mobile rất nhỏ */
 @media (max-width: 480px) {
     .logo-text h1 {
         font-size: 1.2rem;
@@ -663,16 +760,82 @@ footer {
         font-size: 1.1rem;
     }
     
+    /* ========== FIX BẢNG CHO MÀN HÌNH RẤT NHỎ (480px) ========== */
     table {
-        font-size: 0.8rem;
+        font-size: 0.75rem !important;
     }
     
-    table th, table td {
-        padding: 6px 8px;
+    table th,
+    table td {
+        padding: 6px 3px !important;
+        line-height: 1.2 !important;
     }
     
-
+    /* Bảng 3 cột (giá vé) */
+    table th:nth-child(1),
+    table td:nth-child(1) {
+        width: 35% !important;
+        font-size: 0.75rem !important;
     }
+    
+    table th:nth-child(2),
+    table td:nth-child(2) {
+        width: 40% !important;
+        font-size: 0.75rem !important;
+    }
+    
+    table th:nth-child(3),
+    table td:nth-child(3) {
+        width: 25% !important;
+        font-size: 0.8rem !important;
+    }
+    
+    /* Bảng 5 cột (vị trí xe) */
+    #vitri-di-table-body ~ thead th:nth-child(1),
+    #vitri-di-table-body td:nth-child(1),
+    #vitri-ve-table-body ~ thead th:nth-child(1),
+    #vitri-ve-table-body td:nth-child(1) {
+        width: 22% !important;
+        font-size: 0.7rem !important;
+    }
+    
+    #vitri-di-table-body ~ thead th:nth-child(2),
+    #vitri-di-table-body td:nth-child(2),
+    #vitri-ve-table-body ~ thead th:nth-child(2),
+    #vitri-ve-table-body td:nth-child(2) {
+        width: 12% !important;
+        font-size: 0.7rem !important;
+    }
+    
+    #vitri-di-table-body ~ thead th:nth-child(3),
+    #vitri-di-table-body td:nth-child(3),
+    #vitri-ve-table-body ~ thead th:nth-child(3),
+    #vitri-ve-table-body td:nth-child(3) {
+        width: 13% !important;
+        font-size: 0.65rem !important;
+    }
+    
+    #vitri-di-table-body ~ thead th:nth-child(4),
+    #vitri-di-table-body td:nth-child(4),
+    #vitri-ve-table-body ~ thead th:nth-child(4),
+    #vitri-ve-table-body td:nth-child(4) {
+        width: 30% !important;
+        font-size: 0.75rem !important;
+    }
+    
+    #vitri-di-table-body ~ thead th:nth-child(5),
+    #vitri-di-table-body td:nth-child(5),
+    #vitri-ve-table-body ~ thead th:nth-child(5),
+    #vitri-ve-table-body td:nth-child(5) {
+        width: 23% !important;
+        font-size: 0.75rem !important;
+    }
+    
+    /* Giảm cỡ chữ cho giá vé */
+    .price-cell {
+        font-size: 0.75rem !important;
+    }
+    /* ========== KẾT THÚC FIX ========== */
     
     .form-control {
         padding: 10px 12px;
@@ -821,6 +984,8 @@ footer {
 .toc-card {
     animation: fadeIn 0.5s ease-out;
 }
+
+/* Wrapper cho bảng để scroll */
 .table-wrapper {
     width: 100%;
     overflow-x: auto;
@@ -831,7 +996,7 @@ footer {
 }
 
 .table-wrapper table {
-    min-width: 700px; /* Đủ cho 3 cột */
+    min-width: 700px;
     margin-bottom: 0;
 }
 
@@ -840,4 +1005,15 @@ footer {
 .table-wrapper table td {
     display: table-cell !important;
     min-width: 150px;
+}
+
+/* Fix cho iOS Safari */
+@supports (-webkit-touch-callout: none) {
+    table {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .container {
+        -webkit-text-size-adjust: 100%;
+    }
 }
