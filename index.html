@@ -2,339 +2,670 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nhà Xe Hoàng Phương Thanh Hóa | Hotline 0948 531 333</title>
-    <meta name="description" content="Nhà Xe Hoàng Phương – Thanh Hóa đi Hà Nội, Bắc Ninh, Bắc Giang, Thái Nguyên, Hải Phòng.">
-    <meta property="og:title" content="Nhà Xe Hoàng Phương Thanh Hóa">
-    <meta property="og:description" content="Nhà Xe Hoàng Phương – Tuyến Thanh Hóa đi Hà Nội, Bắc Ninh, Bắc Giang, Thái Nguyên, Hải Phòng. Hotline 0948 531 333.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://teemosp.github.io/hp36/">
-    <meta property="og:image" content="https://teemosp.github.io/hp36/bus.png">
-    <meta name="keywords" content="Nhà xe Hoàng Phương, xe khách Thanh Hóa, 0948 531 333">
-    <meta name="author" content="Nhà Xe Hoàng Phương">
-    <link rel="icon" type="image/png" href="bus.png">
-    <meta name="google-site-verification" content="Ghnp5VF4VtdhYCBEWtLI46SetDkUl7sxUp7Y8QiF4NA" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Quản Lý Nhà Xe HP36 | Hoàng Phương</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Segoe UI', sans-serif; }
+        body { background: #f0f2f5; padding: 16px; padding-bottom: 80px; }
+        .header { background: linear-gradient(135deg, #0f2b4d 0%, #1a4a7a 100%); color: white; border-radius: 28px; padding: 20px; margin-bottom: 20px; }
+        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { font-size: 40px; background: rgba(255,255,255,0.15); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border-radius: 35px; }
+        .logo-text h1 { font-size: 1.6rem; letter-spacing: 1px; }
+        .logo-text p { font-size: 0.8rem; opacity: 0.9; }
+        
+        /* Stats bar - chứa thông tin cập nhật và button DN */
+        .stats-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .stats-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .stat-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            backdrop-filter: blur(4px);
+        }
+        .info-btn-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+        .info-btn-header:active { transform: scale(0.97); }
+        .data-count-badge {
+            background: rgba(255,255,255,0.25);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        /* Tab Menu */
+        .tab-menu { display: flex; gap: 8px; margin-bottom: 20px; background: white; padding: 6px; border-radius: 60px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .tab-btn { flex: 1; padding: 12px 8px; border: none; background: transparent; border-radius: 50px; font-weight: 600; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+        .tab-btn.active { background: linear-gradient(135deg, #1a4a7a 0%, #0f2b4d 100%); color: white; box-shadow: 0 2px 8px rgba(26,74,122,0.3); }
+        
+        /* Filter section */
+        .filter-section { background: white; border-radius: 24px; padding: 16px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .search-box { margin-bottom: 14px; }
+        .search-box input { width: 100%; padding: 14px 18px; border: 1px solid #e2e8f0; border-radius: 48px; font-size: 1rem; background: #f9fafb; outline: none; }
+        .search-box input:focus { border-color: #1a4a7a; box-shadow: 0 0 0 3px rgba(26,74,122,0.1); }
+        
+        .filter-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .left-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .right-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .time-filter-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            background: #f8fafc;
+            padding: 4px 12px;
+            border-radius: 48px;
+            border: 1px solid #e2e8f0;
+        }
+        .time-filter-group span { color: #475569; font-size: 0.85rem; }
+        .time-filter-group select, .time-filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 32px;
+            background: white;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .apply-time-btn, .clear-time-btn, .reset-btn {
+            padding: 8px 16px;
+            border-radius: 32px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+            border: none;
+        }
+        .apply-time-btn { background: #1a4a7a; color: white; }
+        .clear-time-btn { background: #eef2ff; color: #1a4a7a; }
+        .reset-btn { background: #eef2ff; color: #1a4a7a; padding: 12px 20px; border-radius: 40px; }
+        .filter-row select {
+            padding: 12px 14px;
+            border-radius: 40px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .time-status {
+            font-size: 0.7rem;
+            color: #10b981;
+            background: #d1fae5;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-top: 12px;
+            display: inline-block;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 32px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #0f2b4d 0%, #1a4a7a 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 32px 32px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h2 { font-size: 1.4rem; display: flex; align-items: center; gap: 8px; }
+        .close-modal {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-body { padding: 20px; }
+        .info-group {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 16px;
+        }
+        .info-group h3 {
+            color: #1a4a7a;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .info-label {
+            width: 120px;
+            font-weight: 600;
+            color: #475569;
+        }
+        .info-value {
+            flex: 1;
+            color: #0f172a;
+        }
+        .member-item {
+            background: #f1f5f9;
+            padding: 8px 12px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+        
+        /* Data Cards */
+        .data-list { display: flex; flex-direction: column; gap: 16px; }
+        .data-card { background: white; border-radius: 24px; padding: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-left: 5px solid #1a4a7a; }
+        .data-card.time-filtered { border-left-color: #10b981; background: #f0fdf4; }
+        .card-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .info-grid { display: flex; flex-wrap: wrap; gap: 12px; margin: 8px 0; }
+        .info-item { background: #f8fafc; padding: 8px 14px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+        .price { font-weight: 800; color: #2b6e3c; background: #e9f7ef; padding: 4px 12px; border-radius: 32px; }
+        .phone { color: #2c5282; font-weight: 500; }
+        .time-badge { background: #e6f0ff; padding: 4px 12px; border-radius: 30px; font-size: 0.8rem; }
+        .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); text-align: center; padding: 12px; border-top: 1px solid #e2e8f0; z-index: 10; font-size: 0.75rem; }
+        .loading, .no-data, .error-msg { text-align: center; padding: 40px; background: white; border-radius: 24px; }
+        .error-msg { color: #dc2626; background: #fef2f2; }
+        mark { background: #fde047; padding: 0 4px; border-radius: 6px; }
+        
+        @media (max-width: 640px) {
+            body { padding: 12px; }
+            .stats-bar { flex-direction: column; align-items: flex-start; }
+            .filter-row { flex-direction: column; align-items: stretch; }
+            .time-filter-group { flex-wrap: wrap; justify-content: center; }
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <i class="fas fa-bus"></i>
-                    <div class="logo-text">
-                        <h1>CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ VẬN TẢI HOÀNG PHƯƠNG</h1>
-                        <p>Uy tín - An toàn - Chất lượng</p>
-                    </div>
-                </div>
-                <div class="contact-header">
-                <p>
-                    <i class="fas fa-phone-alt"></i> Hotline/Zalo:
-                    <span class="phone">0948 531 333</span>
-                    <a href="https://zalo.me/0948531333" target="_blank" style="margin-left: 10px;">
-                        <i class="fab fa-zalo"style="color: #ffffff;"></i> Chat ngay
-                    </a>
-                </p>
-                                    <!-- THÊM FACEBOOK GROUP VÀO ĐÂY -->
-                <p style="margin-top: 8px;">
-                    <i class="fab fa-facebook" style="color: #1877F2;"></i> Nhóm Facebook:
-                    <a href="https://www.facebook.com/groups/496220368019079" target="_blank" style="color: #ffffff; text-decoration: underline; margin-left: 5px;">
-                        Vận Tải Hoàng Phương
-                    </a>
-                </p>
-                </div>
+    <div class="header">
+        <div class="logo-area">
+            <div class="logo-icon">🚍</div>
+            <div class="logo-text">
+                <h1>HP36</h1>
+                <p>Nhà xe Hoàng Phương | Vận tải chất lượng cao</p>
             </div>
         </div>
-    </header>
+        
+        <!-- Stats bar: thông tin cập nhật + button DN + số bản ghi -->
+        <div class="stats-bar">
+            <div class="stats-group">
+                <div class="stat-badge" id="updateBadge">📡 Đang tải...</div>
+                <button class="info-btn-header" id="showInfoBtn">🏢 Thông Tin DN</button>
+            </div>
+            <div class="data-count-badge" id="dataCount">📊 0 bản ghi</div>
+        </div>
+    </div>
     
-    <div class="container">
-        <!-- Tìm kiếm lộ trình -->
-        <div class="search-container">
-            <h2><i class="fas fa-search"></i> Tìm Kiếm Lộ Trình</h2>
-            <form id="searchForm" class="search-form">
-                <div class="form-group">
-                    <label for="fromLocation">Nơi đi</label>
-                    <input type="text" id="fromLocation" class="form-control" placeholder="Ví dụ: Tén tằn..." autocomplete="off">
-                    <div id="fromAutocomplete" class="autocomplete-list"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="toLocation">Nơi đến</label>
-                    <input type="text" id="toLocation" class="form-control" placeholder="Ví dụ: Quễ Võ" autocomplete="off">
-                    <div id="toAutocomplete" class="autocomplete-list"></div>
-                </div>
-                
-                <button type="submit" class="search-btn">
-                    <i class="fas fa-search"></i> Tìm Kiếm
-                </button>
-            </form>
-            <div class="search-examples">
-                <p><span>Gợi ý tìm kiếm:</span> Bạn có thể nhập tên đầy đủ, viết tắt, có dấu hoặc không dấu. Ví dụ: "Mường Lát", "ML", "ml", "Thái Nguyên", "TN", "tn"...</p>
-            </div>
+    <div class="tab-menu">
+        <button class="tab-btn active" data-tab="giave"><span>💰</span><span>Giá vé</span></button>
+        <button class="tab-btn" data-tab="gioxuatben"><span>⏰</span><span>Giờ xuất bến</span></button>
+        <button class="tab-btn" data-tab="vitri"><span>📍</span><span>Vị trí đón</span></button>
+    </div>
+    
+    <div class="filter-section">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm... Ví dụ: Mường Lát, Thái Nguyên, Triệu Sơn..." autocomplete="off">
         </div>
         
-        <!-- Kết quả tìm kiếm -->
-        <div class="search-results" id="searchResults">
-            <div class="section-header">
-                <h2><i class="fas fa-route"></i> Kết Quả Tìm Kiếm</h2>
-                <button class="back-to-toc" id="backFromResults"><i class="fas fa-arrow-left"></i> Quay lại tìm kiếm</button>
+        <div class="filter-row">
+            <div class="left-group">
+                <select id="extraFilter" style="display: none;">
+                    <option value="all">🚌 Tất cả loại xe</option>
+                </select>
             </div>
-            
-            <div class="result-count" id="resultCount">Đang tìm kiếm...</div>
-            
-            <div id="searchResultsContent">
-                <!-- Nội dung kết quả sẽ được hiển thị ở đây -->
-            </div>
-        </div>
-        
-        <!-- Mục lục chính -->
-        <div class="toc-container" id="main-toc">
-            <h2><i class="fas fa-list"></i> Mục Lục Nội Dung</h2>
-            <div class="toc-grid">
-                <div class="toc-card" data-section="company-info">
-                    <h3><i class="fas fa-building"></i> Thông Tin Công Ty</h3>
-                    <p>Thông tin doanh nghiệp và địa chỉ liên hệ</p>
+            <div class="right-group">
+                <div class="time-filter-group">
+                    <span>⏰</span>
+                    <select id="timeCondition">
+                        <option value="after">Sau giờ</option>
+                        <option value="before">Trước giờ</option>
+                        <option value="equal">Đúng giờ</option>
+                    </select>
+                    <input type="time" id="timeValue" step="60">
+                    <button class="apply-time-btn" id="applyTimeBtn">Áp dụng</button>
+                    <button class="clear-time-btn" id="clearTimeBtn">Xóa</button>
                 </div>
-                
-                <div class="toc-card" data-section="giave-section">
-                    <h3><i class="fas fa-money-bill-wave"></i> Bảng Giá Vé</h3>
-                    <p>Bảng giá vé theo tuyến và các lưu ý</p>
-                </div>
-                
-                <div class="toc-card" data-section="gioxuatben-section">
-                    <h3><i class="fas fa-clock"></i> Giờ Xuất Bến</h3>
-                    <p>Lịch xuất bến các tuyến và thông tin liên hệ</p>
-                </div>
-                
-                <div class="toc-card" data-section="vitri-section">
-                    <h3><i class="fas fa-map-marked-alt"></i> Vị Trí Xe</h3>
-                    <p>Thông tin vị trí xe, loại xe và liên hệ</p>
-                </div>
+                <button class="reset-btn" id="resetFilterBtn">⟳ Xóa lọc</button>
             </div>
         </div>
-        
-        <!-- Nội dung Thông tin công ty -->
-        <div class="content-section" id="company-info">
-            <div class="section-header">
-                <h2><i class="fas fa-building"></i> Thông Tin Doanh Nghiệp</h2>
-                <button class="back-to-toc"><i class="fas fa-arrow-left"></i> Quay lại mục lục</button>
+        <div id="timeStatus" class="time-status" style="display: none;"></div>
+    </div>
+    
+    <div id="dataContainer" class="data-list"><div class="loading">⏳ Đang tải dữ liệu...</div></div>
+    
+    <div class="footer">
+        📞 Hotline: 0948 955 999 | © Công ty TNHH TM & DV Vận tải Hoàng Phương
+    </div>
+    
+    <!-- Modal Thông tin doanh nghiệp -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🏢 Thông Tin Doanh Nghiệp</h2>
+                <button class="close-modal" id="closeModalBtn">&times;</button>
             </div>
-            
-            <div class="info-card">
-                <h3><i class="fas fa-building"></i> Thông Tin Doanh Nghiệp</h3>
-                <div class="info-item">
-                    <div class="info-label">Tên công ty:</div>
-                    <div class="info-value">CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ VẬN TẢI HOÀNG PHƯƠNG</div>
+            <div class="modal-body">
+                <div class="info-group">
+                    <h3>📋 Thông tin chung</h3>
+                    <div class="info-row"><div class="info-label">Tên công ty:</div><div class="info-value"><strong>CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ VẬN TẢI HOÀNG PHƯƠNG</strong></div></div>
+                    <div class="info-row"><div class="info-label">Mã số doanh nghiệp:</div><div class="info-value">2800836982</div></div>
+                    <div class="info-row"><div class="info-label">Đăng ký lần đầu:</div><div class="info-value">12/04/2005</div></div>
+                    <div class="info-row"><div class="info-label">Cập nhật lần cuối:</div><div class="info-value">11/02/2025</div></div>
+                    <div class="info-row"><div class="info-label">Vốn điều lệ:</div><div class="info-value">8.000.000.000 VNĐ <span style="color:#64748b; font-size:0.8rem;">(Tám tỷ đồng)</span></div></div>
                 </div>
-                <div class="info-item">
-                    <div class="info-label">Mã số doanh nghiệp:</div>
-                    <div class="info-value">2800836982</div>
+                <div class="info-group">
+                    <h3>📍 Địa Chỉ Liên Hệ</h3>
+                    <div class="info-row"><div class="info-label">Trụ sở chính:</div><div class="info-value">HH02-17 Vinhome Star City, Phường Hạc Thành, Tỉnh Thanh Hoá</div></div>
+                    <div class="info-row"><div class="info-label">Điện thoại:</div><div class="info-value"><strong>0948 955 999</strong></div></div>
                 </div>
-                <div class="info-item">
-                    <div class="info-label">Đăng ký lần đầu:</div>
-                    <div class="info-value">12/04/2005</div>
+                <div class="info-group">
+                    <h3>👔 Ban Lãnh Đạo</h3>
+                    <div class="info-row"><div class="info-label">Giám đốc:</div><div class="info-value">HỒ THỊ HOÀNG</div></div>
                 </div>
-                <div class="info-item">
-                    <div class="info-label">Cập nhật lần cuối:</div>
-                    <div class="info-value">11/02/2025</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Vốn điều lệ:</div>
-                    <div class="info-value">8.000.000.000 VNĐ (Tám tỷ đồng)</div>
-                </div>
-            </div>
-            
-            <div class="info-card">
-                <h3><i class="fas fa-map-marker-alt"></i> Địa Chỉ Liên Hệ</h3>
-                <div class="info-item">
-                    <div class="info-label">Trụ sở chính:</div>
-                    <div class="info-value">HH02-17 Vinhome Star City, Phường Hạc Thành, Tỉnh Thanh Hoá</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Điện thoại:</div>
-                    <div class="info-value">0948955999</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Giám đốc:</div>
-                    <div class="info-value">HỒ THỊ HOÀNG</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Thành viên:</div>
-                    <div class="info-value">LÊ VIẾT PHƯƠNG (29.5%)</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Nội dung Bảng giá vé -->
-        <div class="content-section" id="giave-section">
-            <div class="section-header">
-                <h2><i class="fas fa-money-bill-wave"></i> Bảng Giá Vé</h2>
-                <button class="back-to-toc"><i class="fas fa-arrow-left"></i> Quay lại mục lục</button>
-            </div>
-            
-            <div class="info-card">
-                <h3><i class="fas fa-info-circle"></i> Giải thích bảng giá</h3>
-                <p>Bảng giá dưới đây hiển thị giá vé từ các điểm ở Thanh Hóa đến các tỉnh thành Miền Bắc. Giá được tính bằng nghìn đồng (VND).</p>
-            </div>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Xuất phát (Thanh Hóa)</th>
-                            <th>Điểm đến (Miền Bắc)</th>
-                            <th>Giá vé (nghìn đồng)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="giave-table-body">
-                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-            <div class="info-card">
-                <h3><i class="fas fa-exclamation-circle"></i> Lưu ý về giá vé</h3>
-                <div class="info-item">
-                    <div class="info-label">Giá vé:</div>
-                    <div class="info-value">Giá vé có thể thay đổi theo mùa, ngày lễ. Vui lòng liên hệ hotline để biết giá chính xác nhất.</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Trẻ em:</div>
-                    <div class="info-value">Trẻ em dưới 5 tuổi được miễn phí vé (ngồi cùng ghế với bố mẹ). Trẻ em từ 5 tuổi trở lên mua vé như người lớn.</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Hành lý:</div>
-                    <div class="info-value">Mỗi khách được mang theo 20kg hành lý miễn phí. Hành lý quá cước tính phí theo quy định.</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Nội dung Giờ xuất bến -->
-        <div class="content-section" id="gioxuatben-section">
-            <div class="section-header">
-                <h2><i class="fas fa-clock"></i> Giờ Xuất Bến</h2>
-                <button class="back-to-toc"><i class="fas fa-arrow-left"></i> Quay lại mục lục</button>
-            </div>
-            
-            <div class="info-card">
-                <h3><i class="fas fa-info-circle"></i> Giải thích bảng giờ</h3>
-                <p>Bảng dưới đây hiển thị giờ xuất bến từ các bến đi khác nhau. Quý khách vui lòng có mặt tại bến trước 15 phút so với giờ xuất bến.</p>
-            </div>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Bến đi</th>
-                            <th>Giờ xuất bến</th>
-                            <th>Số điện thoại liên hệ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="gioxuatben-table-body">
-                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-            <div class="info-card">
-                <h3><i class="fas fa-phone-alt"></i> Thông Tin Liên Hệ Đặt Vé</h3>
-                <div class="info-item">
-                    <div class="info-label">Hotline đặt vé:</div>
-                    <div class="info-value">0948 531 333 (24/7)</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Đặt vé online:</div>
-                    <div class="info-value">Đang phát triển</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Lưu ý:</div>
-                    <div class="info-value">Giờ xuất bến có thể thay đổi tùy theo tình hình thực tế. Vui lòng gọi điện xác nhận trước khi đến bến.</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Nội dung Vị trí xe -->
-        <div class="content-section" id="vitri-section">
-            <div class="section-header">
-                <h2><i class="fas fa-map-marked-alt"></i> Vị Trí Xe</h2>
-                <button class="back-to-toc"><i class="fas fa-arrow-left"></i> Quay lại mục lục</button>
-            </div>
-            
-            <div class="info-card">
-                <h3><i class="fas fa-info-circle"></i> Giải thích bảng vị trí</h3>
-                <p>Bảng dưới đây hiển thị thông tin chi tiết về các chuyến xe bao gồm bến đi, giờ đi, biển số xe, số điện thoại liên hệ và loại xe.</p>
-            </div>
-            
-            <h3><i class="fas fa-bus"></i> Thông Tin Xe Đi</h3>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Bến đi</th>
-                            <th>Giờ đi</th>
-                            <th>Biển kiểm soát</th>
-                            <th>Số điện thoại</th>
-                            <th>Loại xe</th>
-                        </tr>
-                    </thead>
-                    <tbody id="vitri-di-table-body">
-                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-            <h3 style="margin-top: 30px;"><i class="fas fa-bus"></i> Thông Tin Xe Về</h3>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Bến về</th>
-                            <th>Giờ về</th>
-                            <th>Biển kiểm soát</th>
-                            <th>Số điện thoại</th>
-                            <th>Loại xe</th>
-                        </tr>
-                    </thead>
-                    <tbody id="vitri-ve-table-body">
-                    <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-            <div class="info-card">
-                <h3><i class="fas fa-car-side"></i> Thông Tin Loại Xe</h3>
-                <div class="info-item">
-                    <div class="info-label">Xe nằm:</div>
-                    <div class="info-value">Xe giường nằm chất lượng cao, có đầy đủ tiện nghi: điều hòa, chăn gối, nước uống, wifi.</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Xe ghế:</div>
-                    <div class="info-value">Xe ghế ngồi chất lượng cao, khoang cách thoải mái, điều hòa, nước uống miễn phí.</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Liên hệ tài xế:</div>
-                    <div class="info-value">Quý khách có thể liên hệ trực tiếp với tài xế qua số điện thoại trong bảng để xác nhận vị trí đón/trả.</div>
+                <div class="info-group">
+                    <h3>👥 Thành viên góp vốn</h3>
+                    <div class="member-item">LÊ VIẾT PHƯƠNG (29.5%)</div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <footer>
-        <section>
-          <h2>Nhà Xe Hoàng Phương Thanh Hóa
-          <p>
-          <strong>nhà xe Hoàng Phương</strong> uy tín tại Thanh Hóa,
-          chúng tôi phục vụ các tuyến: Thanh Hóa – Hà Nội, Bắc Ninh, Bắc Giang,
-          Thái Nguyên, Hải Phòng.
-          </p>
-          </h2>
-        </section>
 
-        <div class="container">
-            <p>&copy; 2025 CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ VẬN TẢI HOÀNG PHƯƠNG. Bảo lưu mọi quyền.</p>
-            <p>Giấy chứng nhận ĐKKD số: 2800836982 cấp ngày 12/04/2005 tại Sở Kế hoạch và Đầu tư tỉnh Thanh Hóa</p>
-        </div>
-    </footer>
-
-    <!-- Tách JavaScript ra file riêng -->
-    <script src="./data.js"></script>
-    <script src="./script.js"></script>
+    <script>
+        (function() {
+            // ==================== CẤU HÌNH ====================
+            const SHEET_ID = "17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY";
+            const GIAVE_GID = "0";
+            const GIOXUAT_GID = "632345854";
+            const VITRI_GID = "614449779";
+            
+            let allData = { giave: [], gioxuatben: [], vitri: [] };
+            let currentTab = "giave";
+            let refreshInterval = null;
+            
+            let timeFilter = { active: false, condition: "after", time: null };
+            
+            const dataContainer = document.getElementById("dataContainer");
+            const searchInput = document.getElementById("searchInput");
+            const extraFilter = document.getElementById("extraFilter");
+            const resetBtn = document.getElementById("resetFilterBtn");
+            const updateBadge = document.getElementById("updateBadge");
+            const dataCountSpan = document.getElementById("dataCount");
+            
+            const timeCondition = document.getElementById("timeCondition");
+            const timeValue = document.getElementById("timeValue");
+            const applyTimeBtn = document.getElementById("applyTimeBtn");
+            const clearTimeBtn = document.getElementById("clearTimeBtn");
+            const timeStatus = document.getElementById("timeStatus");
+            
+            // Modal
+            const modal = document.getElementById("infoModal");
+            const showInfoBtn = document.getElementById("showInfoBtn");
+            const closeModalBtn = document.getElementById("closeModalBtn");
+            
+            showInfoBtn.addEventListener("click", () => modal.classList.add("show"));
+            function closeModal() { modal.classList.remove("show"); }
+            closeModalBtn.addEventListener("click", closeModal);
+            modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+            
+            function removeVietnameseTones(str) {
+                if (!str) return "";
+                str = str.toLowerCase();
+                const map = {
+                    'á':'a','à':'a','ả':'a','ã':'a','ạ':'a','ă':'a','ắ':'a','ằ':'a','ẳ':'a','ẵ':'a','ặ':'a',
+                    'â':'a','ấ':'a','ầ':'a','ẩ':'a','ẫ':'a','ậ':'a','é':'e','è':'e','ẻ':'e','ẽ':'e','ẹ':'e',
+                    'ê':'e','ế':'e','ề':'e','ể':'e','ễ':'e','ệ':'e','í':'i','ì':'i','ỉ':'i','ĩ':'i','ị':'i',
+                    'ó':'o','ò':'o','ỏ':'o','õ':'o','ọ':'o','ô':'o','ố':'o','ồ':'o','ổ':'o','ỗ':'o','ộ':'o',
+                    'ơ':'o','ớ':'o','ờ':'o','ở':'o','ỡ':'o','ợ':'o','ú':'u','ù':'u','ủ':'u','ũ':'u','ụ':'u',
+                    'ư':'u','ứ':'u','ừ':'u','ử':'u','ữ':'u','ự':'u','ý':'y','ỳ':'y','ỷ':'y','ỹ':'y','ỵ':'y','đ':'d'
+                };
+                let result = "";
+                for (let i = 0; i < str.length; i++) result += map[str[i]] || str[i];
+                return result;
+            }
+            
+            function getHourFromTimeStr(timeStr) {
+                if (!timeStr) return -1;
+                let cleaned = timeStr.toString().trim();
+                let match24 = cleaned.match(/(\d{1,2}):(\d{2})/);
+                if (match24) return parseInt(match24[1]);
+                return -1;
+            }
+            
+            function parseCSVToRows(csvText) {
+                const rows = [];
+                const lines = csvText.split(/\r?\n/);
+                for (let line of lines) {
+                    if (!line.trim()) continue;
+                    const cols = [];
+                    let inQuote = false;
+                    let cell = "";
+                    for (let i = 0; i < line.length; i++) {
+                        const ch = line[i];
+                        if (ch === '"') inQuote = !inQuote;
+                        else if (ch === ',' && !inQuote) { cols.push(cell.trim()); cell = ""; }
+                        else cell += ch;
+                    }
+                    cols.push(cell.trim());
+                    rows.push(cols);
+                }
+                return rows;
+            }
+            
+            async function fetchCSV(url, sheetName) {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                try {
+                    const response = await fetch(url, { cache: "no-store", signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const text = await response.text();
+                    if (!text.trim()) throw new Error("File CSV rỗng");
+                    return parseCSVToRows(text);
+                } catch (err) {
+                    clearTimeout(timeoutId);
+                    throw err;
+                }
+            }
+            
+            async function loadAllData() {
+                updateBadge.innerHTML = "⏳ Đang đồng bộ...";
+                dataContainer.innerHTML = `<div class="loading">⏳ Đang tải dữ liệu từ Google Sheets...</div>`;
+                
+                try {
+                    const [csvGiaVe, csvGioXuat, csvVitri] = await Promise.all([
+                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIAVE_GID}`, "Giá vé"),
+                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIOXUAT_GID}`, "Giờ xuất bến"),
+                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${VITRI_GID}`, "Vị trí")
+                    ]);
+                    
+                    let startIdx = 0;
+                    if (csvGiaVe[0] && csvGiaVe[0][0] && (csvGiaVe[0][0].toLowerCase().includes("nơi") || csvGiaVe[0][0].toLowerCase().includes("muong"))) startIdx = 1;
+                    allData.giave = [];
+                    for (let i = startIdx; i < csvGiaVe.length; i++) {
+                        const row = csvGiaVe[i];
+                        if (row[0] && row[0].trim()) {
+                            allData.giave.push({
+                                noi_di: row[0].trim(),
+                                nguoc_lai: (row[1] || "").trim(),
+                                gia_ve: (row[2] || "").trim(),
+                                searchText: removeVietnameseTones(row[0].trim() + " " + (row[1] || "").trim())
+                            });
+                        }
+                    }
+                    
+                    startIdx = 0;
+                    if (csvGioXuat[0] && csvGioXuat[0][0] && csvGioXuat[0][0].toLowerCase().includes("bến")) startIdx = 1;
+                    allData.gioxuatben = [];
+                    for (let i = startIdx; i < csvGioXuat.length; i++) {
+                        const row = csvGioXuat[i];
+                        if (row[0] && row[0].trim()) {
+                            allData.gioxuatben.push({
+                                ben_di: row[0].trim(),
+                                gio: (row[1] || "").trim(),
+                                so_dien_thoai: (row[2] || "").trim(),
+                                searchText: removeVietnameseTones(row[0].trim()),
+                                hour: getHourFromTimeStr(row[1])
+                            });
+                        }
+                    }
+                    
+                    startIdx = 0;
+                    if (csvVitri[0] && csvVitri[0][0] && csvVitri[0][0].toLowerCase().includes("bến")) startIdx = 1;
+                    allData.vitri = [];
+                    for (let i = startIdx; i < csvVitri.length; i++) {
+                        const row = csvVitri[i];
+                        if (row[0] && row[0].trim()) {
+                            allData.vitri.push({
+                                ben_di: row[0].trim(),
+                                gio_di: (row[1] || "").trim(),
+                                bien_kiem_soat: (row[2] || "").trim(),
+                                so_dien_thoai: (row[3] || "").trim(),
+                                loai_xe: (row[4] || "").trim(),
+                                searchText: removeVietnameseTones(row[0].trim()),
+                                hour: getHourFromTimeStr(row[1])
+                            });
+                        }
+                    }
+                    
+                    const total = allData.giave.length + allData.gioxuatben.length + allData.vitri.length;
+                    if (total === 0) throw new Error("Cả 3 sheet đều không có dữ liệu");
+                    
+                    updateBadge.innerHTML = `✅ ${new Date().toLocaleTimeString()} | GV:${allData.giave.length} GX:${allData.gioxuatben.length} VT:${allData.vitri.length}`;
+                    switchToTab(currentTab);
+                    
+                } catch (err) {
+                    console.error("Lỗi:", err);
+                    dataContainer.innerHTML = `<div class="error-msg">❌ LỖI: ${err.message}<br><br>🔧 Hướng dẫn:<br>• Dùng VS Code + Live Server<br>• Đảm bảo sheet đã public</div>`;
+                    updateBadge.innerHTML = "⚠️ Lỗi kết nối";
+                }
+            }
+            
+            function filterByTime(data, tabName) {
+                if (!timeFilter.active || !timeFilter.time) return data;
+                if (tabName === "giave") return data;
+                
+                const [filterHour, filterMinute] = timeFilter.time.split(':').map(Number);
+                const filterTotalMin = filterHour * 60 + (filterMinute || 0);
+                
+                return data.filter(item => {
+                    if (item.hour === -1) return true;
+                    const itemTotalMin = item.hour * 60;
+                    
+                    if (timeFilter.condition === "after") return itemTotalMin >= filterTotalMin;
+                    if (timeFilter.condition === "before") return itemTotalMin <= filterTotalMin;
+                    if (timeFilter.condition === "equal") return item.hour === filterHour;
+                    return true;
+                });
+            }
+            
+            function filterData() {
+                let data = [...(allData[currentTab] || [])];
+                let searchKeyword = searchInput.value.trim();
+                
+                if (searchKeyword !== "") {
+                    const searchNormalized = removeVietnameseTones(searchKeyword);
+                    data = data.filter(item => item.searchText.includes(searchNormalized));
+                }
+                
+                if (currentTab === "vitri" && extraFilter.value !== "all") {
+                    data = data.filter(item => item.loai_xe === extraFilter.value);
+                }
+                
+                data = filterByTime(data, currentTab);
+                return data;
+            }
+            
+            function renderData(data) {
+                if (!data.length) {
+                    let msg = `📭 Không tìm thấy kết quả`;
+                    if (searchInput.value) msg += ` cho "${searchInput.value}"`;
+                    dataContainer.innerHTML = `<div class="no-data">${msg}</div>`;
+                    dataCountSpan.innerHTML = `📊 0 bản ghi`;
+                    return;
+                }
+                
+                let html = '';
+                const keyword = searchInput.value.trim();
+                const keywordNormalized = removeVietnameseTones(keyword);
+                
+                if (currentTab === "giave") {
+                    html = data.map(item => {
+                        let displayNoiDi = escapeHtml(item.noi_di);
+                        let displayNguocLai = escapeHtml(item.nguoc_lai);
+                        if (keyword && keywordNormalized) {
+                            const regex = new RegExp(`(${keywordNormalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                            displayNoiDi = displayNoiDi.replace(regex, match => `<mark>${match}</mark>`);
+                            displayNguocLai = displayNguocLai.replace(regex, match => `<mark>${match}</mark>`);
+                        }
+                        return `<div class="data-card"><div class="card-title">🚌 ${displayNoiDi} → ${displayNguocLai}</div><div class="info-item">💰 <strong class="price">${escapeHtml(item.gia_ve)} VNĐ</strong></div></div>`;
+                    }).join('');
+                } 
+                else if (currentTab === "gioxuatben") {
+                    html = data.map(item => {
+                        let displayBenDi = escapeHtml(item.ben_di);
+                        if (keyword && keywordNormalized) {
+                            const regex = new RegExp(`(${keywordNormalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                            displayBenDi = displayBenDi.replace(regex, match => `<mark>${match}</mark>`);
+                        }
+                        return `<div class="data-card ${timeFilter.active ? 'time-filtered' : ''}"><div class="card-title">🚏 ${displayBenDi} <span class="time-badge">🕐 ${escapeHtml(item.gio)}</span></div><div class="info-item phone">📞 ${escapeHtml(item.so_dien_thoai)}</div></div>`;
+                    }).join('');
+                }
+                else if (currentTab === "vitri") {
+                    html = data.map(item => {
+                        let displayBenDi = escapeHtml(item.ben_di);
+                        if (keyword && keywordNormalized) {
+                            const regex = new RegExp(`(${keywordNormalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                            displayBenDi = displayBenDi.replace(regex, match => `<mark>${match}</mark>`);
+                        }
+                        return `<div class="data-card ${timeFilter.active ? 'time-filtered' : ''}"><div class="card-title">📍 ${displayBenDi} ${item.gio_di ? `<span class="time-badge">🕐 ${escapeHtml(item.gio_di)}</span>` : ''}</div><div class="info-grid">${item.loai_xe ? `<div class="info-item">🚐 ${escapeHtml(item.loai_xe)}</div>` : ''}${item.bien_kiem_soat ? `<div class="info-item">🔢 ${escapeHtml(item.bien_kiem_soat)}</div>` : ''}<div class="info-item phone">📞 ${escapeHtml(item.so_dien_thoai)}</div></div></div>`;
+                    }).join('');
+                }
+                
+                dataContainer.innerHTML = html;
+                dataCountSpan.innerHTML = `📊 ${data.length} bản ghi`;
+            }
+            
+            function escapeHtml(str) { 
+                if (!str) return ""; 
+                return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+            }
+            
+            function applyFiltersAndRender() { renderData(filterData()); }
+            
+            function applyTimeFilter() {
+                const timeVal = timeValue.value;
+                if (!timeVal) { alert("Vui lòng chọn giờ!"); return; }
+                timeFilter.active = true;
+                timeFilter.condition = timeCondition.value;
+                timeFilter.time = timeVal;
+                
+                const conditionText = timeCondition.value === "after" ? "sau" : (timeCondition.value === "before" ? "trước" : "đúng");
+                timeStatus.innerHTML = `⏰ Đang lọc: ${conditionText} giờ ${timeVal}`;
+                timeStatus.style.display = "inline-block";
+                applyFiltersAndRender();
+            }
+            
+            function clearTimeFilter() {
+                timeFilter.active = false;
+                timeFilter.time = null;
+                timeStatus.style.display = "none";
+                applyFiltersAndRender();
+            }
+            
+            function switchToTab(tabName) {
+                currentTab = tabName;
+                updateFilterUI();
+                applyFiltersAndRender();
+            }
+            
+            function updateFilterUI() {
+                if (currentTab === "vitri") {
+                    extraFilter.style.display = "block";
+                    const types = new Set();
+                    allData.vitri.forEach(v => { if (v.loai_xe && v.loai_xe.trim()) types.add(v.loai_xe); });
+                    extraFilter.innerHTML = '<option value="all">🚌 Tất cả loại xe</option>' + 
+                        Array.from(types).sort().map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+                } else {
+                    extraFilter.style.display = "none";
+                }
+                searchInput.placeholder = currentTab === "giave" ? "🔍 Tìm theo nơi đi (VD: Mường Lát, Hiền kiệt...)" : "🔍 Tìm theo bến đi (VD: Thái Nguyên, Bắc Giang...)";
+            }
+            
+            function bindEvents() {
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        switchToTab(btn.dataset.tab);
+                    });
+                });
+                searchInput.addEventListener('input', applyFiltersAndRender);
+                extraFilter.addEventListener('change', applyFiltersAndRender);
+                resetBtn.addEventListener('click', () => { 
+                    searchInput.value = ""; 
+                    extraFilter.value = "all"; 
+                    clearTimeFilter();
+                });
+                applyTimeBtn.addEventListener('click', applyTimeFilter);
+                clearTimeBtn.addEventListener('click', clearTimeFilter);
+            }
+            
+            function startAutoRefresh() { if (refreshInterval) clearInterval(refreshInterval); refreshInterval = setInterval(loadAllData, 60000); }
+            
+            bindEvents();
+            loadAllData();
+            startAutoRefresh();
+        })();
+    </script>
 </body>
 </html>
