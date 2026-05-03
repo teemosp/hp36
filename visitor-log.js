@@ -1,17 +1,68 @@
-// ==================== visitor-log.js ====================
-// File riêng để ghi nhận chi tiết lượt truy cập
-// NHÚNG VÀO INDEX: <script src="visitor-log.js"></script>
-
+// ==================== visitor-log.js (ĐÃ SỬA - HOẠT ĐỘNG TỐT HƠN) ====================
 (function() {
-    // ===== CẤU HÌNH =====
-    // ⚠️ QUAN TRỌNG: Sau khi tạo Google Apps Script, thay URL này
+    // CẤU HÌNH - THAY URL WEB APP CỦA BẠN VÀO ĐÂY
     const LOG_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyAsL-76qd12IxyqkeSWlG17kZ05f4x9jDrbCALhFIhSEmLICenfBx0UaabsXxpG3VKZw/exec";
     
-    // ID Google Sheets của bạn (để tạo sheet LOG_TRUY_CAP tự động)
-    const SPREADSHEET_ID = "17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY";
-    const LOG_SHEET_NAME = "LOG_TRUY_CAP";
+    // ===== LẤY IP VÀ VỊ TRÍ ĐỊA LÝ (Dùng nhiều API dự phòng) =====
+    async function getGeoLocation() {
+        // Thử API ip-api.com (hỗ trợ CORS tốt)
+        try {
+            const response = await fetch("https://ip-api.com/json/");
+            if (response.ok) {
+                const data = await response.json();
+                if (data.status === "success") {
+                    return {
+                        ip: data.query || "Unknown",
+                        city: data.city || "Unknown",
+                        region: data.regionName || "Unknown",
+                        country: data.country || "Unknown"
+                    };
+                }
+            }
+        } catch (e) { console.log("ip-api.com failed:", e); }
+        
+        // Thử API ipwho.is
+        try {
+            const response = await fetch("https://ipwho.is/");
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    return {
+                        ip: data.ip || "Unknown",
+                        city: data.city || "Unknown",
+                        region: data.region || "Unknown",
+                        country: data.country || "Unknown"
+                    };
+                }
+            }
+        } catch (e) { console.log("ipwho.is failed:", e); }
+        
+        // Thử API ipapi.co
+        try {
+            const response = await fetch("https://ipapi.co/json/");
+            if (response.ok) {
+                const data = await response.json();
+                if (data.ip && data.ip !== "unknown") {
+                    return {
+                        ip: data.ip || "Unknown",
+                        city: data.city || "Unknown",
+                        region: data.region || "Unknown",
+                        country: data.country_name || "Unknown"
+                    };
+                }
+            }
+        } catch (e) { console.log("ipapi.co failed:", e); }
+        
+        // Nếu tất cả đều thất bại
+        return {
+            ip: "Unknown (CORS blocked)",
+            city: "Unknown",
+            region: "Unknown",
+            country: "Unknown"
+        };
+    }
     
-    // ===== HÀM LẤY THÔNG TIN TRÌNH DUYỆT =====
+    // ===== LẤY THÔNG TIN TRÌNH DUYỆT =====
     function getBrowserInfo() {
         const ua = navigator.userAgent;
         let browser = "Unknown";
@@ -29,28 +80,10 @@
         return { browser, device, userAgent: ua.substring(0, 500) };
     }
     
-    // ===== LẤY IP VÀ VỊ TRÍ ĐỊA LÝ =====
-    async function getGeoLocation() {
-        try {
-            const response = await fetch("https://ipapi.co/json/");
-            const data = await response.json();
-            return {
-                ip: data.ip || "Unknown",
-                city: data.city || "Unknown",
-                region: data.region || "Unknown",
-                country: data.country_name || "Unknown"
-            };
-        } catch (error) {
-            console.error("Lỗi lấy geo:", error);
-            return { ip: "Unknown", city: "Unknown", region: "Unknown", country: "Unknown" };
-        }
-    }
-    
-    // ===== GHI VÀO GOOGLE SHEETS (qua Web App) =====
+    // ===== GHI VÀO GOOGLE SHEETS =====
     async function logVisitToSheet(visitData) {
         if (LOG_WEB_APP_URL.includes("YOUR_SCRIPT_ID")) {
-            console.log("⚠️ [Visitor Log] Chưa cấu hình LOG_WEB_APP_URL, dữ liệu không được ghi");
-            console.log("📊 Dữ liệu đáng lẽ được ghi:", visitData);
+            console.log("⚠️ Chưa cấu hình LOG_WEB_APP_URL");
             return;
         }
         try {
@@ -60,21 +93,20 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(visitData)
             });
-            console.log("✅ [Visitor Log] Đã ghi nhận truy cập:", visitData.datetime);
+            console.log("✅ Đã ghi nhận truy cập:", visitData.datetime);
         } catch (error) {
-            console.error("❌ [Visitor Log] Lỗi ghi log:", error);
+            console.error("❌ Lỗi ghi log:", error);
         }
     }
     
-    // ===== HÀM CHÍNH: GHI NHẬN TRUY CẬP =====
+    // ===== HÀM CHÍNH =====
     async function recordVisit() {
         const now = new Date();
         const todayStr = now.toISOString().split('T')[0];
         const lastLogDate = localStorage.getItem("lastVisitLogDate");
         
-        // Chỉ ghi 1 lần mỗi ngày (tránh spam)
         if (lastLogDate === todayStr) {
-            console.log("📊 [Visitor Log] Đã ghi hôm nay, bỏ qua");
+            console.log("📊 Đã ghi hôm nay, bỏ qua");
             return;
         }
         
@@ -97,10 +129,10 @@
         
         await logVisitToSheet(visitData);
         localStorage.setItem("lastVisitLogDate", todayStr);
-        console.log("📊 [Visitor Log] Đã lưu thông tin truy cập");
+        console.log("📊 Thông tin đã lưu:", visitData);
     }
     
-    // Tự động chạy khi trang tải
+    // Tự động chạy
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", recordVisit);
     } else {
