@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Quản Lý Nhà Xe HP36 | Hoàng Phương</title>
     
-    <!-- NHÚNG CSS RIÊNG -->
+    <!-- CSS RIÊNG -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -109,12 +109,327 @@
         </div>
     </div>
     
-    <!-- NHÚNG JAVASCRIPT -->
+    <!-- JAVASCRIPT -->
     <script src="visitor-log.js"></script>
     <script>
-        // ==================== TOÀN BỘ JAVASCRIPT CHÍNH (GIỮ NGUYÊN) ====================
-        // PHẦN JS CŨ CỦA BẠN - COPY TOÀN BỘ VÀO ĐÂY
-        // (đã được cung cấp trong các câu trả lời trước)
+        // ==================== JAVASCRIPT CHÍNH ====================
+        (function() {
+            // CẤU HÌNH
+            const SHEET_ID = "17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY";
+            const GIAVE_GID = "0";
+            const GIOXUAT_GID = "614449779";
+            const VITRI_GID = "632345854";
+            
+            let allData = { giave: [], gioxuatben: [], vitri: [] };
+            let currentTab = "giave";
+            let refreshInterval = null;
+            let timeFilter = { active: false, condition: "after", time: null };
+            
+            const dataContainer = document.getElementById("dataContainer");
+            const searchInput = document.getElementById("searchInput");
+            const extraFilter = document.getElementById("extraFilter");
+            const resetBtn = document.getElementById("resetFilterBtn");
+            const updateBadge = document.getElementById("updateBadge");
+            const dataCountSpan = document.getElementById("dataCount");
+            const timeCondition = document.getElementById("timeCondition");
+            const timeValue = document.getElementById("timeValue");
+            const applyTimeBtn = document.getElementById("applyTimeBtn");
+            const clearTimeBtn = document.getElementById("clearTimeBtn");
+            const timeStatus = document.getElementById("timeStatus");
+            
+            // MODAL
+            const modal = document.getElementById("infoModal");
+            const showInfoBtn = document.getElementById("showInfoBtn");
+            const closeModalBtn = document.getElementById("closeModalBtn");
+            
+            showInfoBtn.addEventListener("click", () => modal.classList.add("show"));
+            closeModalBtn.addEventListener("click", () => modal.classList.remove("show"));
+            modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.remove("show"); });
+            
+            // BỘ ĐẾM LƯỢT TRUY CẬP
+            function updateVisitCounter() {
+                const today = new Date();
+                const todayStr = today.toISOString().split('T')[0];
+                const currentMonth = `${today.getFullYear()}-${today.getMonth() + 1}`;
+                const currentYear = `${today.getFullYear()}`;
+                
+                let visits = localStorage.getItem('visitCounter');
+                if (!visits) visits = { daily: {}, monthly: {}, yearly: {}, total: 0 };
+                else visits = JSON.parse(visits);
+                
+                const lastVisitDate = localStorage.getItem('lastVisitDate');
+                const isNewDay = lastVisitDate !== todayStr;
+                
+                if (isNewDay) {
+                    visits.daily[todayStr] = (visits.daily[todayStr] || 0) + 1;
+                    visits.monthly[currentMonth] = (visits.monthly[currentMonth] || 0) + 1;
+                    visits.yearly[currentYear] = (visits.yearly[currentYear] || 0) + 1;
+                    visits.total = (visits.total || 0) + 1;
+                    localStorage.setItem('visitCounter', JSON.stringify(visits));
+                    localStorage.setItem('lastVisitDate', todayStr);
+                }
+                
+                document.getElementById('todayCount').innerText = visits.daily[todayStr] || 0;
+                document.getElementById('monthCount').innerText = visits.monthly[currentMonth] || 0;
+                document.getElementById('yearCount').innerText = visits.yearly[currentYear] || 0;
+                document.getElementById('totalCount').innerText = visits.total || 0;
+            }
+            
+            // HÀM TIỆN ÍCH
+            function removeVietnameseTones(str) {
+                if (!str) return "";
+                str = str.toLowerCase();
+                const map = {
+                    'á':'a','à':'a','ả':'a','ã':'a','ạ':'a','ă':'a','ắ':'a','ằ':'a','ẳ':'a','ẵ':'a','ặ':'a',
+                    'â':'a','ấ':'a','ầ':'a','ẩ':'a','ẫ':'a','ậ':'a','é':'e','è':'e','ẻ':'e','ẽ':'e','ẹ':'e',
+                    'ê':'e','ế':'e','ề':'e','ể':'e','ễ':'e','ệ':'e','í':'i','ì':'i','ỉ':'i','ĩ':'i','ị':'i',
+                    'ó':'o','ò':'o','ỏ':'o','õ':'o','ọ':'o','ô':'o','ố':'o','ồ':'o','ổ':'o','ỗ':'o','ộ':'o',
+                    'ơ':'o','ớ':'o','ờ':'o','ở':'o','ỡ':'o','ợ':'o','ú':'u','ù':'u','ủ':'u','ũ':'u','ụ':'u',
+                    'ư':'u','ứ':'u','ừ':'u','ử':'u','ữ':'u','ự':'u','ý':'y','ỳ':'y','ỷ':'y','ỹ':'y','ỵ':'y','đ':'d'
+                };
+                let result = "";
+                for (let i = 0; i < str.length; i++) result += map[str[i]] || str[i];
+                return result;
+            }
+            
+            function getHourFromTimeStr(timeStr) {
+                if (!timeStr) return -1;
+                let match24 = timeStr.toString().match(/(\d{1,2}):(\d{2})/);
+                return match24 ? parseInt(match24[1]) : -1;
+            }
+            
+            function parseCSVToRows(csvText) {
+                const rows = [];
+                const lines = csvText.split(/\r?\n/);
+                for (let line of lines) {
+                    if (!line.trim()) continue;
+                    const cols = [];
+                    let inQuote = false, cell = "";
+                    for (let i = 0; i < line.length; i++) {
+                        const ch = line[i];
+                        if (ch === '"') inQuote = !inQuote;
+                        else if (ch === ',' && !inQuote) { cols.push(cell.trim()); cell = ""; }
+                        else cell += ch;
+                    }
+                    cols.push(cell.trim());
+                    rows.push(cols);
+                }
+                return rows;
+            }
+            
+            async function fetchCSV(url) {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                try {
+                    const response = await fetch(url, { cache: "no-store", signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const text = await response.text();
+                    return parseCSVToRows(text);
+                } catch (err) {
+                    clearTimeout(timeoutId);
+                    throw err;
+                }
+            }
+            
+            // TẢI DỮ LIỆU
+            async function loadAllData() {
+                updateBadge.innerHTML = "⏳ Đang đồng bộ...";
+                dataContainer.innerHTML = `<div class="loading">⏳ Đang tải dữ liệu...</div>`;
+                try {
+                    const [csvGiaVe, csvGioXuat, csvVitri] = await Promise.all([
+                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIAVE_GID}`),
+                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIOXUAT_GID}`),
+                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${VITRI_GID}`)
+                    ]);
+                    
+                    // XỬ LÝ GIÁ VÉ
+                    let startIdx = (csvGiaVe[0] && csvGiaVe[0][0] && (csvGiaVe[0][0].toLowerCase().includes("nơi") || csvGiaVe[0][0].toLowerCase().includes("muong"))) ? 1 : 0;
+                    allData.giave = [];
+                    for (let i = startIdx; i < csvGiaVe.length; i++) {
+                        const row = csvGiaVe[i];
+                        if (row[0] && row[0].trim()) {
+                            allData.giave.push({
+                                noi_di: row[0].trim(),
+                                nguoc_lai: (row[1] || "").trim(),
+                                gia_ve: (row[2] || "").trim(),
+                                searchText: removeVietnameseTones(row[0].trim() + " " + (row[1] || "").trim())
+                            });
+                        }
+                    }
+                    
+                    // XỬ LÝ GIỜ XUẤT BẾN
+                    startIdx = (csvGioXuat[0] && csvGioXuat[0][0] && csvGioXuat[0][0].toLowerCase().includes("bến")) ? 1 : 0;
+                    allData.gioxuatben = [];
+                    for (let i = startIdx; i < csvGioXuat.length; i++) {
+                        const row = csvGioXuat[i];
+                        if (row[0] && row[0].trim()) {
+                            allData.gioxuatben.push({
+                                ben_di: row[0].trim(),
+                                gio: (row[1] || "").trim(),
+                                so_dien_thoai: (row[2] || "").trim(),
+                                searchText: removeVietnameseTones(row[0].trim()),
+                                hour: getHourFromTimeStr(row[1])
+                            });
+                        }
+                    }
+                    
+                    // XỬ LÝ VỊ TRÍ
+                    startIdx = (csvVitri[0] && csvVitri[0][0] && csvVitri[0][0].toLowerCase().includes("bến")) ? 1 : 0;
+                    allData.vitri = [];
+                    for (let i = startIdx; i < csvVitri.length; i++) {
+                        const row = csvVitri[i];
+                        if (row[0] && row[0].trim()) {
+                            allData.vitri.push({
+                                ben_di: row[0].trim(),
+                                gio_di: (row[1] || "").trim(),
+                                bien_kiem_soat: (row[2] || "").trim(),
+                                so_dien_thoai: (row[3] || "").trim(),
+                                loai_xe: (row[4] || "").trim(),
+                                searchText: removeVietnameseTones(row[0].trim()),
+                                hour: getHourFromTimeStr(row[1])
+                            });
+                        }
+                    }
+                    
+                    updateBadge.innerHTML = `✅ ${new Date().toLocaleTimeString()} | GV:${allData.giave.length} GX:${allData.gioxuatben.length} VT:${allData.vitri.length}`;
+                    switchToTab(currentTab);
+                } catch (err) {
+                    dataContainer.innerHTML = `<div class="error-msg">❌ LỖI: ${err.message}<br>🔧 Dùng Live Server hoặc localhost</div>`;
+                    updateBadge.innerHTML = "⚠️ Lỗi kết nối";
+                }
+            }
+            
+            // LỌC DỮ LIỆU
+            function filterByTime(data, tabName) {
+                if (!timeFilter.active || !timeFilter.time || tabName === "giave") return data;
+                const [filterHour] = timeFilter.time.split(':').map(Number);
+                return data.filter(item => {
+                    if (item.hour === -1) return true;
+                    if (timeFilter.condition === "after") return item.hour >= filterHour;
+                    if (timeFilter.condition === "before") return item.hour <= filterHour;
+                    if (timeFilter.condition === "equal") return item.hour === filterHour;
+                    return true;
+                });
+            }
+            
+            function filterData() {
+                let data = [...(allData[currentTab] || [])];
+                let searchKeyword = searchInput.value.trim();
+                if (searchKeyword) {
+                    const searchNormalized = removeVietnameseTones(searchKeyword);
+                    data = data.filter(item => item.searchText.includes(searchNormalized));
+                }
+                if (currentTab === "vitri" && extraFilter.value !== "all") data = data.filter(item => item.loai_xe === extraFilter.value);
+                data = filterByTime(data, currentTab);
+                return data;
+            }
+            
+            // HIỂN THỊ DỮ LIỆU
+            function escapeHtml(str) { 
+                if (!str) return ""; 
+                return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+            }
+            
+            function renderData(data) {
+                if (!data.length) { 
+                    dataContainer.innerHTML = `<div class="no-data">📭 Không tìm thấy kết quả</div>`; 
+                    dataCountSpan.innerHTML = `📊 0 bản ghi`; 
+                    return; 
+                }
+                
+                let html = '';
+                const keyword = searchInput.value.trim();
+                const kwNorm = removeVietnameseTones(keyword);
+                
+                if (currentTab === "giave") {
+                    html = data.map(item => {
+                        let displayNoiDi = escapeHtml(item.noi_di);
+                        let displayNguocLai = escapeHtml(item.nguoc_lai);
+                        if (keyword && kwNorm) {
+                            const regex = new RegExp(`(${kwNorm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                            displayNoiDi = displayNoiDi.replace(regex, match => `<mark>${match}</mark>`);
+                            displayNguocLai = displayNguocLai.replace(regex, match => `<mark>${match}</mark>`);
+                        }
+                        return `<div class="data-card"><div class="card-title">🚌 ${displayNoiDi} → ${displayNguocLai}</div><div class="info-item">💰 <strong class="price">${escapeHtml(item.gia_ve)} VNĐ</strong></div></div>`;
+                    }).join('');
+                } else if (currentTab === "gioxuatben") {
+                    html = data.map(item => {
+                        let displayBenDi = escapeHtml(item.ben_di);
+                        if (keyword && kwNorm) {
+                            const regex = new RegExp(`(${kwNorm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                            displayBenDi = displayBenDi.replace(regex, match => `<mark>${match}</mark>`);
+                        }
+                        return `<div class="data-card ${timeFilter.active ? 'time-filtered' : ''}"><div class="card-title">🚏 ${displayBenDi} <span class="time-badge">🕐 ${escapeHtml(item.gio)}</span></div><div class="info-item phone">📞 ${escapeHtml(item.so_dien_thoai)}</div></div>`;
+                    }).join('');
+                } else {
+                    html = data.map(item => {
+                        let displayBenDi = escapeHtml(item.ben_di);
+                        if (keyword && kwNorm) {
+                            const regex = new RegExp(`(${kwNorm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                            displayBenDi = displayBenDi.replace(regex, match => `<mark>${match}</mark>`);
+                        }
+                        return `<div class="data-card ${timeFilter.active ? 'time-filtered' : ''}"><div class="card-title">📍 ${displayBenDi} ${item.gio_di ? `<span class="time-badge">🕐 ${escapeHtml(item.gio_di)}</span>` : ''}</div><div class="info-grid">${item.loai_xe ? `<div class="info-item">🚐 ${escapeHtml(item.loai_xe)}</div>` : ''}${item.bien_kiem_soat ? `<div class="info-item">🔢 ${escapeHtml(item.bien_kiem_soat)}</div>` : ''}<div class="info-item phone">📞 ${escapeHtml(item.so_dien_thoai)}</div></div></div>`;
+                    }).join('');
+                }
+                
+                dataContainer.innerHTML = html;
+                dataCountSpan.innerHTML = `📊 ${data.length} bản ghi`;
+            }
+            
+            function applyFiltersAndRender() { renderData(filterData()); }
+            
+            function applyTimeFilter() {
+                if (!timeValue.value) { alert("Chọn giờ!"); return; }
+                timeFilter = { active: true, condition: timeCondition.value, time: timeValue.value };
+                timeStatus.innerHTML = `⏰ Đang lọc: ${timeCondition.value === "after" ? "sau" : timeCondition.value === "before" ? "trước" : "đúng"} giờ ${timeValue.value}`;
+                timeStatus.style.display = "inline-block";
+                applyFiltersAndRender();
+            }
+            
+            function clearTimeFilter() { 
+                timeFilter = { active: false, condition: "after", time: null }; 
+                timeStatus.style.display = "none"; 
+                applyFiltersAndRender(); 
+            }
+            
+            function switchToTab(tabName) { 
+                currentTab = tabName; 
+                updateFilterUI(); 
+                applyFiltersAndRender(); 
+            }
+            
+            function updateFilterUI() {
+                if (currentTab === "vitri") {
+                    extraFilter.style.display = "block";
+                    const types = new Set(allData.vitri.map(v => v.loai_xe).filter(t => t));
+                    extraFilter.innerHTML = '<option value="all">🚌 Tất cả loại xe</option>' + Array.from(types).map(t => `<option value="${t}">${t}</option>`).join('');
+                } else extraFilter.style.display = "none";
+                searchInput.placeholder = currentTab === "giave" ? "🔍 Tìm theo nơi đi..." : "🔍 Tìm theo bến đi...";
+            }
+            
+            // KHỞI TẠO
+            function bindEvents() {
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    switchToTab(btn.dataset.tab);
+                }));
+                searchInput.addEventListener('input', applyFiltersAndRender);
+                extraFilter.addEventListener('change', applyFiltersAndRender);
+                resetBtn.addEventListener('click', () => { searchInput.value = ""; extraFilter.value = "all"; clearTimeFilter(); });
+                applyTimeBtn.addEventListener('click', applyTimeFilter);
+                clearTimeBtn.addEventListener('click', clearTimeFilter);
+            }
+            
+            function startAutoRefresh() { if (refreshInterval) clearInterval(refreshInterval); refreshInterval = setInterval(loadAllData, 60000); }
+            
+            // CHẠY
+            updateVisitCounter();
+            bindEvents();
+            loadAllData();
+            startAutoRefresh();
+        })();
     </script>
 </body>
 </html>
