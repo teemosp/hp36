@@ -5,7 +5,7 @@
 (function() {
     // ===== CẤU HÌNH =====
     // ⚠️ QUAN TRỌNG: Sau khi tạo Google Apps Script, thay URL này
-    const LOG_WEB_APP_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+    const LOG_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyAsL-76qd12IxyqkeSWlG17kZ05f4x9jDrbCALhFIhSEmLICenfBx0UaabsXxpG3VKZw/exec";
     
     // ID Google Sheets của bạn (để tạo sheet LOG_TRUY_CAP tự động)
     const SPREADSHEET_ID = "17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY";
