@@ -4,16 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Quản Lý Nhà Xe HP36 | Hoàng Phương</title>
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Segoe UI', sans-serif; }
-        body { background: #f0f2f5; padding: 16px; padding-bottom: 80px; }
-        .header { background: linear-gradient(135deg, #0f2b4d 0%, #1a4a7a 100%); color: white; border-radius: 28px; padding: 20px; margin-bottom: 20px; }
-        .logo-area { display: flex; align-items: center; gap: 12px; }
-        .logo-icon { font-size: 40px; background: rgba(255,255,255,0.15); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border-radius: 35px; }
-        .logo-text h1 { font-size: 1.6rem; letter-spacing: 1px; }
-        .logo-text p { font-size: 0.8rem; opacity: 0.9; }
-        
-        /* Stats bar - chứa thông tin cập nhật và button DN */
+        /* ==================== CSS TOÀN BỘ ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            padding: 16px;
+            padding-bottom: 100px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0f2b4d 0%, #1a4a7a 100%);
+            color: white;
+            border-radius: 28px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            font-size: 40px;
+            background: rgba(255,255,255,0.15);
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 35px;
+        }
+
+        .logo-text h1 {
+            font-size: 1.6rem;
+            letter-spacing: 1px;
+        }
+
+        .logo-text p {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        /* Stats Bar */
         .stats-bar {
             display: flex;
             flex-wrap: wrap;
@@ -22,12 +66,14 @@
             gap: 12px;
             margin-top: 16px;
         }
+
         .stats-group {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
             align-items: center;
         }
+
         .stat-badge {
             background: rgba(255,255,255,0.2);
             padding: 5px 12px;
@@ -35,6 +81,7 @@
             font-size: 0.75rem;
             backdrop-filter: blur(4px);
         }
+
         .info-btn-header {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             border: none;
@@ -49,7 +96,11 @@
             gap: 8px;
             font-size: 0.8rem;
         }
-        .info-btn-header:active { transform: scale(0.97); }
+
+        .info-btn-header:active {
+            transform: scale(0.97);
+        }
+
         .data-count-badge {
             background: rgba(255,255,255,0.25);
             padding: 5px 12px;
@@ -57,18 +108,68 @@
             font-size: 0.75rem;
             font-weight: 500;
         }
-        
+
         /* Tab Menu */
-        .tab-menu { display: flex; gap: 8px; margin-bottom: 20px; background: white; padding: 6px; border-radius: 60px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .tab-btn { flex: 1; padding: 12px 8px; border: none; background: transparent; border-radius: 50px; font-weight: 600; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
-        .tab-btn.active { background: linear-gradient(135deg, #1a4a7a 0%, #0f2b4d 100%); color: white; box-shadow: 0 2px 8px rgba(26,74,122,0.3); }
-        
-        /* Filter section */
-        .filter-section { background: white; border-radius: 24px; padding: 16px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .search-box { margin-bottom: 14px; }
-        .search-box input { width: 100%; padding: 14px 18px; border: 1px solid #e2e8f0; border-radius: 48px; font-size: 1rem; background: #f9fafb; outline: none; }
-        .search-box input:focus { border-color: #1a4a7a; box-shadow: 0 0 0 3px rgba(26,74,122,0.1); }
-        
+        .tab-menu {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 6px;
+            border-radius: 60px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 8px;
+            border: none;
+            background: transparent;
+            border-radius: 50px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #1a4a7a 0%, #0f2b4d 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(26,74,122,0.3);
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            border-radius: 24px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .search-box {
+            margin-bottom: 14px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid #e2e8f0;
+            border-radius: 48px;
+            font-size: 1rem;
+            background: #f9fafb;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: #1a4a7a;
+            box-shadow: 0 0 0 3px rgba(26,74,122,0.1);
+        }
+
         .filter-row {
             display: flex;
             gap: 12px;
@@ -76,18 +177,14 @@
             align-items: center;
             justify-content: space-between;
         }
-        .left-group {
+
+        .left-group, .right-group {
             display: flex;
             gap: 12px;
             align-items: center;
             flex-wrap: wrap;
         }
-        .right-group {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
+
         .time-filter-group {
             display: flex;
             gap: 8px;
@@ -97,8 +194,14 @@
             border-radius: 48px;
             border: 1px solid #e2e8f0;
         }
-        .time-filter-group span { color: #475569; font-size: 0.85rem; }
-        .time-filter-group select, .time-filter-group input {
+
+        .time-filter-group span {
+            color: #475569;
+            font-size: 0.85rem;
+        }
+
+        .time-filter-group select,
+        .time-filter-group input {
             padding: 8px 12px;
             border: 1px solid #cbd5e1;
             border-radius: 32px;
@@ -106,6 +209,7 @@
             font-size: 0.85rem;
             outline: none;
         }
+
         .apply-time-btn, .clear-time-btn, .reset-btn {
             padding: 8px 16px;
             border-radius: 32px;
@@ -114,17 +218,24 @@
             font-size: 0.8rem;
             border: none;
         }
-        .apply-time-btn { background: #1a4a7a; color: white; }
-        .clear-time-btn { background: #eef2ff; color: #1a4a7a; }
-        .reset-btn { background: #eef2ff; color: #1a4a7a; padding: 12px 20px; border-radius: 40px; }
-        .filter-row select {
-            padding: 12px 14px;
-            border-radius: 40px;
-            border: 1px solid #cbd5e1;
-            background: white;
-            font-size: 0.9rem;
-            cursor: pointer;
+
+        .apply-time-btn {
+            background: #1a4a7a;
+            color: white;
         }
+
+        .clear-time-btn {
+            background: #eef2ff;
+            color: #1a4a7a;
+        }
+
+        .reset-btn {
+            background: #eef2ff;
+            color: #1a4a7a;
+            padding: 12px 20px;
+            border-radius: 40px;
+        }
+
         .time-status {
             font-size: 0.7rem;
             color: #10b981;
@@ -134,7 +245,7 @@
             margin-top: 12px;
             display: inline-block;
         }
-        
+
         /* Modal */
         .modal {
             display: none;
@@ -150,7 +261,11 @@
             align-items: center;
             padding: 16px;
         }
-        .modal.show { display: flex; }
+
+        .modal.show {
+            display: flex;
+        }
+
         .modal-content {
             background: white;
             border-radius: 32px;
@@ -161,10 +276,18 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             animation: modalIn 0.3s ease;
         }
+
         @keyframes modalIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         .modal-header {
             background: linear-gradient(135deg, #0f2b4d 0%, #1a4a7a 100%);
             color: white;
@@ -174,7 +297,14 @@
             justify-content: space-between;
             align-items: center;
         }
-        .modal-header h2 { font-size: 1.4rem; display: flex; align-items: center; gap: 8px; }
+
+        .modal-header h2 {
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .close-modal {
             background: rgba(255,255,255,0.2);
             border: none;
@@ -188,12 +318,17 @@
             align-items: center;
             justify-content: center;
         }
-        .modal-body { padding: 20px; }
+
+        .modal-body {
+            padding: 20px;
+        }
+
         .info-group {
             margin-bottom: 20px;
             border-bottom: 1px solid #e2e8f0;
             padding-bottom: 16px;
         }
+
         .info-group h3 {
             color: #1a4a7a;
             font-size: 1.1rem;
@@ -202,47 +337,187 @@
             align-items: center;
             gap: 8px;
         }
+
         .info-row {
             display: flex;
             margin-bottom: 12px;
             flex-wrap: wrap;
         }
+
         .info-label {
             width: 120px;
             font-weight: 600;
             color: #475569;
         }
+
         .info-value {
             flex: 1;
             color: #0f172a;
         }
+
         .member-item {
             background: #f1f5f9;
             padding: 8px 12px;
             border-radius: 12px;
             margin-bottom: 8px;
         }
-        
+
         /* Data Cards */
-        .data-list { display: flex; flex-direction: column; gap: 16px; }
-        .data-card { background: white; border-radius: 24px; padding: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-left: 5px solid #1a4a7a; }
-        .data-card.time-filtered { border-left-color: #10b981; background: #f0fdf4; }
-        .card-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .info-grid { display: flex; flex-wrap: wrap; gap: 12px; margin: 8px 0; }
-        .info-item { background: #f8fafc; padding: 8px 14px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
-        .price { font-weight: 800; color: #2b6e3c; background: #e9f7ef; padding: 4px 12px; border-radius: 32px; }
-        .phone { color: #2c5282; font-weight: 500; }
-        .time-badge { background: #e6f0ff; padding: 4px 12px; border-radius: 30px; font-size: 0.8rem; }
-        .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); text-align: center; padding: 12px; border-top: 1px solid #e2e8f0; z-index: 10; font-size: 0.75rem; }
-        .loading, .no-data, .error-msg { text-align: center; padding: 40px; background: white; border-radius: 24px; }
-        .error-msg { color: #dc2626; background: #fef2f2; }
-        mark { background: #fde047; padding: 0 4px; border-radius: 6px; }
-        
+        .data-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .data-card {
+            background: white;
+            border-radius: 24px;
+            padding: 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-left: 5px solid #1a4a7a;
+        }
+
+        .data-card.time-filtered {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .info-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 8px 0;
+        }
+
+        .info-item {
+            background: #f8fafc;
+            padding: 8px 14px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .price {
+            font-weight: 800;
+            color: #2b6e3c;
+            background: #e9f7ef;
+            padding: 4px 12px;
+            border-radius: 32px;
+        }
+
+        .phone {
+            color: #2c5282;
+            font-weight: 500;
+        }
+
+        .time-badge {
+            background: #e6f0ff;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+        }
+
+        /* Footer */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            padding: 12px;
+            border-top: 1px solid #e2e8f0;
+            z-index: 10;
+            font-size: 0.75rem;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .counter-stats {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .counter-item {
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .counter-item span:first-child {
+            color: #475569;
+        }
+
+        .counter-item span:last-child {
+            color: #1a4a7a;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
+        .loading, .no-data, .error-msg {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 24px;
+        }
+
+        .error-msg {
+            color: #dc2626;
+            background: #fef2f2;
+        }
+
+        mark {
+            background: #fde047;
+            padding: 0 4px;
+            border-radius: 6px;
+        }
+
+        /* Responsive */
         @media (max-width: 640px) {
-            body { padding: 12px; }
-            .stats-bar { flex-direction: column; align-items: flex-start; }
-            .filter-row { flex-direction: column; align-items: stretch; }
-            .time-filter-group { flex-wrap: wrap; justify-content: center; }
+            body {
+                padding: 12px;
+            }
+            .stats-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .time-filter-group {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .counter-stats {
+                gap: 8px;
+            }
+            .footer-content {
+                flex-direction: column;
+                gap: 8px;
+            }
         }
     </style>
 </head>
@@ -255,8 +530,6 @@
                 <p>Nhà xe Hoàng Phương | Vận tải chất lượng cao</p>
             </div>
         </div>
-        
-        <!-- Stats bar: thông tin cập nhật + button DN + số bản ghi -->
         <div class="stats-bar">
             <div class="stats-group">
                 <div class="stat-badge" id="updateBadge">📡 Đang tải...</div>
@@ -274,9 +547,8 @@
     
     <div class="filter-section">
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm... Ví dụ: Mường Lát, Thái Nguyên, Triệu Sơn..." autocomplete="off">
+            <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm..." autocomplete="off">
         </div>
-        
         <div class="filter-row">
             <div class="left-group">
                 <select id="extraFilter" style="display: none;">
@@ -301,13 +573,23 @@
         <div id="timeStatus" class="time-status" style="display: none;"></div>
     </div>
     
-    <div id="dataContainer" class="data-list"><div class="loading">⏳ Đang tải dữ liệu...</div></div>
-    
-    <div class="footer">
-        📞 Hotline: 0948 955 999 | © Công ty TNHH TM & DV Vận tải Hoàng Phương
+    <div id="dataContainer" class="data-list">
+        <div class="loading">⏳ Đang tải dữ liệu...</div>
     </div>
     
-    <!-- Modal Thông tin doanh nghiệp -->
+    <div class="footer">
+        <div class="footer-content">
+            <div>📞 Hotline: 0948 955 999 | © Công ty TNHH TM & DV Vận tải Hoàng Phương</div>
+            <div class="counter-stats" id="counterStats">
+                <div class="counter-item">📅 Hôm nay: <span id="todayCount">0</span></div>
+                <div class="counter-item">📆 Tháng này: <span id="monthCount">0</span></div>
+                <div class="counter-item">📊 Năm nay: <span id="yearCount">0</span></div>
+                <div class="counter-item">🔁 Tổng: <span id="totalCount">0</span></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL THÔNG TIN DOANH NGHIỆP -->
     <div id="infoModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -321,7 +603,7 @@
                     <div class="info-row"><div class="info-label">Mã số doanh nghiệp:</div><div class="info-value">2800836982</div></div>
                     <div class="info-row"><div class="info-label">Đăng ký lần đầu:</div><div class="info-value">12/04/2005</div></div>
                     <div class="info-row"><div class="info-label">Cập nhật lần cuối:</div><div class="info-value">11/02/2025</div></div>
-                    <div class="info-row"><div class="info-label">Vốn điều lệ:</div><div class="info-value">8.000.000.000 VNĐ <span style="color:#64748b; font-size:0.8rem;">(Tám tỷ đồng)</span></div></div>
+                    <div class="info-row"><div class="info-label">Vốn điều lệ:</div><div class="info-value">8.000.000.000 VNĐ</div></div>
                 </div>
                 <div class="info-group">
                     <h3>📍 Địa Chỉ Liên Hệ</h3>
@@ -339,10 +621,13 @@
             </div>
         </div>
     </div>
-
+    
+    <!-- JAVASCRIPT -->
+    <script src="visitor-log.js"></script>
     <script>
+        // ==================== JAVASCRIPT CHÍNH ====================
         (function() {
-            // ==================== CẤU HÌNH ====================
+            // CẤU HÌNH
             const SHEET_ID = "17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY";
             const GIAVE_GID = "0";
             const GIOXUAT_GID = "632345854";
@@ -351,7 +636,6 @@
             let allData = { giave: [], gioxuatben: [], vitri: [] };
             let currentTab = "giave";
             let refreshInterval = null;
-            
             let timeFilter = { active: false, condition: "after", time: null };
             
             const dataContainer = document.getElementById("dataContainer");
@@ -360,23 +644,51 @@
             const resetBtn = document.getElementById("resetFilterBtn");
             const updateBadge = document.getElementById("updateBadge");
             const dataCountSpan = document.getElementById("dataCount");
-            
             const timeCondition = document.getElementById("timeCondition");
             const timeValue = document.getElementById("timeValue");
             const applyTimeBtn = document.getElementById("applyTimeBtn");
             const clearTimeBtn = document.getElementById("clearTimeBtn");
             const timeStatus = document.getElementById("timeStatus");
             
-            // Modal
+            // MODAL
             const modal = document.getElementById("infoModal");
             const showInfoBtn = document.getElementById("showInfoBtn");
             const closeModalBtn = document.getElementById("closeModalBtn");
             
             showInfoBtn.addEventListener("click", () => modal.classList.add("show"));
-            function closeModal() { modal.classList.remove("show"); }
-            closeModalBtn.addEventListener("click", closeModal);
-            modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+            closeModalBtn.addEventListener("click", () => modal.classList.remove("show"));
+            modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.remove("show"); });
             
+            // BỘ ĐẾM LƯỢT TRUY CẬP (localStorage)
+            function updateVisitCounter() {
+                const today = new Date();
+                const todayStr = today.toISOString().split('T')[0];
+                const currentMonth = `${today.getFullYear()}-${today.getMonth() + 1}`;
+                const currentYear = `${today.getFullYear()}`;
+                
+                let visits = localStorage.getItem('visitCounter');
+                if (!visits) visits = { daily: {}, monthly: {}, yearly: {}, total: 0 };
+                else visits = JSON.parse(visits);
+                
+                const lastVisitDate = localStorage.getItem('lastVisitDate');
+                const isNewDay = lastVisitDate !== todayStr;
+                
+                if (isNewDay) {
+                    visits.daily[todayStr] = (visits.daily[todayStr] || 0) + 1;
+                    visits.monthly[currentMonth] = (visits.monthly[currentMonth] || 0) + 1;
+                    visits.yearly[currentYear] = (visits.yearly[currentYear] || 0) + 1;
+                    visits.total = (visits.total || 0) + 1;
+                    localStorage.setItem('visitCounter', JSON.stringify(visits));
+                    localStorage.setItem('lastVisitDate', todayStr);
+                }
+                
+                document.getElementById('todayCount').innerText = visits.daily[todayStr] || 0;
+                document.getElementById('monthCount').innerText = visits.monthly[currentMonth] || 0;
+                document.getElementById('yearCount').innerText = visits.yearly[currentYear] || 0;
+                document.getElementById('totalCount').innerText = visits.total || 0;
+            }
+            
+            // HÀM TIỆN ÍCH
             function removeVietnameseTones(str) {
                 if (!str) return "";
                 str = str.toLowerCase();
@@ -395,10 +707,8 @@
             
             function getHourFromTimeStr(timeStr) {
                 if (!timeStr) return -1;
-                let cleaned = timeStr.toString().trim();
-                let match24 = cleaned.match(/(\d{1,2}):(\d{2})/);
-                if (match24) return parseInt(match24[1]);
-                return -1;
+                let match24 = timeStr.toString().match(/(\d{1,2}):(\d{2})/);
+                return match24 ? parseInt(match24[1]) : -1;
             }
             
             function parseCSVToRows(csvText) {
@@ -407,8 +717,7 @@
                 for (let line of lines) {
                     if (!line.trim()) continue;
                     const cols = [];
-                    let inQuote = false;
-                    let cell = "";
+                    let inQuote = false, cell = "";
                     for (let i = 0; i < line.length; i++) {
                         const ch = line[i];
                         if (ch === '"') inQuote = !inQuote;
@@ -421,7 +730,7 @@
                 return rows;
             }
             
-            async function fetchCSV(url, sheetName) {
+            async function fetchCSV(url) {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 15000);
                 try {
@@ -429,7 +738,6 @@
                     clearTimeout(timeoutId);
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     const text = await response.text();
-                    if (!text.trim()) throw new Error("File CSV rỗng");
                     return parseCSVToRows(text);
                 } catch (err) {
                     clearTimeout(timeoutId);
@@ -437,19 +745,19 @@
                 }
             }
             
+            // TẢI DỮ LIỆU
             async function loadAllData() {
                 updateBadge.innerHTML = "⏳ Đang đồng bộ...";
-                dataContainer.innerHTML = `<div class="loading">⏳ Đang tải dữ liệu từ Google Sheets...</div>`;
-                
+                dataContainer.innerHTML = `<div class="loading">⏳ Đang tải dữ liệu...</div>`;
                 try {
                     const [csvGiaVe, csvGioXuat, csvVitri] = await Promise.all([
-                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIAVE_GID}`, "Giá vé"),
-                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIOXUAT_GID}`, "Giờ xuất bến"),
-                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${VITRI_GID}`, "Vị trí")
+                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIAVE_GID}`),
+                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIOXUAT_GID}`),
+                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${VITRI_GID}`)
                     ]);
                     
-                    let startIdx = 0;
-                    if (csvGiaVe[0] && csvGiaVe[0][0] && (csvGiaVe[0][0].toLowerCase().includes("nơi") || csvGiaVe[0][0].toLowerCase().includes("muong"))) startIdx = 1;
+                    // XỬ LÝ GIÁ VÉ
+                    let startIdx = (csvGiaVe[0] && csvGiaVe[0][0] && (csvGiaVe[0][0].toLowerCase().includes("nơi") || csvGiaVe[0][0].toLowerCase().includes("muong"))) ? 1 : 0;
                     allData.giave = [];
                     for (let i = startIdx; i < csvGiaVe.length; i++) {
                         const row = csvGiaVe[i];
@@ -463,8 +771,8 @@
                         }
                     }
                     
-                    startIdx = 0;
-                    if (csvGioXuat[0] && csvGioXuat[0][0] && csvGioXuat[0][0].toLowerCase().includes("bến")) startIdx = 1;
+                    // XỬ LÝ GIỜ XUẤT BẾN
+                    startIdx = (csvGioXuat[0] && csvGioXuat[0][0] && csvGioXuat[0][0].toLowerCase().includes("bến")) ? 1 : 0;
                     allData.gioxuatben = [];
                     for (let i = startIdx; i < csvGioXuat.length; i++) {
                         const row = csvGioXuat[i];
@@ -479,8 +787,8 @@
                         }
                     }
                     
-                    startIdx = 0;
-                    if (csvVitri[0] && csvVitri[0][0] && csvVitri[0][0].toLowerCase().includes("bến")) startIdx = 1;
+                    // XỬ LÝ VỊ TRÍ
+                    startIdx = (csvVitri[0] && csvVitri[0][0] && csvVitri[0][0].toLowerCase().includes("bến")) ? 1 : 0;
                     allData.vitri = [];
                     for (let i = startIdx; i < csvVitri.length; i++) {
                         const row = csvVitri[i];
@@ -497,32 +805,23 @@
                         }
                     }
                     
-                    const total = allData.giave.length + allData.gioxuatben.length + allData.vitri.length;
-                    if (total === 0) throw new Error("Cả 3 sheet đều không có dữ liệu");
-                    
                     updateBadge.innerHTML = `✅ ${new Date().toLocaleTimeString()} | GV:${allData.giave.length} GX:${allData.gioxuatben.length} VT:${allData.vitri.length}`;
                     switchToTab(currentTab);
-                    
                 } catch (err) {
                     console.error("Lỗi:", err);
-                    dataContainer.innerHTML = `<div class="error-msg">❌ LỖI: ${err.message}<br><br>🔧 Hướng dẫn:<br>• Dùng VS Code + Live Server<br>• Đảm bảo sheet đã public</div>`;
+                    dataContainer.innerHTML = `<div class="error-msg">❌ LỖI: ${err.message}<br>🔧 Kiểm tra: Sheet đã public chưa? Dùng Live Server?</div>`;
                     updateBadge.innerHTML = "⚠️ Lỗi kết nối";
                 }
             }
             
+            // LỌC DỮ LIỆU
             function filterByTime(data, tabName) {
-                if (!timeFilter.active || !timeFilter.time) return data;
-                if (tabName === "giave") return data;
-                
-                const [filterHour, filterMinute] = timeFilter.time.split(':').map(Number);
-                const filterTotalMin = filterHour * 60 + (filterMinute || 0);
-                
+                if (!timeFilter.active || !timeFilter.time || tabName === "giave") return data;
+                const [filterHour] = timeFilter.time.split(':').map(Number);
                 return data.filter(item => {
                     if (item.hour === -1) return true;
-                    const itemTotalMin = item.hour * 60;
-                    
-                    if (timeFilter.condition === "after") return itemTotalMin >= filterTotalMin;
-                    if (timeFilter.condition === "before") return itemTotalMin <= filterTotalMin;
+                    if (timeFilter.condition === "after") return item.hour >= filterHour;
+                    if (timeFilter.condition === "before") return item.hour <= filterHour;
                     if (timeFilter.condition === "equal") return item.hour === filterHour;
                     return true;
                 });
@@ -531,60 +830,57 @@
             function filterData() {
                 let data = [...(allData[currentTab] || [])];
                 let searchKeyword = searchInput.value.trim();
-                
-                if (searchKeyword !== "") {
+                if (searchKeyword) {
                     const searchNormalized = removeVietnameseTones(searchKeyword);
                     data = data.filter(item => item.searchText.includes(searchNormalized));
                 }
-                
-                if (currentTab === "vitri" && extraFilter.value !== "all") {
-                    data = data.filter(item => item.loai_xe === extraFilter.value);
-                }
-                
+                if (currentTab === "vitri" && extraFilter.value !== "all") data = data.filter(item => item.loai_xe === extraFilter.value);
                 data = filterByTime(data, currentTab);
                 return data;
             }
             
+            // HIỂN THỊ
+            function escapeHtml(str) { 
+                if (!str) return ""; 
+                return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+            }
+            
             function renderData(data) {
-                if (!data.length) {
-                    let msg = `📭 Không tìm thấy kết quả`;
-                    if (searchInput.value) msg += ` cho "${searchInput.value}"`;
-                    dataContainer.innerHTML = `<div class="no-data">${msg}</div>`;
-                    dataCountSpan.innerHTML = `📊 0 bản ghi`;
-                    return;
+                if (!data.length) { 
+                    dataContainer.innerHTML = `<div class="no-data">📭 Không tìm thấy kết quả</div>`; 
+                    dataCountSpan.innerHTML = `📊 0 bản ghi`; 
+                    return; 
                 }
                 
                 let html = '';
                 const keyword = searchInput.value.trim();
-                const keywordNormalized = removeVietnameseTones(keyword);
+                const kwNorm = removeVietnameseTones(keyword);
                 
                 if (currentTab === "giave") {
                     html = data.map(item => {
                         let displayNoiDi = escapeHtml(item.noi_di);
                         let displayNguocLai = escapeHtml(item.nguoc_lai);
-                        if (keyword && keywordNormalized) {
-                            const regex = new RegExp(`(${keywordNormalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                        if (keyword && kwNorm) {
+                            const regex = new RegExp(`(${kwNorm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
                             displayNoiDi = displayNoiDi.replace(regex, match => `<mark>${match}</mark>`);
                             displayNguocLai = displayNguocLai.replace(regex, match => `<mark>${match}</mark>`);
                         }
                         return `<div class="data-card"><div class="card-title">🚌 ${displayNoiDi} → ${displayNguocLai}</div><div class="info-item">💰 <strong class="price">${escapeHtml(item.gia_ve)} VNĐ</strong></div></div>`;
                     }).join('');
-                } 
-                else if (currentTab === "gioxuatben") {
+                } else if (currentTab === "gioxuatben") {
                     html = data.map(item => {
                         let displayBenDi = escapeHtml(item.ben_di);
-                        if (keyword && keywordNormalized) {
-                            const regex = new RegExp(`(${keywordNormalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                        if (keyword && kwNorm) {
+                            const regex = new RegExp(`(${kwNorm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
                             displayBenDi = displayBenDi.replace(regex, match => `<mark>${match}</mark>`);
                         }
                         return `<div class="data-card ${timeFilter.active ? 'time-filtered' : ''}"><div class="card-title">🚏 ${displayBenDi} <span class="time-badge">🕐 ${escapeHtml(item.gio)}</span></div><div class="info-item phone">📞 ${escapeHtml(item.so_dien_thoai)}</div></div>`;
                     }).join('');
-                }
-                else if (currentTab === "vitri") {
+                } else {
                     html = data.map(item => {
                         let displayBenDi = escapeHtml(item.ben_di);
-                        if (keyword && keywordNormalized) {
-                            const regex = new RegExp(`(${keywordNormalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                        if (keyword && kwNorm) {
+                            const regex = new RegExp(`(${kwNorm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
                             displayBenDi = displayBenDi.replace(regex, match => `<mark>${match}</mark>`);
                         }
                         return `<div class="data-card ${timeFilter.active ? 'time-filtered' : ''}"><div class="card-title">📍 ${displayBenDi} ${item.gio_di ? `<span class="time-badge">🕐 ${escapeHtml(item.gio_di)}</span>` : ''}</div><div class="info-grid">${item.loai_xe ? `<div class="info-item">🚐 ${escapeHtml(item.loai_xe)}</div>` : ''}${item.bien_kiem_soat ? `<div class="info-item">🔢 ${escapeHtml(item.bien_kiem_soat)}</div>` : ''}<div class="info-item phone">📞 ${escapeHtml(item.so_dien_thoai)}</div></div></div>`;
@@ -595,78 +891,59 @@
                 dataCountSpan.innerHTML = `📊 ${data.length} bản ghi`;
             }
             
-            function escapeHtml(str) { 
-                if (!str) return ""; 
-                return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
-            }
-            
             function applyFiltersAndRender() { renderData(filterData()); }
             
             function applyTimeFilter() {
-                const timeVal = timeValue.value;
-                if (!timeVal) { alert("Vui lòng chọn giờ!"); return; }
-                timeFilter.active = true;
-                timeFilter.condition = timeCondition.value;
-                timeFilter.time = timeVal;
-                
-                const conditionText = timeCondition.value === "after" ? "sau" : (timeCondition.value === "before" ? "trước" : "đúng");
-                timeStatus.innerHTML = `⏰ Đang lọc: ${conditionText} giờ ${timeVal}`;
+                if (!timeValue.value) { alert("Chọn giờ!"); return; }
+                timeFilter = { active: true, condition: timeCondition.value, time: timeValue.value };
+                timeStatus.innerHTML = `⏰ Đang lọc: ${timeCondition.value === "after" ? "sau" : timeCondition.value === "before" ? "trước" : "đúng"} giờ ${timeValue.value}`;
                 timeStatus.style.display = "inline-block";
                 applyFiltersAndRender();
             }
             
-            function clearTimeFilter() {
-                timeFilter.active = false;
-                timeFilter.time = null;
-                timeStatus.style.display = "none";
-                applyFiltersAndRender();
+            function clearTimeFilter() { 
+                timeFilter = { active: false, condition: "after", time: null }; 
+                timeStatus.style.display = "none"; 
+                applyFiltersAndRender(); 
             }
             
-            function switchToTab(tabName) {
-                currentTab = tabName;
-                updateFilterUI();
-                applyFiltersAndRender();
+            function switchToTab(tabName) { 
+                currentTab = tabName; 
+                updateFilterUI(); 
+                applyFiltersAndRender(); 
             }
             
             function updateFilterUI() {
                 if (currentTab === "vitri") {
                     extraFilter.style.display = "block";
-                    const types = new Set();
-                    allData.vitri.forEach(v => { if (v.loai_xe && v.loai_xe.trim()) types.add(v.loai_xe); });
-                    extraFilter.innerHTML = '<option value="all">🚌 Tất cả loại xe</option>' + 
-                        Array.from(types).sort().map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
-                } else {
-                    extraFilter.style.display = "none";
-                }
-                searchInput.placeholder = currentTab === "giave" ? "🔍 Tìm theo nơi đi (VD: Mường Lát, Hiền kiệt...)" : "🔍 Tìm theo bến đi (VD: Thái Nguyên, Bắc Giang...)";
+                    const types = new Set(allData.vitri.map(v => v.loai_xe).filter(t => t));
+                    extraFilter.innerHTML = '<option value="all">🚌 Tất cả loại xe</option>' + Array.from(types).map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+                } else extraFilter.style.display = "none";
+                searchInput.placeholder = currentTab === "giave" ? "🔍 Tìm theo nơi đi..." : "🔍 Tìm theo bến đi...";
             }
             
+            // KHỞI TẠO
             function bindEvents() {
-                document.querySelectorAll('.tab-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        switchToTab(btn.dataset.tab);
-                    });
-                });
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    switchToTab(btn.dataset.tab);
+                }));
                 searchInput.addEventListener('input', applyFiltersAndRender);
                 extraFilter.addEventListener('change', applyFiltersAndRender);
-                resetBtn.addEventListener('click', () => { 
-                    searchInput.value = ""; 
-                    extraFilter.value = "all"; 
-                    clearTimeFilter();
-                });
+                resetBtn.addEventListener('click', () => { searchInput.value = ""; extraFilter.value = "all"; clearTimeFilter(); });
                 applyTimeBtn.addEventListener('click', applyTimeFilter);
                 clearTimeBtn.addEventListener('click', clearTimeFilter);
             }
             
             function startAutoRefresh() { if (refreshInterval) clearInterval(refreshInterval); refreshInterval = setInterval(loadAllData, 60000); }
             
+            // CHẠY
+            updateVisitCounter();
             bindEvents();
             loadAllData();
             startAutoRefresh();
         })();
     </script>
-    <script src="visitor-log.js"></script>
 </body>
 </html>
