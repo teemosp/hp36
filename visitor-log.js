@@ -1,5 +1,5 @@
 // ==================== visitor-log.js ====================
-const PROXY_URL = "https://script.google.com/macros/s/AKfycbwiMTHs8j2P4DZx-hMrdqbUzrY1AfuMNSNDaJ2XiaSyXFWFR05TV_GO9SxZ8FWA5Xbvdw/exec";
+const PROXY_URL = "https://script.google.com/macros/s/AKfycbyrAuBWt4v77hURogvOCwvktfj1Gd7KhtlIOjGMjhY5ikN3JOLYaNckTWtzSAQ7e28rTQ/exec";
 
 function getBrowserInfo() {
     const ua = navigator.userAgent;
