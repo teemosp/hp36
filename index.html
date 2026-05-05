@@ -542,7 +542,7 @@
     
     <div class="footer">
         <div class="footer-content">
-            <div>📞 Hotline: 0948 955 999 | © Công ty TNHH TM & DV Vận tải Hoàng Phương</div>
+            <div>📞 Hotline: 0948 531 33 | © Công ty TNHH TM & DV Vận tải Hoàng Phương</div>
         </div>
     </div>
     
@@ -579,11 +579,15 @@
         </div>
     </div>
     
-    <!-- JAVASCRIPT -->
-    <script src="visitor-log.js"></script>
     <script>
         (function() {
-            // ===== DOM ELEMENTS =====
+            // ===== CẤU HÌNH =====
+            const SHEET_ID = "17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY";
+            const GIAVE_GID = "0";
+            const GIOXUAT_GID = "614449779";
+            const VITRI_GID = "632345854";
+            
+            // DOM elements
             const dataContainer = document.getElementById("dataContainer");
             const searchInput = document.getElementById("searchInput");
             const extraFilter = document.getElementById("extraFilter");
@@ -633,54 +637,105 @@
                 return match24 ? parseInt(match24[1]) : -1;
             }
             
-            // ===== TẢI DỮ LIỆU TỪ PROXY =====
+            function parseCSVToRows(csvText) {
+                const rows = [];
+                const lines = csvText.split(/\r?\n/);
+                for (let line of lines) {
+                    if (!line.trim()) continue;
+                    const cols = [];
+                    let inQuote = false, cell = "";
+                    for (let i = 0; i < line.length; i++) {
+                        const ch = line[i];
+                        if (ch === '"') inQuote = !inQuote;
+                        else if (ch === ',' && !inQuote) { cols.push(cell.trim()); cell = ""; }
+                        else cell += ch;
+                    }
+                    cols.push(cell.trim());
+                    rows.push(cols);
+                }
+                return rows;
+            }
+            
+            async function fetchCSV(url) {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                try {
+                    const response = await fetch(url, { cache: "no-store", signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const text = await response.text();
+                    return parseCSVToRows(text);
+                } catch (err) {
+                    clearTimeout(timeoutId);
+                    throw err;
+                }
+            }
+            
+            // ===== TẢI DỮ LIỆU =====
             async function loadAllData() {
                 updateBadge.innerHTML = "⏳ Đang đồng bộ...";
                 dataContainer.innerHTML = `<div class="loading">⏳ Đang tải dữ liệu...</div>`;
                 try {
-                    // Gọi hàm fetchSheetData từ visitor-log.js
-                    const dataGiaVe = await window.fetchSheetData('giave');
-                    const dataGioXuat = await window.fetchSheetData('gioxuatben');
-                    const dataVitri = await window.fetchSheetData('vitri');
+                    const [csvGiaVe, csvGioXuat, csvVitri] = await Promise.all([
+                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIAVE_GID}`),
+                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIOXUAT_GID}`),
+                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${VITRI_GID}`)
+                    ]);
                     
-                    console.log("Dữ liệu giá vé:", dataGiaVe);
-                    console.log("Dữ liệu giờ xuất bến:", dataGioXuat);
-                    console.log("Dữ liệu vị trí:", dataVitri);
+                    // XỬ LÝ GIÁ VÉ
+                    let startIdx = (csvGiaVe[0] && csvGiaVe[0][0] && (csvGiaVe[0][0].toLowerCase().includes("nơi") || csvGiaVe[0][0].toLowerCase().includes("muong"))) ? 1 : 0;
+                    allData.giave = [];
+                    for (let i = startIdx; i < csvGiaVe.length; i++) {
+                        const row = csvGiaVe[i];
+                        if (row[0] && row[0].trim()) {
+                            allData.giave.push({
+                                noi_di: row[0].trim(),
+                                nguoc_lai: (row[1] || "").trim(),
+                                gia_ve: (row[2] || "").trim(),
+                                searchText: removeVietnameseTones(row[0].trim() + " " + (row[1] || "").trim())
+                            });
+                        }
+                    }
                     
-                    // Xử lý GIÁ VÉ
-                    allData.giave = (Array.isArray(dataGiaVe) ? dataGiaVe : []).map(row => ({
-                        noi_di: row["Nơi Đi"] || row["noi_di"] || "",
-                        nguoc_lai: row["Ngược Lại"] || row["nguoc_lai"] || "",
-                        gia_ve: row["giá"] || row["gia_ve"] || "",
-                        searchText: removeVietnameseTones((row["Nơi Đi"] || row["noi_di"] || "") + " " + (row["Ngược Lại"] || row["nguoc_lai"] || ""))
-                    })).filter(item => item.noi_di);
+                    // XỬ LÝ GIỜ XUẤT BẾN
+                    startIdx = (csvGioXuat[0] && csvGioXuat[0][0] && csvGioXuat[0][0].toLowerCase().includes("bến")) ? 1 : 0;
+                    allData.gioxuatben = [];
+                    for (let i = startIdx; i < csvGioXuat.length; i++) {
+                        const row = csvGioXuat[i];
+                        if (row[0] && row[0].trim()) {
+                            allData.gioxuatben.push({
+                                ben_di: row[0].trim(),
+                                gio: (row[1] || "").trim(),
+                                so_dien_thoai: (row[2] || "").trim(),
+                                searchText: removeVietnameseTones(row[0].trim()),
+                                hour: getHourFromTimeStr(row[1])
+                            });
+                        }
+                    }
                     
-                    // Xử lý GIỜ XUẤT BẾN
-                    allData.gioxuatben = (Array.isArray(dataGioXuat) ? dataGioXuat : []).map(row => ({
-                        ben_di: row["Bến đi"] || row["ben_di"] || "",
-                        gio: row["Giờ"] || row["gio"] || "",
-                        so_dien_thoai: row["Số điện thoại"] || row["so_dien_thoai"] || "",
-                        searchText: removeVietnameseTones(row["Bến đi"] || row["ben_di"] || ""),
-                        hour: getHourFromTimeStr(row["Giờ"] || row["gio"] || "")
-                    })).filter(item => item.ben_di);
-                    
-                    // Xử lý VỊ TRÍ
-                    allData.vitri = (Array.isArray(dataVitri) ? dataVitri : []).map(row => ({
-                        ben_di: row["Bến đi"] || row["ben_di"] || "",
-                        gio_di: row["giờ đi"] || row["gio_di"] || "",
-                        bien_kiem_soat: row["biến kiểm soát"] || row["bien_kiem_soat"] || "",
-                        so_dien_thoai: row["số điện thoại"] || row["so_dien_thoai"] || "",
-                        loai_xe: row["Loại xe"] || row["loai_xe"] || "",
-                        searchText: removeVietnameseTones(row["Bến đi"] || row["ben_di"] || ""),
-                        hour: getHourFromTimeStr(row["giờ đi"] || row["gio_di"] || "")
-                    })).filter(item => item.ben_di);
+                    // XỬ LÝ VỊ TRÍ
+                    startIdx = (csvVitri[0] && csvVitri[0][0] && csvVitri[0][0].toLowerCase().includes("bến")) ? 1 : 0;
+                    allData.vitri = [];
+                    for (let i = startIdx; i < csvVitri.length; i++) {
+                        const row = csvVitri[i];
+                        if (row[0] && row[0].trim()) {
+                            allData.vitri.push({
+                                ben_di: row[0].trim(),
+                                gio_di: (row[1] || "").trim(),
+                                bien_kiem_soat: (row[2] || "").trim(),
+                                so_dien_thoai: (row[3] || "").trim(),
+                                loai_xe: (row[4] || "").trim(),
+                                searchText: removeVietnameseTones(row[0].trim()),
+                                hour: getHourFromTimeStr(row[1])
+                            });
+                        }
+                    }
                     
                     updateBadge.innerHTML = `✅ ${new Date().toLocaleTimeString()} | GV:${allData.giave.length} GX:${allData.gioxuatben.length} VT:${allData.vitri.length}`;
                     switchToTab(currentTab);
-                    
                 } catch (err) {
                     console.error("Lỗi:", err);
-                    dataContainer.innerHTML = `<div class="error-msg">❌ LỖI: ${err.message}<br>🔧 Kiểm tra kết nối Proxy</div>`;
+                    dataContainer.innerHTML = `<div class="error-msg">❌ LỖI: ${err.message}<br>🔧 Kiểm tra: Sheet đã public chưa? Dùng Live Server?</div>`;
                     updateBadge.innerHTML = "⚠️ Lỗi kết nối";
                 }
             }
