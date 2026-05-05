@@ -1,42 +1,15 @@
-// ==================== visitor-log.js (ĐÃ SỬA) ====================
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwbyKlTjhQMDFTHHOw_LTNoovVCRJjqZ6NXeFDJjlyvpLF_6fNZtjOex3pLhkr547nh-Q/exec";
+// ==================== visitor-log.js (Bỏ lấy IP) ====================
+const PROXY_URL = "https://script.google.com/macros/s/AKfycbwbyKlTjhQMDFTHHOw_LTNoovVCRJjqZ6NXeFDJjlyvpLF_6fNZtjOex3pLhkr547nh-Q/exec";
 
-// ===== LẤY IP THẬT (Dùng nhiều API dự phòng) =====
+// ===== BỎ LẤY IP, DÙNG IP MẶC ĐỊNH =====
 async function getRealIP() {
-    // API 1: ipwho.is (hỗ trợ CORS tốt)
-    try {
-        const response = await fetch('https://ipwho.is/');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-                return {
-                    ip: data.ip,
-                    city: data.city || "Unknown",
-                    region: data.region || "Unknown",
-                    country: data.country || "Unknown"
-                };
-            }
-        }
-    } catch (e) { console.log("ipwho.is failed:", e); }
-    
-    // API 2: ipapi.co
-    try {
-        const response = await fetch('https://ipapi.co/json/');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.ip) {
-                return {
-                    ip: data.ip,
-                    city: data.city || "Unknown",
-                    region: data.region || "Unknown",
-                    country: data.country_name || "Unknown"
-                };
-            }
-        }
-    } catch (e) { console.log("ipapi.co failed:", e); }
-    
-    // Fallback - không lấy được IP
-    return { ip: "Unknown", city: "Unknown", region: "Unknown", country: "Unknown" };
+    // Không gọi API bên ngoài, trả về IP mặc định
+    return {
+        ip: "Visited from web",
+        city: "Unknown",
+        region: "Unknown",
+        country: "Unknown"
+    };
 }
 
 function getBrowserInfo() {
@@ -57,17 +30,31 @@ function getBrowserInfo() {
 
 async function updateCounterDisplay() {
     try {
-        const response = await fetch(WEB_APP_URL);
-        const text = await response.text();
-        const stats = JSON.parse(text);
+        const response = await fetch(`${PROXY_URL}?sheet=VISIT_COUNTER`);
+        const data = await response.json();
         
-        if (stats.today !== undefined) {
-            document.getElementById('todayCount').innerText = stats.today || 0;
-            document.getElementById('monthCount').innerText = stats.month || 0;
-            document.getElementById('yearCount').innerText = stats.year || 0;
-            document.getElementById('totalCount').innerText = stats.total || 0;
-            console.log("📊 Bộ đếm:", stats);
+        const today = new Date().toISOString().split('T')[0];
+        const currentMonth = today.substring(0, 7);
+        const currentYear = today.substring(0, 4);
+        
+        let todayCount = 0, monthCount = 0, yearCount = 0, totalCount = 0;
+        
+        if (Array.isArray(data)) {
+            data.forEach(row => {
+                const date = row.Ngày;
+                if (date === today) todayCount++;
+                if (date && date.startsWith(currentMonth)) monthCount++;
+                if (date && date.startsWith(currentYear)) yearCount++;
+                totalCount++;
+            });
         }
+        
+        document.getElementById('todayCount').innerText = todayCount;
+        document.getElementById('monthCount').innerText = monthCount;
+        document.getElementById('yearCount').innerText = yearCount;
+        document.getElementById('totalCount').innerText = totalCount;
+        console.log("📊 Bộ đếm:", { today: todayCount, month: monthCount, year: yearCount, total: totalCount });
+        
     } catch (error) {
         console.error("Lỗi lấy bộ đếm:", error);
     }
@@ -84,17 +71,19 @@ async function recordVisit() {
         return;
     }
     
-    console.log("🌐 Đang lấy IP...");
+    // Tạo ID duy nhất cho phiên truy cập
+    const sessionId = Math.random().toString(36).substring(2, 15);
+    
     const geo = await getRealIP();
     const browserInfo = getBrowserInfo();
     
     const visitData = {
         timestamp: now.toISOString(),
         datetime: now.toLocaleString("vi-VN"),
-        ip: geo.ip,
-        city: geo.city,
-        region: geo.region,
-        country: geo.country,
+        ip: `Session_${sessionId}`,
+        city: "Web Visitor",
+        region: browserInfo.device,
+        country: browserInfo.browser,
         browser: browserInfo.browser,
         device: browserInfo.device,
         userAgent: browserInfo.userAgent,
@@ -105,8 +94,7 @@ async function recordVisit() {
     console.log("📤 Gửi dữ liệu:", visitData);
     
     try {
-        // Dùng mode: 'no-cors' để tránh lỗi CORS (nhưng sẽ không nhận được phản hồi)
-        await fetch(WEB_APP_URL, {
+        await fetch(PROXY_URL, {
             method: "POST",
             mode: "no-cors",
             headers: { "Content-Type": "application/json" },
@@ -114,9 +102,8 @@ async function recordVisit() {
         });
         
         localStorage.setItem("lastVisitLogDate", todayStr);
-        console.log("✅ Đã gửi yêu cầu ghi nhận truy cập từ IP:", geo.ip);
+        console.log("✅ Đã gửi yêu cầu ghi nhận truy cập");
         
-        // Đợi 1 giây rồi cập nhật bộ đếm
         setTimeout(updateCounterDisplay, 1000);
         
     } catch (error) {
