@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Quản Lý Nhà Xe HP36 | Hoàng Phương</title>
-    
     <style>
-        /* ==================== CSS TOÀN BỘ ==================== */
         * {
             margin: 0;
             padding: 0;
@@ -20,7 +18,6 @@
             padding-bottom: 100px;
         }
 
-        /* Header */
         .header {
             background: linear-gradient(135deg, #0f2b4d 0%, #1a4a7a 100%);
             color: white;
@@ -57,7 +54,6 @@
             opacity: 0.9;
         }
 
-        /* Stats Bar */
         .stats-bar {
             display: flex;
             flex-wrap: wrap;
@@ -90,15 +86,10 @@
             font-weight: 600;
             color: white;
             cursor: pointer;
-            transition: 0.2s;
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 0.8rem;
-        }
-
-        .info-btn-header:active {
-            transform: scale(0.97);
         }
 
         .data-count-badge {
@@ -109,7 +100,6 @@
             font-weight: 500;
         }
 
-        /* Tab Menu */
         .tab-menu {
             display: flex;
             gap: 8px;
@@ -142,7 +132,6 @@
             box-shadow: 0 2px 8px rgba(26,74,122,0.3);
         }
 
-        /* Filter Section */
         .filter-section {
             background: white;
             border-radius: 24px;
@@ -246,7 +235,6 @@
             display: inline-block;
         }
 
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -362,7 +350,6 @@
             margin-bottom: 8px;
         }
 
-        /* Data Cards */
         .data-list {
             display: flex;
             flex-direction: column;
@@ -429,7 +416,6 @@
             font-size: 0.8rem;
         }
 
-        /* Footer */
         .footer {
             position: fixed;
             bottom: 0;
@@ -452,30 +438,6 @@
             gap: 16px;
         }
 
-        .counter-stats {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .counter-item {
-            background: #f1f5f9;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: 500;
-        }
-
-        .counter-item span:first-child {
-            color: #475569;
-        }
-
-        .counter-item span:last-child {
-            color: #1a4a7a;
-            font-weight: 700;
-            margin-left: 6px;
-        }
-
         .loading, .no-data, .error-msg {
             text-align: center;
             padding: 40px;
@@ -494,7 +456,6 @@
             border-radius: 6px;
         }
 
-        /* Responsive */
         @media (max-width: 640px) {
             body {
                 padding: 12px;
@@ -510,9 +471,6 @@
             .time-filter-group {
                 flex-wrap: wrap;
                 justify-content: center;
-            }
-            .counter-stats {
-                gap: 8px;
             }
             .footer-content {
                 flex-direction: column;
@@ -579,8 +537,7 @@
     
     <div class="footer">
         <div class="footer-content">
-            <div>📞 Hotline: 0948 531 333 | © Công ty TNHH TM & DV Vận tải Hoàng Phương</div>
-
+            <div>📞 Hotline: 0948 955 999 | © Công ty TNHH TM & DV Vận tải Hoàng Phương</div>
         </div>
     </div>
     
@@ -620,19 +577,8 @@
     <!-- JAVASCRIPT -->
     <script src="visitor-log.js"></script>
     <script>
-        // ==================== JAVASCRIPT CHÍNH ====================
         (function() {
-            // CẤU HÌNH
-            const SHEET_ID = "17ksYxJypnO4dEfZRG3NjO-b5zqdAaVcSGH3ZWf28erY";
-            const GIAVE_GID = "0";
-            const GIOXUAT_GID = "632345854";
-            const VITRI_GID = "614449779";
-            
-            let allData = { giave: [], gioxuatben: [], vitri: [] };
-            let currentTab = "giave";
-            let refreshInterval = null;
-            let timeFilter = { active: false, condition: "after", time: null };
-            
+            // ===== CẤU HÌNH =====
             const dataContainer = document.getElementById("dataContainer");
             const searchInput = document.getElementById("searchInput");
             const extraFilter = document.getElementById("extraFilter");
@@ -654,36 +600,12 @@
             closeModalBtn.addEventListener("click", () => modal.classList.remove("show"));
             modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.remove("show"); });
             
-            // BỘ ĐẾM LƯỢT TRUY CẬP (localStorage)
-            function updateVisitCounter() {
-                const today = new Date();
-                const todayStr = today.toISOString().split('T')[0];
-                const currentMonth = `${today.getFullYear()}-${today.getMonth() + 1}`;
-                const currentYear = `${today.getFullYear()}`;
-                
-                let visits = localStorage.getItem('visitCounter');
-                if (!visits) visits = { daily: {}, monthly: {}, yearly: {}, total: 0 };
-                else visits = JSON.parse(visits);
-                
-                const lastVisitDate = localStorage.getItem('lastVisitDate');
-                const isNewDay = lastVisitDate !== todayStr;
-                
-                if (isNewDay) {
-                    visits.daily[todayStr] = (visits.daily[todayStr] || 0) + 1;
-                    visits.monthly[currentMonth] = (visits.monthly[currentMonth] || 0) + 1;
-                    visits.yearly[currentYear] = (visits.yearly[currentYear] || 0) + 1;
-                    visits.total = (visits.total || 0) + 1;
-                    localStorage.setItem('visitCounter', JSON.stringify(visits));
-                    localStorage.setItem('lastVisitDate', todayStr);
-                }
-                
-                document.getElementById('todayCount').innerText = visits.daily[todayStr] || 0;
-                document.getElementById('monthCount').innerText = visits.monthly[currentMonth] || 0;
-                document.getElementById('yearCount').innerText = visits.yearly[currentYear] || 0;
-                document.getElementById('totalCount').innerText = visits.total || 0;
-            }
+            let allData = { giave: [], gioxuatben: [], vitri: [] };
+            let currentTab = "giave";
+            let refreshInterval = null;
+            let timeFilter = { active: false, condition: "after", time: null };
             
-            // HÀM TIỆN ÍCH
+            // ===== HÀM TIỆN ÍCH =====
             function removeVietnameseTones(str) {
                 if (!str) return "";
                 str = str.toLowerCase();
@@ -706,110 +628,59 @@
                 return match24 ? parseInt(match24[1]) : -1;
             }
             
-            function parseCSVToRows(csvText) {
-                const rows = [];
-                const lines = csvText.split(/\r?\n/);
-                for (let line of lines) {
-                    if (!line.trim()) continue;
-                    const cols = [];
-                    let inQuote = false, cell = "";
-                    for (let i = 0; i < line.length; i++) {
-                        const ch = line[i];
-                        if (ch === '"') inQuote = !inQuote;
-                        else if (ch === ',' && !inQuote) { cols.push(cell.trim()); cell = ""; }
-                        else cell += ch;
-                    }
-                    cols.push(cell.trim());
-                    rows.push(cols);
-                }
-                return rows;
-            }
-            
-            async function fetchCSV(url) {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
-                try {
-                    const response = await fetch(url, { cache: "no-store", signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    const text = await response.text();
-                    return parseCSVToRows(text);
-                } catch (err) {
-                    clearTimeout(timeoutId);
-                    throw err;
-                }
-            }
-            
-            // TẢI DỮ LIỆU
+            // ===== TẢI DỮ LIỆU TỪ PROXY =====
             async function loadAllData() {
                 updateBadge.innerHTML = "⏳ Đang đồng bộ...";
                 dataContainer.innerHTML = `<div class="loading">⏳ Đang tải dữ liệu...</div>`;
                 try {
-                    const [csvGiaVe, csvGioXuat, csvVitri] = await Promise.all([
-                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIAVE_GID}`),
-                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIOXUAT_GID}`),
-                        fetchCSV(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${VITRI_GID}`)
-                    ]);
+                    // Gọi hàm fetchSheetData từ visitor-log.js
+                    const dataGiaVe = await window.fetchSheetData('giave');
+                    const dataGioXuat = await window.fetchSheetData('gioxuatben');
+                    const dataVitri = await window.fetchSheetData('vitri');
                     
-                    // XỬ LÝ GIÁ VÉ
-                    let startIdx = (csvGiaVe[0] && csvGiaVe[0][0] && (csvGiaVe[0][0].toLowerCase().includes("nơi") || csvGiaVe[0][0].toLowerCase().includes("muong"))) ? 1 : 0;
-                    allData.giave = [];
-                    for (let i = startIdx; i < csvGiaVe.length; i++) {
-                        const row = csvGiaVe[i];
-                        if (row[0] && row[0].trim()) {
-                            allData.giave.push({
-                                noi_di: row[0].trim(),
-                                nguoc_lai: (row[1] || "").trim(),
-                                gia_ve: (row[2] || "").trim(),
-                                searchText: removeVietnameseTones(row[0].trim() + " " + (row[1] || "").trim())
-                            });
-                        }
-                    }
+                    console.log("Dữ liệu giá vé:", dataGiaVe);
+                    console.log("Dữ liệu giờ xuất bến:", dataGioXuat);
+                    console.log("Dữ liệu vị trí:", dataVitri);
                     
-                    // XỬ LÝ GIỜ XUẤT BẾN
-                    startIdx = (csvGioXuat[0] && csvGioXuat[0][0] && csvGioXuat[0][0].toLowerCase().includes("bến")) ? 1 : 0;
-                    allData.gioxuatben = [];
-                    for (let i = startIdx; i < csvGioXuat.length; i++) {
-                        const row = csvGioXuat[i];
-                        if (row[0] && row[0].trim()) {
-                            allData.gioxuatben.push({
-                                ben_di: row[0].trim(),
-                                gio: (row[1] || "").trim(),
-                                so_dien_thoai: (row[2] || "").trim(),
-                                searchText: removeVietnameseTones(row[0].trim()),
-                                hour: getHourFromTimeStr(row[1])
-                            });
-                        }
-                    }
+                    // Xử lý GIÁ VÉ
+                    allData.giave = (Array.isArray(dataGiaVe) ? dataGiaVe : []).map(row => ({
+                        noi_di: row["Nơi Đi"] || row["noi_di"] || "",
+                        nguoc_lai: row["Ngược Lại"] || row["nguoc_lai"] || "",
+                        gia_ve: row["giá"] || row["gia_ve"] || "",
+                        searchText: removeVietnameseTones((row["Nơi Đi"] || row["noi_di"] || "") + " " + (row["Ngược Lại"] || row["nguoc_lai"] || ""))
+                    })).filter(item => item.noi_di);
                     
-                    // XỬ LÝ VỊ TRÍ
-                    startIdx = (csvVitri[0] && csvVitri[0][0] && csvVitri[0][0].toLowerCase().includes("bến")) ? 1 : 0;
-                    allData.vitri = [];
-                    for (let i = startIdx; i < csvVitri.length; i++) {
-                        const row = csvVitri[i];
-                        if (row[0] && row[0].trim()) {
-                            allData.vitri.push({
-                                ben_di: row[0].trim(),
-                                gio_di: (row[1] || "").trim(),
-                                bien_kiem_soat: (row[2] || "").trim(),
-                                so_dien_thoai: (row[3] || "").trim(),
-                                loai_xe: (row[4] || "").trim(),
-                                searchText: removeVietnameseTones(row[0].trim()),
-                                hour: getHourFromTimeStr(row[1])
-                            });
-                        }
-                    }
+                    // Xử lý GIỜ XUẤT BẾN
+                    allData.gioxuatben = (Array.isArray(dataGioXuat) ? dataGioXuat : []).map(row => ({
+                        ben_di: row["Bến đi"] || row["ben_di"] || "",
+                        gio: row["Giờ"] || row["gio"] || "",
+                        so_dien_thoai: row["Số điện thoại"] || row["so_dien_thoai"] || "",
+                        searchText: removeVietnameseTones(row["Bến đi"] || row["ben_di"] || ""),
+                        hour: getHourFromTimeStr(row["Giờ"] || row["gio"] || "")
+                    })).filter(item => item.ben_di);
+                    
+                    // Xử lý VỊ TRÍ
+                    allData.vitri = (Array.isArray(dataVitri) ? dataVitri : []).map(row => ({
+                        ben_di: row["Bến đi"] || row["ben_di"] || "",
+                        gio_di: row["giờ đi"] || row["gio_di"] || "",
+                        bien_kiem_soat: row["biến kiểm soát"] || row["bien_kiem_soat"] || "",
+                        so_dien_thoai: row["số điện thoại"] || row["so_dien_thoai"] || "",
+                        loai_xe: row["Loại xe"] || row["loai_xe"] || "",
+                        searchText: removeVietnameseTones(row["Bến đi"] || row["ben_di"] || ""),
+                        hour: getHourFromTimeStr(row["giờ đi"] || row["gio_di"] || "")
+                    })).filter(item => item.ben_di);
                     
                     updateBadge.innerHTML = `✅ ${new Date().toLocaleTimeString()} | GV:${allData.giave.length} GX:${allData.gioxuatben.length} VT:${allData.vitri.length}`;
                     switchToTab(currentTab);
+                    
                 } catch (err) {
                     console.error("Lỗi:", err);
-                    dataContainer.innerHTML = `<div class="error-msg">❌ LỖI: ${err.message}<br>🔧 Kiểm tra: Sheet đã public chưa? Dùng Live Server?</div>`;
+                    dataContainer.innerHTML = `<div class="error-msg">❌ LỖI: ${err.message}<br>🔧 Kiểm tra kết nối Proxy</div>`;
                     updateBadge.innerHTML = "⚠️ Lỗi kết nối";
                 }
             }
             
-            // LỌC DỮ LIỆU
+            // ===== LỌC DỮ LIỆU =====
             function filterByTime(data, tabName) {
                 if (!timeFilter.active || !timeFilter.time || tabName === "giave") return data;
                 const [filterHour] = timeFilter.time.split(':').map(Number);
@@ -829,12 +700,14 @@
                     const searchNormalized = removeVietnameseTones(searchKeyword);
                     data = data.filter(item => item.searchText.includes(searchNormalized));
                 }
-                if (currentTab === "vitri" && extraFilter.value !== "all") data = data.filter(item => item.loai_xe === extraFilter.value);
+                if (currentTab === "vitri" && extraFilter.value !== "all") {
+                    data = data.filter(item => item.loai_xe === extraFilter.value);
+                }
                 data = filterByTime(data, currentTab);
                 return data;
             }
             
-            // HIỂN THỊ
+            // ===== HIỂN THỊ =====
             function escapeHtml(str) { 
                 if (!str) return ""; 
                 return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
@@ -917,7 +790,7 @@
                 searchInput.placeholder = currentTab === "giave" ? "🔍 Tìm theo nơi đi..." : "🔍 Tìm theo bến đi...";
             }
             
-            // KHỞI TẠO
+            // ===== KHỞI TẠO =====
             function bindEvents() {
                 document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
                     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -933,8 +806,6 @@
             
             function startAutoRefresh() { if (refreshInterval) clearInterval(refreshInterval); refreshInterval = setInterval(loadAllData, 60000); }
             
-            // CHẠY
-            updateVisitCounter();
             bindEvents();
             loadAllData();
             startAutoRefresh();
