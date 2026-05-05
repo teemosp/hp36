@@ -1,38 +1,13 @@
 // ==================== visitor-log.js ====================
-// Lấy IP thật từ trình duyệt và gửi lên Apps Script
+// Tự động lấy IP và cập nhật bộ đếm
 
 (function() {
-    // ===== CẤU HÌNH =====
-    const LOG_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzY8kX6b0C9kiHHbc8fMex3ntYe6BFeVDkWAosoqp-U7Kl6YTap7zzL_iFPyza4MAKCAQ/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzY8kX6b0C9kiHHbc8fMex3ntYe6BFeVDkWAosoqp-U7Kl6YTap7zzL_iFPyza4MAKCAQ/exec";
     
-    // ===== HÀM LẤY IP THẬT =====
+    // ===== LẤY IP THẬT =====
     async function getRealIP() {
-        // Thử API thứ nhất: ipapi.co (ưu tiên)
         try {
-            const response = await fetch('https://ipapi.co/json/', {
-                mode: 'cors',
-                cache: 'no-cache'
-            });
-            if (response.ok) {
-                const data = await response.json();
-                if (data.ip) {
-                    return {
-                        ip: data.ip,
-                        city: data.city || "Unknown",
-                        region: data.region || "Unknown",
-                        country: data.country_name || "Unknown",
-                        latitude: data.latitude || null,
-                        longitude: data.longitude || null
-                    };
-                }
-            }
-        } catch (e) { console.log("ipapi.co failed:", e); }
-        
-        // Thử API thứ hai: ip-api.com
-        try {
-            const response = await fetch('https://ip-api.com/json/', {
-                mode: 'cors'
-            });
+            const response = await fetch('https://ip-api.com/json/');
             if (response.ok) {
                 const data = await response.json();
                 if (data.status === "success") {
@@ -40,41 +15,13 @@
                         ip: data.query,
                         city: data.city || "Unknown",
                         region: data.regionName || "Unknown",
-                        country: data.country || "Unknown",
-                        latitude: data.lat || null,
-                        longitude: data.lon || null
+                        country: data.country || "Unknown"
                     };
                 }
             }
-        } catch (e) { console.log("ip-api.com failed:", e); }
+        } catch (e) { console.log("Lỗi lấy IP:", e); }
         
-        // Thử API thứ ba: ipwho.is
-        try {
-            const response = await fetch('https://ipwho.is/');
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                    return {
-                        ip: data.ip,
-                        city: data.city || "Unknown",
-                        region: data.region || "Unknown",
-                        country: data.country || "Unknown",
-                        latitude: data.latitude || null,
-                        longitude: data.longitude || null
-                    };
-                }
-            }
-        } catch (e) { console.log("ipwho.is failed:", e); }
-        
-        // Nếu không lấy được IP
-        return {
-            ip: "Unable to fetch",
-            city: "Unknown",
-            region: "Unknown",
-            country: "Unknown",
-            latitude: null,
-            longitude: null
-        };
+        return { ip: "Unknown", city: "Unknown", region: "Unknown", country: "Unknown" };
     }
     
     // ===== LẤY THÔNG TIN TRÌNH DUYỆT =====
@@ -85,53 +32,50 @@
         else if (ua.includes("Firefox")) browser = "Firefox";
         else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Safari";
         else if (ua.includes("Edg")) browser = "Edge";
-        else if (ua.includes("Opera")) browser = "Opera";
         
         let device = "Desktop";
         if (/(iPhone|iPad|iPod)/i.test(ua)) device = "iOS";
         else if (/Android/i.test(ua)) device = "Android";
         else if (/Mobile/i.test(ua)) device = "Mobile";
         
-        return { browser, device, userAgent: ua.substring(0, 500) };
+        return { browser, device, userAgent: ua };
     }
     
-    // ===== GỬI DỮ LIỆU LÊN APPS SCRIPT =====
-    async function sendToAppsScript(visitData) {
+    // ===== CẬP NHẬT GIAO DIỆN BỘ ĐẾM =====
+    async function updateCounterDisplay() {
         try {
-            // Sử dụng mode: 'no-cors' để tránh lỗi CORS
-            await fetch(LOG_WEB_APP_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(visitData)
-            });
-            console.log("✅ Đã gửi dữ liệu truy cập");
-            return true;
+            const response = await fetch(WEB_APP_URL);
+            const stats = await response.json();
+            
+            document.getElementById('todayCount').innerText = stats.today || 0;
+            document.getElementById('monthCount').innerText = stats.month || 0;
+            document.getElementById('yearCount').innerText = stats.year || 0;
+            document.getElementById('totalCount').innerText = stats.total || 0;
+            
+            console.log("📊 Bộ đếm:", stats);
         } catch (error) {
-            console.error("❌ Lỗi gửi:", error);
-            return false;
+            console.error("Lỗi lấy bộ đếm:", error);
         }
     }
     
-    // ===== HÀM CHÍNH =====
+    // ===== GHI NHẬN TRUY CẬP =====
     async function recordVisit() {
         const now = new Date();
         const todayStr = now.toISOString().split('T')[0];
         const lastLogDate = localStorage.getItem("lastVisitLogDate");
         
-        // Chỉ ghi 1 lần mỗi ngày (có thể bỏ nếu muốn ghi mỗi lần)
+        // Chỉ ghi 1 lần mỗi ngày cho mỗi thiết bị/IP
         if (lastLogDate === todayStr) {
-            console.log("📊 Đã ghi hôm nay, bỏ qua");
+            console.log("📊 Đã ghi hôm nay, chỉ cập nhật bộ đếm");
+            await updateCounterDisplay();
             return;
         }
         
-        console.log("🌐 Đang lấy IP và vị trí...");
+        console.log("🌐 Đang ghi nhận truy cập...");
         
-        // Lấy IP và vị trí
         const geo = await getRealIP();
         const browserInfo = getBrowserInfo();
         
-        // Tạo dữ liệu gửi đi
         const visitData = {
             timestamp: now.toISOString(),
             datetime: now.toLocaleString("vi-VN"),
@@ -139,8 +83,6 @@
             city: geo.city,
             region: geo.region,
             country: geo.country,
-            latitude: geo.latitude,
-            longitude: geo.longitude,
             browser: browserInfo.browser,
             device: browserInfo.device,
             userAgent: browserInfo.userAgent,
@@ -148,19 +90,36 @@
             pageUrl: window.location.href
         };
         
-        console.log("📊 Dữ liệu sẽ gửi:", visitData);
-        
-        // Gửi lên Apps Script
-        await sendToAppsScript(visitData);
-        
-        // Lưu lại ngày đã ghi
-        localStorage.setItem("lastVisitLogDate", todayStr);
+        try {
+            const response = await fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(visitData)
+            });
+            
+            localStorage.setItem("lastVisitLogDate", todayStr);
+            console.log("✅ Đã ghi nhận truy cập từ IP:", geo.ip);
+            
+            // Cập nhật bộ đếm sau khi ghi
+            setTimeout(updateCounterDisplay, 1000);
+            
+        } catch (error) {
+            console.error("❌ Lỗi:", error);
+        }
     }
     
-    // Tự động chạy khi trang tải
+    // Cập nhật bộ đếm mỗi 30 giây
+    setInterval(updateCounterDisplay, 30000);
+    
+    // Chạy khi tải trang
     if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", recordVisit);
+        document.addEventListener("DOMContentLoaded", () => {
+            recordVisit();
+            updateCounterDisplay();
+        });
     } else {
         recordVisit();
+        updateCounterDisplay();
     }
 })();
