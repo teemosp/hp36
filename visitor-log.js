@@ -1,5 +1,5 @@
 // ==================== visitor-log.js ====================
-const PROXY_URL = "https://script.google.com/macros/s/AKfycbxuf7yMNz4MrZ4ZK1Nuz5JHvZyV7ICp3XvkqC6dU6siZnn924XVxPuLUWZIW1lFLI5zdw/exec";
+const PROXY_URL = "https://script.google.com/macros/s/AKfycbx_jjM1xJhXPAjhbFre9ynzZ5jb2ch6yFB1S9PsOyCZQMiRchO7Y-bewPR5IOpRxz5SIQ/exec";
 
 function getBrowserInfo() {
     const ua = navigator.userAgent;
@@ -8,6 +8,7 @@ function getBrowserInfo() {
     else if (ua.includes("Firefox")) browser = "Firefox";
     else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Safari";
     else if (ua.includes("Edg")) browser = "Edge";
+    else if (ua.includes("Opera")) browser = "Opera";
     
     return { browser, userAgent: ua };
 }
@@ -24,7 +25,7 @@ async function updateCounterDisplay() {
         
         if (Array.isArray(data)) {
             data.forEach(row => {
-                const count = parseInt(row["Số lượt truy cập"]) || 0;
+                const count = parseInt(row["Số lượt truy cập (tổng)"]) || 0;
                 totalCount += count;
                 if (row.Ngày === today) {
                     todayCount = count;
@@ -33,7 +34,10 @@ async function updateCounterDisplay() {
         }
         
         document.getElementById('todayCount').innerText = todayCount;
+        document.getElementById('monthCount').innerText = data.length || 0;
+        document.getElementById('yearCount').innerText = new Date().getFullYear();
         document.getElementById('totalCount').innerText = totalCount;
+        
         console.log("📊 Hôm nay:", todayCount, "| Tổng:", totalCount);
         
     } catch (error) {
@@ -76,13 +80,8 @@ async function recordVisit() {
 // Cập nhật bộ đếm mỗi 30 giây
 setInterval(updateCounterDisplay, 30000);
 
-// Chạy khi tải trang
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-        recordVisit();
-        updateCounterDisplay();
-    });
-} else {
+// Chạy khi tải trang (mỗi lần F5 đều chạy)
+window.addEventListener('load', () => {
     recordVisit();
     updateCounterDisplay();
-}
+});
