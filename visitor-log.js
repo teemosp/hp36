@@ -3,7 +3,7 @@
 
 (function() {
     // ===== CẤU HÌNH: THAY URL WEB APP CỦA BẠN VÀO ĐÂY =====
-    const LOG_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyAsL-76qd12IxyqkeSWlG17kZ05f4x9jDrbCALhFIhSEmLICenfBx0UaabsXxpG3VKZw/exec";
+    const LOG_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzY8kX6b0C9kiHHbc8fMex3ntYe6BFeVDkWAosoqp-U7Kl6YTap7zzL_iFPyza4MAKCAQ/exec";
     
     // ===== GHI NHẬN TRUY CẬP =====
     async function recordVisit() {
