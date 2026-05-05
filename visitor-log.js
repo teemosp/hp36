@@ -1,5 +1,5 @@
 // ==================== visitor-log.js (ĐÃ SỬA) ====================
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyMaY4wcPcdCO4fLIoSl0BCX1Ze5Okja0vplkZ3V06hAsB81MhLhNiDLMnqXIl4ZNSSHw/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwbyKlTjhQMDFTHHOw_LTNoovVCRJjqZ6NXeFDJjlyvpLF_6fNZtjOex3pLhkr547nh-Q/exec";
 
 // ===== LẤY IP THẬT (Dùng nhiều API dự phòng) =====
 async function getRealIP() {
