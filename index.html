@@ -86,10 +86,15 @@
             font-weight: 600;
             color: white;
             cursor: pointer;
+            transition: 0.2s;
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 0.8rem;
+        }
+
+        .info-btn-header:active {
+            transform: scale(0.97);
         }
 
         .data-count-badge {
@@ -578,7 +583,7 @@
     <script src="visitor-log.js"></script>
     <script>
         (function() {
-            // ===== CẤU HÌNH =====
+            // ===== DOM ELEMENTS =====
             const dataContainer = document.getElementById("dataContainer");
             const searchInput = document.getElementById("searchInput");
             const extraFilter = document.getElementById("extraFilter");
