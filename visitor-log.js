@@ -1,4 +1,4 @@
-// ==================== visitor-log.js (SỬA LỖI) ====================
+// ==================== visitor-log.js ====================
 (function() {
     // THAY URL CỦA BẠN VÀO ĐÂY
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzY8kX6b0C9kiHHbc8fMex3ntYe6BFeVDkWAosoqp-U7Kl6YTap7zzL_iFPyza4MAKCAQ/exec";
@@ -6,7 +6,6 @@
     // ===== LẤY IP THẬT =====
     async function getRealIP() {
         try {
-            // Dùng ip-api.com (hỗ trợ CORS tốt)
             const response = await fetch('https://ip-api.com/json/');
             if (response.ok) {
                 const data = await response.json();
@@ -21,7 +20,6 @@
             }
         } catch (e) { console.log("Lỗi ip-api:", e); }
         
-        // Fallback
         return { ip: "Unknown", city: "Unknown", region: "Unknown", country: "Unknown" };
     }
     
@@ -42,15 +40,44 @@
         return { browser, device, userAgent: ua };
     }
     
+    // ===== CẬP NHẬT HIỂN THỊ BỘ ĐẾM =====
+    async function updateCounterDisplay() {
+        try {
+            const response = await fetch(WEB_APP_URL);
+            const text = await response.text();
+            
+            // Thử parse JSON
+            let stats;
+            try {
+                stats = JSON.parse(text);
+            } catch (e) {
+                console.error("JSON parse error:", text.substring(0, 100));
+                return;
+            }
+            
+            if (stats.today !== undefined) {
+                document.getElementById('todayCount').innerText = stats.today || 0;
+                document.getElementById('monthCount').innerText = stats.month || 0;
+                document.getElementById('yearCount').innerText = stats.year || 0;
+                document.getElementById('totalCount').innerText = stats.total || 0;
+                console.log("📊 Bộ đếm:", stats);
+            } else if (stats.error) {
+                console.error("Lỗi từ server:", stats.error);
+            }
+        } catch (error) {
+            console.error("Lỗi lấy bộ đếm:", error);
+        }
+    }
+    
     // ===== GHI NHẬN TRUY CẬP =====
     async function recordVisit() {
         const now = new Date();
         const todayStr = now.toISOString().split('T')[0];
         const lastLogDate = localStorage.getItem("lastVisitLogDate");
         
-        // Chỉ ghi 1 lần mỗi ngày
         if (lastLogDate === todayStr) {
-            console.log("📊 Đã ghi hôm nay, bỏ qua");
+            console.log("📊 Đã ghi hôm nay, chỉ cập nhật bộ đếm");
+            await updateCounterDisplay();
             return;
         }
         
@@ -72,10 +99,9 @@
             pageUrl: window.location.href
         };
         
-        console.log("📤 Đang gửi dữ liệu:", visitData);
+        console.log("📤 Gửi dữ liệu:", visitData);
         
         try {
-            // Bỏ mode: "no-cors" để nhận phản hồi
             const response = await fetch(WEB_APP_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -83,24 +109,34 @@
             });
             
             const result = await response.json();
-            console.log("✅ Kết quả từ server:", result);
+            console.log("✅ Kết quả:", result);
             
             if (result.status === "success") {
                 localStorage.setItem("lastVisitLogDate", todayStr);
                 console.log("✅ Đã ghi nhận truy cập từ IP:", geo.ip);
             } else {
-                console.error("❌ Server báo lỗi:", result.message);
+                console.error("❌ Lỗi:", result.message);
             }
+            
+            // Cập nhật bộ đếm sau khi ghi
+            await updateCounterDisplay();
             
         } catch (error) {
             console.error("❌ Lỗi gửi request:", error);
         }
     }
     
+    // Cập nhật bộ đếm mỗi 30 giây
+    setInterval(updateCounterDisplay, 30000);
+    
     // Chạy khi tải trang
     if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", recordVisit);
+        document.addEventListener("DOMContentLoaded", () => {
+            recordVisit();
+            updateCounterDisplay();
+        });
     } else {
         recordVisit();
+        updateCounterDisplay();
     }
 })();
