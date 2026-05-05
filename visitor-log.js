@@ -1,6 +1,23 @@
 // ==================== visitor-log.js ====================
 const PROXY_URL = "https://script.google.com/macros/s/AKfycbyrAuBWt4v77hURogvOCwvktfj1Gd7KhtlIOjGMjhY5ikN3JOLYaNckTWtzSAQ7e28rTQ/exec";
 
+// Hàm đọc dữ liệu từ Google Sheets qua Proxy
+window.fetchSheetData = async function(sheetName) {
+    try {
+        const response = await fetch(`${PROXY_URL}?sheet=${sheetName}`);
+        const data = await response.json();
+        if (data.error) {
+            console.error("Lỗi từ server:", data.error);
+            return [];
+        }
+        return data;
+    } catch (error) {
+        console.error(`Lỗi đọc sheet ${sheetName}:`, error);
+        return [];
+    }
+};
+
+// Ghi log truy cập
 function getBrowserInfo() {
     const ua = navigator.userAgent;
     let browser = "Unknown";
@@ -29,8 +46,6 @@ async function recordVisit() {
         timestamp: new Date().toISOString()
     };
     
-    console.log("📤 Gửi dữ liệu:", visitData);
-    
     try {
         await fetch(PROXY_URL, {
             method: "POST",
@@ -40,7 +55,7 @@ async function recordVisit() {
         });
         console.log("✅ Đã gửi yêu cầu ghi log");
     } catch (error) {
-        console.error("❌ Lỗi:", error);
+        console.error("❌ Lỗi ghi log:", error);
     }
 }
 
