@@ -1,7 +1,7 @@
 // ==================== visitor-log.js ====================
 (function() {
     // THAY URL CỦA BẠN VÀO ĐÂY
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxgQjmZzmmlVTja-ub4q5N3GFU6l6HrBoQlmbUjmN2lbUtLAef46sjpmpvv-_scYK2nXQ/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyTy91GPaAene-dbwOb70PTEBAS2PNHPgwHCtu50b5xwNnOtHmZkpBBLCAItfVLmyCkrg/exec";
     
     // ===== LẤY IP THẬT =====
     async function getRealIP() {
