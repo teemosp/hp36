@@ -542,7 +542,7 @@
     
     <div class="footer">
         <div class="footer-content">
-            <div>📞 Hotline: 0948 531 333 | © Công ty TNHH TM & DV Vận tải Hoàng Phương</div>
+            <div>📞 Hotline: 0948 955 999 | © Công ty TNHH TM & DV Vận tải Hoàng Phương</div>
         </div>
     </div>
     
@@ -587,6 +587,9 @@
             const GIOXUAT_GID = "632345854";
             const VITRI_GID = "614449779";
             
+            // Proxy URL để ghi log (giữ nguyên)
+            const PROXY_URL = "https://script.google.com/macros/s/AKfycbyJTKsbFJCCmFhbHdYrrHYCCoFhV_VQiF34oCx3GfvDhwgjxCD6Qoynh4eJRQiXlVcp0w/exec";
+            
             // DOM elements
             const dataContainer = document.getElementById("dataContainer");
             const searchInput = document.getElementById("searchInput");
@@ -613,6 +616,52 @@
             let currentTab = "giave";
             let refreshInterval = null;
             let timeFilter = { active: false, condition: "after", time: null };
+            
+            // ===== HÀM GHI LOG TRUY CẬP =====
+            async function recordVisit() {
+                try {
+                    // Lấy thông tin trình duyệt
+                    const ua = navigator.userAgent;
+                    let browser = "Unknown";
+                    if (ua.includes("Chrome") && !ua.includes("Edg")) browser = "Chrome";
+                    else if (ua.includes("Firefox")) browser = "Firefox";
+                    else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Safari";
+                    else if (ua.includes("Edg")) browser = "Edge";
+                    
+                    let device = "Desktop";
+                    if (/(iPhone|iPad|iPod)/i.test(ua)) device = "iOS";
+                    else if (/Android/i.test(ua)) device = "Android";
+                    else if (/Mobile/i.test(ua)) device = "Mobile";
+                    
+                    const now = new Date();
+                    const todayStr = now.toISOString().split('T')[0];
+                    const lastLogDate = localStorage.getItem("lastVisitLogDate");
+                    
+                    // Chỉ ghi 1 lần mỗi ngày
+                    if (lastLogDate !== todayStr) {
+                        const visitData = {
+                            browser: browser,
+                            device: device,
+                            userAgent: ua,
+                            pageUrl: window.location.href,
+                            referrer: document.referrer || "Direct",
+                            timestamp: now.toISOString()
+                        };
+                        
+                        await fetch(PROXY_URL, {
+                            method: "POST",
+                            mode: "no-cors",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(visitData)
+                        });
+                        
+                        localStorage.setItem("lastVisitLogDate", todayStr);
+                        console.log("✅ Đã ghi log truy cập");
+                    }
+                } catch (error) {
+                    console.error("Lỗi ghi log:", error);
+                }
+            }
             
             // ===== HÀM TIỆN ÍCH =====
             function removeVietnameseTones(str) {
@@ -735,7 +784,7 @@
                     switchToTab(currentTab);
                 } catch (err) {
                     console.error("Lỗi:", err);
-                    dataContainer.innerHTML = `<div class="error-msg">❌ LỖI: ${err.message}<br>🔧 Kiểm tra: Sheet đã public chưa? Dùng Live Server?</div>`;
+                    dataContainer.innerHTML = `<div class="error-msg">❌ LỖI: ${err.message}<br>🔧 Kiểm tra: Sheet đã public chưa?</div>`;
                     updateBadge.innerHTML = "⚠️ Lỗi kết nối";
                 }
             }
@@ -865,6 +914,9 @@
             }
             
             function startAutoRefresh() { if (refreshInterval) clearInterval(refreshInterval); refreshInterval = setInterval(loadAllData, 60000); }
+            
+            // Ghi log khi tải trang
+            recordVisit();
             
             bindEvents();
             loadAllData();
